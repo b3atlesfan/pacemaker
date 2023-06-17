@@ -34,7 +34,7 @@ onNodeDragStop((e) => console.log('drag stop', e))
  */
 onConnect((params) => addEdges(params))
 
-const dark = ref(false)
+const dark = ref(true)
 
 /**
  * To update node properties you can simply use your elements v-model and mutate the elements directly
