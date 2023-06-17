@@ -68,17 +68,29 @@ function resetTransform() {
 function toggleClass() {
   return (dark.value = !dark.value)
 }
+
+function addNode() {
+  elements.value.push({ id: '6', type: 'input', label: 'Node ', position: { x: 450, y: 110 }, class: 'light' })
+}
 </script>
 
 <template>
   <VueFlow v-model="elements" :class="{ dark }" class="basicflow" :default-viewport="{ zoom: 1.5 }" :min-zoom="0.2" :max-zoom="4">
     <Background :pattern-color="dark ? '#FFFFFB' : '#aaa'" gap="50" />
 
+    <!--
     <MiniMap />
+    -->
 
     <Controls />
 
     <Panel :position="PanelPosition.TopRight" class="controls">
+      <button style="background-color: #113285; color: white" title="Add node" @click="addNode">
+        <svg width="16" height="16" viewBox="0 0 32 32">
+          <path fill="#FFFFFB" d="M13.388,9.624h-3.011v-3.01c0-0.208-0.168-0.377-0.376-0.377S9.624,6.405,9.624,6.613v3.01H6.613c-0.208,0-0.376,0.168-0.376,0.376s0.168,0.376,0.376,0.376h3.011v3.01c0,0.208,0.168,0.378,0.376,0.378s0.376-0.17,0.376-0.378v-3.01h3.011c0.207,0,0.377-0.168,0.377-0.376S13.595,9.624,13.388,9.624z M10,1.344c-4.781,0-8.656,3.875-8.656,8.656c0,4.781,3.875,8.656,8.656,8.656c4.781,0,8.656-3.875,8.656-8.656C18.656,5.219,14.781,1.344,10,1.344z M10,17.903c-4.365,0-7.904-3.538-7.904-7.903S5.635,2.096,10,2.096S17.903,5.635,17.903,10S14.365,17.903,10,17.903z"></path>
+        </svg>
+      </button>
+
       <button style="background-color: #113285; color: white" title="Reset Transform" @click="resetTransform">
         <svg width="16" height="16" viewBox="0 0 32 32">
           <path fill="#FFFFFB" d="M18 28A12 12 0 1 0 6 16v6.2l-3.6-3.6L1 20l6 6l6-6l-1.4-1.4L8 22.2V16a10 10 0 1 1 10 10Z" />

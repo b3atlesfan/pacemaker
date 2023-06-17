@@ -10,7 +10,8 @@ import {RouterLink} from "vue-router";
       </div>
       <ul class="nav-routes">
         <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
+        <RouterLink to="/theming">Theming</RouterLink>
+        <RouterLink to="/composables">Composables</RouterLink>
       </ul>
     </nav>
   </header>
