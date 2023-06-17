@@ -4,7 +4,7 @@ import TheWelcome from "@/components/TheWelcome.vue";
 </script>
 
 <template>
-  <main>
+  <main class="box content">
     <VueFlowExample />
   </main>
 </template>

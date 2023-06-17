@@ -72,7 +72,7 @@ function toggleClass() {
 
 <template>
   <VueFlow v-model="elements" :class="{ dark }" class="basicflow" :default-viewport="{ zoom: 1.5 }" :min-zoom="0.2" :max-zoom="4">
-    <Background :pattern-color="dark ? '#FFFFFB' : '#aaa'" gap="8" />
+    <Background :pattern-color="dark ? '#FFFFFB' : '#aaa'" gap="50" />
 
     <MiniMap />
 

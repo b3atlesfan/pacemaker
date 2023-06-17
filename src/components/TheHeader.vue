@@ -3,7 +3,7 @@ import {RouterLink} from "vue-router";
 </script>
 
 <template>
-  <header>
+  <header class="row header">
     <nav class="container">
       <div class="branding">
         <h1>PaceMaker</h1>
@@ -22,7 +22,7 @@ header {
   nav {
     display: flex;
     align-items: center;
-    padding: 25px 16px;
+    padding: 0 16px;
 
     .branding {
       display: flex;

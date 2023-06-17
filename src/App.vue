@@ -5,8 +5,10 @@ import TheHeader from "@/components/TheHeader.vue";
 </script>
 
 <template>
-  <TheHeader />
-  <RouterView />
+  <div class="box">
+    <TheHeader />
+    <RouterView />
+  </div>
 </template>
 
 <style scoped>
