@@ -193,3 +193,7 @@ function addNode() {
     </Panel>
   </VueFlow>
 </template>
+
+<style scoped>
+
+</style>

@@ -1,7 +1,5 @@
 <script setup>
-import {GameplayBeat} from "@/assets/GameplayBeat";
 import {Handle, Position} from "@vue-flow/core";
-import {computed} from "vue";
 
 const props = defineProps({
   id: {
@@ -21,16 +19,19 @@ const props = defineProps({
 </script>
 
 <template>
-  <div class="rounded border-pink-300 border-2 mx-1 my-1 bg-green-100 text-black">
+  <div>
     <ul>
       <li>{{ props.label }}</li>
       <li>Difficulty is {{ props.data }} / 10</li>
     </ul>
     <Handle id="a_in" type="target" :position="Position.Right" />
     <Handle id="a_out" type="source" :position="Position.Right" />
-    <Handle id="b" type="source" :position="Position.Top" />
-    <Handle id="c" type="source" :position="Position.Bottom" />
-    <Handle id="d" type="source" :position="Position.Left" />
+    <Handle id="b_in" type="target" :position="Position.Top" />
+    <Handle id="b_out" type="source" :position="Position.Top" />
+    <Handle id="c_in" type="target" :position="Position.Bottom" />
+    <Handle id="c_out" type="source" :position="Position.Bottom" />
+    <Handle id="d_in" type="target" :position="Position.Left" />
+    <Handle id="d_out" type="source" :position="Position.Left" />
   </div>
 </template>
 

@@ -63,6 +63,11 @@ body,
     color: #fffffb
 }
 
+.basicflow.dark .vue-flow__node-gameplay-beat {
+    @apply rounded border-pink-300 border-2 mx-1 my-1 p-1 bg-green-100 text-black;
+}
+
+
 .basicflow.dark .vue-flow__controls .vue-flow__controls-button {
     background: #292524;
     fill: #fffffb;
