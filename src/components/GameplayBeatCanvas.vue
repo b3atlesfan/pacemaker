@@ -10,21 +10,34 @@ import { initialElements } from '@/assets/vueflow_examples/initial-elements.js'
  * useVueFlow provides all event handlers and store properties
  * You can pass the composable an object that has the same properties as the VueFlow component props
  */
-const { onPaneReady, onNodeDragStop, onConnect, addEdges, setTransform, toObject } = useVueFlow()
+const { onPaneReady, onNodeDragStop, onConnect, addEdges, setTransform, toObject, onPaneClick, addNodes } = useVueFlow()
 
 /**
  * Our elements
  */
 const elements = ref(initialElements)
 
+let vueFlowInstance
+
+onPaneReady((flowInstance) => {
+  flowInstance.fitView()
+  vueFlowInstance = flowInstance
+})
+
+let id = 6
+
+onPaneClick((mouseEvent) => {
+  console.log([mouseEvent.x, mouseEvent.y])
+  const pos = { x: mouseEvent.x - 100, y: mouseEvent.y - 100 }
+  addNodes({ id: '' + id, type: 'input', label: 'Node ' + id, position: vueFlowInstance.project(pos), class: 'light' })
+  id++
+})
+
 /**
  * This is a Vue Flow event-hook which can be listened to from anywhere you call the composable, instead of only on the main component
  *
  * onPaneReady is called when viewpane & nodes have visible dimensions
  */
-onPaneReady(({ fitView }) => {
-  fitView()
-})
 
 onNodeDragStop((e) => console.log('drag stop', e))
 
