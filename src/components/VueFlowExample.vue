@@ -4,7 +4,7 @@ import { Background } from '@vue-flow/background'
 import { Controls } from '@vue-flow/controls'
 import { MiniMap } from '@vue-flow/minimap'
 import { ref } from 'vue'
-import { initialElements } from '@/assets/initial-elements.js'
+import { initialElements } from '@/assets/vueflow_examples/initial-elements.js'
 
 /**
  * useVueFlow provides all event handlers and store properties

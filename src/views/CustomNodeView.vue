@@ -9,6 +9,7 @@ const node = {
   id: '1',
   label: 'Node 23',
   type: 'custom',
+  data: 1,
   position: { x: 50, y: 50 },
 }
 
@@ -33,10 +34,12 @@ const nodeTypes2 = {
 </script>
 
 <template>
-  <VueFlow v-model="elements">
+  <VueFlow v-model="elements" :node-types="nodeTypes2">
+    <!--
     <template #node-custom="data">
       <CustomNode :data="node"></CustomNode>
     </template>
+    -->
   </VueFlow>
 </template>
 

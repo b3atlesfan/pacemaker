@@ -4,13 +4,20 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  label: {
+    type: Object,
+    required: false,
+  }
 })
 
 </script>
 
 <template>
-  <div class="vue-flow__node-custom">
-    {{ data.label }}
+  <div>
+    <ul>
+      <li>{{ props.label }}</li>
+      <li>Difficulty is {{ props.data }} / 10</li>
+    </ul>
   </div>
 </template>
 
