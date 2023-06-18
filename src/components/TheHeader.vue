@@ -6,6 +6,7 @@ import {RouterLink} from "vue-router";
   <header class="row header">
     <nav class="container">
       <div class="branding">
+        <img src="@/assets/images/pacemaker_icon_cropped.png" alt="">
         <h1>PaceMaker</h1>
       </div>
       <ul class="nav-routes">
