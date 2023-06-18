@@ -5,56 +5,34 @@ import {computed} from "vue";
 
 const props = defineProps({
   id: {
-    type: Object,
+    type: String,
     required: true,
   },
   data: {
-    type: Object,
+    type: Number,
     required: true,
   },
   label: {
-    type: Object,
+    type: String,
     required: false,
   },
-  beat: {
-    type: GameplayBeat,
-    required: true,
-  }
 })
 
 </script>
 
 <template>
-  <div class="gameplay-beat-node">
+  <div class="rounded border-pink-300 border-2 mx-1 my-1 bg-green-100 text-black">
     <ul>
       <li>{{ props.label }}</li>
       <li>Difficulty is {{ props.data }} / 10</li>
     </ul>
-    <Handle id="a_in" type="target" :position="Position.Right" class="gameplay-beat-handle"/>
-    <Handle id="a_out" type="source" :position="Position.Right" class="gameplay-beat-handle"/>
-    <Handle id="b" type="source" :position="Position.Top" class="gameplay-beat-handle"/>
-    <Handle id="c" type="source" :position="Position.Bottom" class="gameplay-beat-handle"/>
-    <Handle id="d" type="source" :position="Position.Left" class="gameplay-beat-handle"/>
+    <Handle id="a_in" type="target" :position="Position.Right" />
+    <Handle id="a_out" type="source" :position="Position.Right" />
+    <Handle id="b" type="source" :position="Position.Top" />
+    <Handle id="c" type="source" :position="Position.Bottom" />
+    <Handle id="d" type="source" :position="Position.Left" />
   </div>
 </template>
 
 <style scoped>
-.gameplay-beat-node {
-  /*
-  background: #9CA8B3;
-  color: #fff;
-  padding: 10px;
-  border-width: 3px;
-  border-color: #6f3381;
-  border-radius: 90%;
-   */
-  margin: 3px;
-  border-width: 3px;
-  border-color: #6f3381;
-  border-radius: 90%;
-}
-
-.gameplay-beat-handle {
-
-}
 </style>
