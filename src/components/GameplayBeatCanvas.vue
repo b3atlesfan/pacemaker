@@ -3,14 +3,21 @@ import { Panel, PanelPosition, VueFlow, isNode, useVueFlow } from '@vue-flow/cor
 import { Background } from '@vue-flow/background'
 import { Controls } from '@vue-flow/controls'
 import { MiniMap } from '@vue-flow/minimap'
-import { ref } from 'vue'
+import {markRaw, ref} from 'vue'
 import { initialElements } from '@/assets/vueflow_examples/initial-elements.js'
+import ContextMenu from '@imengyu/vue3-context-menu'
+import { GameplayBeat } from "@/assets/GameplayBeat"
+import GameplayBeatNode from "@/components/GameplayBeatNode.vue";
 
 /**
  * useVueFlow provides all event handlers and store properties
  * You can pass the composable an object that has the same properties as the VueFlow component props
  */
-const { onPaneReady, onNodeDragStop, onConnect, addEdges, setTransform, toObject, onPaneClick, addNodes } = useVueFlow()
+const { onPaneReady, onNodeDragStop, onConnect, addEdges, setTransform, toObject, nodeTypes, addNodes } = useVueFlow()
+
+nodeTypes.value = {
+  'gameplay-beat': markRaw(GameplayBeatNode)
+}
 
 /**
  * Our elements
@@ -26,12 +33,35 @@ onPaneReady((flowInstance) => {
 
 let id = 6
 
-onPaneClick((mouseEvent) => {
-  console.log([mouseEvent.x, mouseEvent.y])
-  const pos = { x: mouseEvent.x - 100, y: mouseEvent.y - 100 }
-  addNodes({ id: '' + id, type: 'input', label: 'Node ' + id, position: vueFlowInstance.project(pos), class: 'light' })
-  id++
-})
+function onContextMenu(mouseEvent) {
+  //prevent the browser's default menu
+  mouseEvent.preventDefault();
+  //show your menu
+  ContextMenu.showContextMenu({
+    x: mouseEvent.x,
+    y: mouseEvent.y,
+    items: [
+      {
+        label: "Create beat",
+        onClick: () => {
+          console.log([mouseEvent.x, mouseEvent.y])
+          const pos = { x: mouseEvent.x, y: mouseEvent.y }
+          const beat = new GameplayBeat('' + id, 'Beat ' + id, "this is some cool data", vueFlowInstance.project(pos))
+          addNodes(beat)
+          id++
+        }
+      },
+      {
+        label: "A submenu",
+        children: [
+          { label: "Item1" },
+          { label: "Item2" },
+          { label: "Item3" },
+        ]
+      },
+    ]
+  });
+}
 
 /**
  * This is a Vue Flow event-hook which can be listened to from anywhere you call the composable, instead of only on the main component
@@ -88,7 +118,7 @@ function addNode() {
 </script>
 
 <template>
-  <VueFlow v-model="elements" :class="{ dark }" class="basicflow" :default-viewport="{ zoom: 1.5 }" :min-zoom="0.2" :max-zoom="4">
+  <VueFlow v-model="elements" :class="{ dark }" class="basicflow" :default-viewport="{ zoom: 1.5 }" :min-zoom="0.2" :max-zoom="4" @paneContextMenu="onContextMenu($event)">
     <Background :pattern-color="dark ? '#FFFFFB' : '#aaa'" gap="50" />
 
     <!--
