@@ -12,6 +12,8 @@ import {RouterLink} from "vue-router";
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/theming">Theming</RouterLink>
         <RouterLink to="/composables">Composables</RouterLink>
+        <RouterLink to="/customnodes">Custom Nodes</RouterLink>
+        <RouterLink to="/customnodesexample">Custom Nodes Example</RouterLink>
       </ul>
     </nav>
   </header>
