@@ -1,6 +1,6 @@
 <script setup>
 import { RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
+import HelloWorld from './components/examples/HelloWorld.vue'
 import TheHeader from "@/components/TheHeader.vue";
 </script>
 

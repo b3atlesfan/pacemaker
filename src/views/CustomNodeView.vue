@@ -1,6 +1,6 @@
 <script setup>
 import {useVueFlow, VueFlow} from '@vue-flow/core'
-import CustomNode from '@/components/CustomNode.vue'
+import CustomNode from '@/components/examples/CustomNode.vue'
 import {markRaw, ref} from "vue";
 
 const { nodeTypes } = useVueFlow()

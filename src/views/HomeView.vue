@@ -1,6 +1,6 @@
 <script setup>
-import VueFlowExample from "@/components/VueFlowExample.vue";
-import TheWelcome from "@/components/TheWelcome.vue";
+import VueFlowExample from "@/components/examples/VueFlowExample.vue";
+import TheWelcome from "@/components/examples/TheWelcome.vue";
 </script>
 
 <template>
