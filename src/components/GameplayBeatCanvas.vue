@@ -1,5 +1,5 @@
 <script setup>
-import { Panel, PanelPosition, VueFlow, isNode, useVueFlow } from '@vue-flow/core'
+import {Panel, PanelPosition, VueFlow, isNode, useVueFlow, MarkerType} from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import { Controls } from '@vue-flow/controls'
 import { MiniMap } from '@vue-flow/minimap'
@@ -46,7 +46,7 @@ function onContextMenu(mouseEvent) {
         onClick: () => {
           console.log([mouseEvent.x, mouseEvent.y])
           const pos = { x: mouseEvent.x, y: mouseEvent.y }
-          const beat = new GameplayBeat('' + id, 'Beat ' + id, "this is some cool data", vueFlowInstance.project(pos))
+          const beat = new GameplayBeat('' + id, 'Beat ' + id, 1, vueFlowInstance.project(pos))
           addNodes(beat)
           id++
         }
@@ -75,7 +75,17 @@ onNodeDragStop((e) => console.log('drag stop', e))
  * onConnect is called when a new connection is created.
  * You can add additional properties to your new edge (like a type or label) or block the creation altogether
  */
-onConnect((params) => addEdges(params))
+onConnect((params) => {
+  const edge = {
+    id: 'e' + params.source + '-' + params.target,
+    label: 'edge with arrowhead',
+    source: params.source,
+    target: params.target,
+    markerEnd: MarkerType.ArrowClosed
+  }
+
+  addEdges(edge)
+})
 
 const dark = ref(true)
 

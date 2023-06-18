@@ -22,7 +22,7 @@ const props = defineProps({
 </template>
 
 <style scoped>
-.vue-flow__node-custom {
+.gameplay-beat-node {
   background: #9CA8B3;
   color: #fff;
   padding: 10px;
