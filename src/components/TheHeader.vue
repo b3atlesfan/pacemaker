@@ -10,7 +10,8 @@ import {RouterLink} from "vue-router";
         <h1>PaceMaker</h1>
       </div>
       <ul class="nav-routes">
-        <RouterLink to="/">Home</RouterLink>
+        <RouterLink to="/">Main</RouterLink>
+        <RouterLink to="/flowexample">VueFlowExample</RouterLink>
         <RouterLink to="/theming">Theming</RouterLink>
         <RouterLink to="/composables">Composables</RouterLink>
         <RouterLink to="/customnodes">Custom Nodes</RouterLink>

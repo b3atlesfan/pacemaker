@@ -59,10 +59,10 @@ const elements = ref([
 
 <style scoped>
 /* these are necessary styles for vue flow */
-@import '@vue-flow/core/dist/style.css';
+/*@import 'style.css';*/
 
 /* this contains the default theme, these are optional styles */
-@import '@vue-flow/core/dist/theme-default.css';
+/*@import 'theme-default.css';*/
 
 .vue-flow {
   background: #6f3381;
