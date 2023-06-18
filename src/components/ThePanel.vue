@@ -1,6 +1,7 @@
 <script setup>
 import {Panel, PanelPosition} from "@vue-flow/core";
 import {toRef} from "vue";
+import PanelButton from "@/components/PanelButton.vue";
 
 const props = defineProps({
   dark: {
@@ -15,6 +16,7 @@ const emits = defineEmits(["onResetTransform", "onShuffleNodes", "onToggleDarkMo
 
 <template>
   <Panel :position="PanelPosition.TopRight" class="controls">
+    <PanelButton title="Reset Transform" d="M18 28A12 12 0 1 0 6 16v6.2l-3.6-3.6L1 20l6 6l6-6l-1.4-1.4L8 22.2V16a10 10 0 1 1 10 10Z" fill="#FFFFFB" @onClick="$emit('onResetTransform')"/>
 
     <button style="background-color: #6f3381" title="Reset Transform" @click="$emit('onResetTransform')">
       <svg width="16" height="16" viewBox="0 0 32 32">
