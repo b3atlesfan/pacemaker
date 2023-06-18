@@ -142,7 +142,7 @@ function toggleClass() {
 
     <Controls />
 
-    <ThePanel :dark="dark" @onResetTransform="resetTransform" @onShuffleNodes="updatePos" @onToggleDarkMode="toggleClass" @onLogToObject="logToObject"/>
+    <ThePanel :dark=dark @onResetTransform="resetTransform" @onShuffleNodes="updatePos" @onToggleDarkMode="toggleClass" @onLogToObject="logToObject"/>
 
   </VueFlow>
 </template>
