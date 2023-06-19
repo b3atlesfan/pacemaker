@@ -1,19 +1,44 @@
 <script setup>
 
 const props = defineProps({
+  color: {
+    type: String,
+    required: false
+  },
   title: {
     type: String,
-    required: true
+    required: false
+  },
+  width: {
+    type: Number,
+    required: false,
+  },
+  height: {
+    type: Number,
+    required: false,
+  },
+  viewBox: {
+    type: String,
+    required: false,
   },
   fill: {
-    type: Object,
-    required: true,
+    type: String,
+    required: false,
   },
   d: {
     type: String,
-    required: true,
+    required: false,
   }
 })
+
+const style = "background-color: " + (props.color ?? "#ffffff")
+const title = props.title ?? "Button"
+const width = props.width ?? 16
+const height = props.height ?? 16
+const viewBox = props.viewBox ?? "0 0 24 24"
+const fill = props.fill ?? "#000"
+const d = props.d ?? "M12 17q-2.075 0-3.537-1.463Q7 14.075 7 12t1.463-3.538Q9.925 7 12 7t3.538 1.462Q17 9.925 17 12q0 2.075-1.462 3.537Q14.075 17 12 17ZM2 13q-.425 0-.712-.288Q1"
+
 
 const emit = defineEmits(["onClick"])
 
@@ -24,9 +49,9 @@ function onClickCallback() {
 </script>
 
 <template>
-  <button style="background-color: #6f3381; color: white" :title=props.title @click="onClickCallback">
-    <svg width="16" height="16" viewBox="0 0 32 32">
-      <path :fill=fill :d="d"/>
+  <button :style=style :title=title @click="onClickCallback">
+    <svg :width=width :height=height :viewBox=viewBox>
+      <path :fill=fill :d=d />
     </svg>
   </button>
 </template>
