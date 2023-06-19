@@ -15,24 +15,17 @@ const emits = defineEmits(["onResetTransform", "onShuffleNodes", "onToggleDarkMo
 
 <template>
   <Panel :position="PanelPosition.TopRight" class="controls">
-    <PanelButton @onClick="$emit('onResetTransform')"/>
+    <PanelButton title="Reset Transform" background-color="#6f3381" fill-color="#fffffb" view-box="0 0 32 32"
+                 svg-string="M18 28A12 12 0 1 0 6 16v6.2l-3.6-3.6L1 20l6 6l6-6l-1.4-1.4L8 22.2V16a10 10 0 1 1 10 10Z"
+                 @onClick="$emit('onResetTransform')"
+    />
+    <PanelButton title="Shuffle Node Positions" background-color="#6f3381" fill-color="#fffffb"
+                 svg-string="M14 20v-2h2.6l-3.2-3.2l1.425-1.425L18 16.55V14h2v6Zm-8.6 0L4 18.6L16.6 6H14V4h6v6h-2V7.4Zm3.775-9.425L4 5.4L5.4 4l5.175 5.175Z"
+                 @onClick="$emit('onShuffleNodes')"
+    />
 
-    <button style="background-color: #6f3381" title="Reset Transform" @click="$emit('onResetTransform')">
-      <svg width="16" height="16" viewBox="0 0 32 32">
-        <path fill="#FFFFFB" d="M18 28A12 12 0 1 0 6 16v6.2l-3.6-3.6L1 20l6 6l6-6l-1.4-1.4L8 22.2V16a10 10 0 1 1 10 10Z" />
-      </svg>
-    </button>
-
-    <button style="background-color: #6f3381" title="Shuffle Node Positions" @click="$emit('onShuffleNodes')">
-      <svg width="16" height="16" viewBox="0 0 24 24">
-        <path
-            fill="#FFFFFB"
-            d="M14 20v-2h2.6l-3.2-3.2l1.425-1.425L18 16.55V14h2v6Zm-8.6 0L4 18.6L16.6 6H14V4h6v6h-2V7.4Zm3.775-9.425L4 5.4L5.4 4l5.175 5.175Z"
-        />
-      </svg>
-    </button>
-
-    <button :style="{ backgroundColor: dark ? '#FFFFFB' : '#292524', color: dark ? '#292524' : '#FFFFFB' }" @click="$emit('onToggleDarkMode')">
+    <button :style="{ backgroundColor: dark ? '#FFFFFB' : '#292524', color: dark ? '#292524' : '#FFFFFB' }"
+            @click="$emit('onToggleDarkMode')">
       <template v-if="dark">
         <svg width="16" height="16" viewBox="0 0 24 24">
           <path
@@ -52,14 +45,10 @@ const emits = defineEmits(["onResetTransform", "onShuffleNodes", "onToggleDarkMo
       </template>
     </button>
 
-    <button title="Log `toObject`" @click="$emit('onLogToObject')">
-      <svg width="16" height="16" viewBox="0 0 24 24">
-        <path
-            fill="#292524"
-            d="M20 19V7H4v12h16m0-16a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16m-7 14v-2h5v2h-5m-3.42-4L5.57 9H8.4l3.3 3.3c.39.39.39 1.03 0 1.42L8.42 17H5.59l3.99-4Z"
-        />
-      </svg>
-    </button>
+    <PanelButton title="Log `toObject`"
+                 svg-string="M20 19V7H4v12h16m0-16a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16m-7 14v-2h5v2h-5m-3.42-4L5.57 9H8.4l3.3 3.3c.39.39.39 1.03 0 1.42L8.42 17H5.59l3.99-4Z"
+                 @onClick="$emit('onLogToObject')"
+    />
   </Panel>
 </template>
 
