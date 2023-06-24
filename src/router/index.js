@@ -4,6 +4,7 @@ import ComposablesView from "@/views/examples/ComposablesView.vue";
 import CustomNodeView from "@/views/examples/CustomNodeView.vue";
 import CustomNodeExampleView from "@/views/examples/CustomNodeExampleView.vue";
 import MainView from "@/views/MainView.vue";
+import ModalView from "@/views/examples/ModalView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -32,6 +33,11 @@ const router = createRouter({
       path: '/customnodesexample',
       name: 'customnodesexample',
       component: CustomNodeExampleView
+    },
+    {
+      path: '/modal',
+      name: 'modal',
+      component: ModalView
     },
     {
       path: '/theming',
