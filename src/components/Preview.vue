@@ -99,7 +99,6 @@ function reset() {
       Close
     </button>
   </VueFinalModal>
-  <ModalsContainer />
 </template>
 
 <style scoped lang="css">

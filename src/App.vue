@@ -1,12 +1,14 @@
 <script setup>
 import { RouterView } from 'vue-router'
 import TheHeader from "@/components/TheHeader.vue";
+import {ModalsContainer} from "vue-final-modal";
 </script>
 
 <template>
   <div class="box">
     <TheHeader />
     <RouterView />
+    <ModalsContainer />
   </div>
 </template>
 
