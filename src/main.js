@@ -1,6 +1,7 @@
 import './assets/main.css'
 import './style.css'
 import '@imengyu/vue3-context-menu/lib/vue3-context-menu.css'
+import 'vue-final-modal/style.css'
 import ContextMenu from '@imengyu/vue3-context-menu'
 
 import { createApp } from 'vue'
