@@ -46,11 +46,14 @@ function onContextMenu(mouseEvent) {
       {
         label: "Create beat",
         onClick: () => {
+          open()
+          /*
           console.log([mouseEvent.x, mouseEvent.y])
           const pos = { x: mouseEvent.x, y: mouseEvent.y }
           const beat = new GameplayBeat('' + id, 'Beat ' + id, 1, vueFlowInstance.project(pos))
           addNodes(beat)
           id++
+           */
         }
       },
       {
@@ -130,6 +133,22 @@ function toggleClass() {
   return (dark.value = !dark.value)
 }
 
+import {ModalsContainer, useModal, VueFinalModal} from 'vue-final-modal'
+import ModalConfirm from '@/components/CreateBeatModal.vue'
+
+const { open, close } = useModal({
+  component: ModalConfirm,
+  attrs: {
+    title: 'Hello World!',
+    onClose() {
+      close()
+    },
+  },
+  slots: {
+    default: '<p>UseModal: The content of the modal</p>',
+  },
+})
+
 </script>
 
 <template>
@@ -142,7 +161,7 @@ function toggleClass() {
 
     <Controls />
 
-    <ThePanel :dark=dark @onResetTransform="resetTransform" @onShuffleNodes="updatePos" @onToggleDarkMode="toggleClass" @onLogToObject="logToObject"/>
+    <ThePanel :dark=dark @onResetTransform="open" @onShuffleNodes="updatePos" @onToggleDarkMode="toggleClass" @onLogToObject="logToObject"/>
 
   </VueFlow>
 </template>
