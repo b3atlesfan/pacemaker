@@ -2,7 +2,7 @@
 import {VueFinalModal} from "vue-final-modal";
 import {ref} from "vue";
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'createNode'])
 
 const getInitialValues = () => ({
   modelValue: false,
@@ -19,6 +19,10 @@ const getInitialValues = () => ({
 })
 
 const options = ref(getInitialValues())
+
+const difficulty = ref(0)
+
+const name = ref("")
 </script>
 
 <template>
@@ -42,17 +46,25 @@ const options = ref(getInitialValues())
     </h1>
     <div class="flex">
       <p>Name</p>
-      <input class="bg-gray-200 mx-3 px-1">
+      <input
+          type="text"
+          class="bg-gray-200 mx-3 px-1"
+          @input="name = $event.target.value"
+      />
     </div>
     <div class="flex">
       <p>Difficulty</p>
-      <input class="bg-gray-200 mx-3 px-1">
+      <input
+          type="number"
+          class="bg-gray-200 mx-3 px-1"
+          v-model="difficulty"
+      />
     </div>
     <div>
       <button @click="$emit('close')">
         Close
       </button>
-      <button class="float-right" @click="console.log('hello confirm')">
+      <button class="float-right" @click="$emit('createNode', name, difficulty)">
         Confirm
       </button>
     </div>

@@ -35,6 +35,8 @@ onPaneReady((flowInstance) => {
 
 let id = 6
 
+let pos
+
 function onContextMenu(mouseEvent) {
   //prevent the browser's default menu
   mouseEvent.preventDefault();
@@ -46,6 +48,7 @@ function onContextMenu(mouseEvent) {
       {
         label: "Create beat",
         onClick: () => {
+          pos = {x: mouseEvent.x, y: mouseEvent.y }
           open()
           /*
           console.log([mouseEvent.x, mouseEvent.y])
@@ -143,11 +146,21 @@ const { open, close } = useModal({
     onClose() {
       close()
     },
+    onCreateNode(name, difficulty) {
+      createNode(name, difficulty)
+      close()
+    }
   },
   slots: {
     default: '<p>UseModal: The content of the modal</p>',
   },
 })
+
+function createNode(name, difficulty) {
+  const beat = new GameplayBeat('' + id, name, difficulty, vueFlowInstance.project(pos))
+  addNodes(beat)
+  id++
+}
 
 </script>
 
