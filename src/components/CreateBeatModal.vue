@@ -40,13 +40,13 @@ const options = ref(getInitialValues())
     <h1 class="text-xl">
       Hello World!
     </h1>
-    <div>
+    <div class="flex">
       <p>Name</p>
-      <input >
+      <input class="bg-gray-200 mx-3 px-1">
     </div>
-    <div>
+    <div class="flex">
       <p>Difficulty</p>
-      <input >
+      <input class="bg-gray-200 mx-3 px-1">
     </div>
     <div>
       <button @click="$emit('close')">
