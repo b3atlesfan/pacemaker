@@ -3,7 +3,7 @@ import GameplayBeatCanvas from "@/components/GameplayBeatCanvas.vue";
 </script>
 
 <template>
-  <GameplayBeatCanvas/>
+  <GameplayBeatCanvas />
 </template>
 
 <style lang="scss" scoped>
