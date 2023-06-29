@@ -11,12 +11,7 @@ import {RouterLink} from "vue-router";
       </div>
       <ul class="nav-routes">
         <RouterLink to="/">Main</RouterLink>
-        <RouterLink to="/flowexample">VueFlowExample</RouterLink>
-        <RouterLink to="/theming">Theming</RouterLink>
-        <RouterLink to="/composables">Composables</RouterLink>
-        <RouterLink to="/customnodes">Custom Nodes</RouterLink>
-        <RouterLink to="/customnodesexample">Custom Nodes Example</RouterLink>
-        <RouterLink to="/modal">Modal</RouterLink>
+        <RouterLink to="/playground">Playground</RouterLink>
       </ul>
     </nav>
   </header>
