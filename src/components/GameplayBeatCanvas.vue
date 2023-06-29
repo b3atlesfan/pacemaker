@@ -9,22 +9,27 @@ import {GameplayBeat} from "@/assets/GameplayBeat"
 import GameplayBeatNode from "@/components/GameplayBeatNode.vue";
 import PanelButton from "@/components/PanelButton.vue";
 import ThePanel from "@/components/ThePanel.vue";
+import {ModalsContainer, useModal, VueFinalModal} from 'vue-final-modal'
+import ModalConfirm from '@/components/CreateBeatModal.vue'
+import {useElementsStore} from "@/stores/elements";
+import {storeToRefs} from "pinia";
+
 
 /**
  * useVueFlow provides all event handlers and store properties
  * You can pass the composable an object that has the same properties as the VueFlow component props
  */
-const { onPaneReady, onNodeDragStop, onConnect, addEdges, setTransform, toObject, nodeTypes, addNodes, getNodes } = useVueFlow()
+const { onPaneReady, onNodeDragStop, onConnect, addEdges, setTransform, toObject, nodeTypes, addNodes, getNodes, getElements } = useVueFlow()
 
 nodeTypes.value = {
   'gameplay-beat': markRaw(GameplayBeatNode)
 }
 
-
 /**
  * Our elements
  */
-const elements = ref(initialElements)
+// const elements = ref(initialElements)
+const { elements } = storeToRefs(useElementsStore())
 
 let vueFlowInstance
 
@@ -92,8 +97,8 @@ onConnect((params) => {
     //label: 'edge with arrowhead',
     source: params.source,
     target: params.target,
-    sourceHandle: params.sourceHandle,
-    targetHandle: params.targetHandle,
+    //sourceHandle: params.sourceHandle,
+    //targetHandle: params.targetHandle,
     animated: true,
     markerEnd: MarkerType.ArrowClosed
   }
@@ -136,9 +141,6 @@ function toggleClass() {
   return (dark.value = !dark.value)
 }
 
-import {ModalsContainer, useModal, VueFinalModal} from 'vue-final-modal'
-import ModalConfirm from '@/components/CreateBeatModal.vue'
-
 const { open, close } = useModal({
   component: ModalConfirm,
   attrs: {
@@ -159,6 +161,7 @@ const { open, close } = useModal({
 function createNode(name, difficulty) {
   const beat = new GameplayBeat('' + id, name, difficulty, vueFlowInstance.project(pos))
   addNodes(beat)
+  console.log(getNodes.value)
   id++
 }
 
