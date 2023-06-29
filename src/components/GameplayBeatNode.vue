@@ -24,11 +24,8 @@ const props = defineProps({
       <li>{{ props.label }}</li>
       <li>Difficulty: {{ props.data }} / 10</li>
     </ul>
-    <Handle id="a_out" type="source" :position="Position.Right" :style="{top: '10px'}" />
-    <Handle id="a_in" type="target" :position="Position.Right" :style="{bottom: '10px'}" />
-    <Handle id="b_out" type="source" :position="Position.Top" />
-    <Handle id="c_out" type="source" :position="Position.Bottom" />
-    <Handle id="d_out" type="source" :position="Position.Left" />
+    <Handle id="a_in" type="target" :position="Position.Left"  />
+    <Handle id="a_out" type="source" :position="Position.Right" />
   </div>
 </template>
 
