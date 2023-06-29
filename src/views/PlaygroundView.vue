@@ -1,9 +1,10 @@
 <script setup>
 import Preview from "@/components/Preview.vue";
+import BarChart from "@/components/examples/BarChart.vue";
 </script>
 
 <template>
-  <Preview />
+  <BarChart />
 </template>
 
 <style scoped>
