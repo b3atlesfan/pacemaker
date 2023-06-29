@@ -19,7 +19,8 @@ import {storeToRefs} from "pinia";
  * useVueFlow provides all event handlers and store properties
  * You can pass the composable an object that has the same properties as the VueFlow component props
  */
-const { onPaneReady, onNodeDragStop, onConnect, addEdges, setTransform, toObject, nodeTypes, addNodes, getNodes, getElements } = useVueFlow()
+const { onPaneReady, onNodeDragStop, onConnect, addEdges, setTransform, toObject, nodeTypes, addNodes, getNodes } = useVueFlow()
+
 
 nodeTypes.value = {
   'gameplay-beat': markRaw(GameplayBeatNode)
@@ -38,7 +39,13 @@ onPaneReady((flowInstance) => {
   vueFlowInstance = flowInstance
 })
 
-let id = 6
+let id = 0
+
+elements.value.forEach(e => {
+  if (e.type !== 'gameplay-beat') return;
+  id++
+})
+
 
 let pos
 

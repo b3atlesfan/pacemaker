@@ -10,43 +10,37 @@ import {
 } from 'chart.js'
 
 import { Bar } from 'vue-chartjs'
-import {useVueFlow} from "@vue-flow/core";
-import {useElementsStore} from "@/stores/elements";
+import { useElementsStore } from "@/stores/elements";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
-
-const data = {
-  labels: [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December'
-  ],
-  datasets: [
-    {
-      label: 'Data One',
-      backgroundColor: '#f87979',
-      data: [40, 20, 12, 39, 10, 40, 39, 80, 40, 20, 12, 11]
-    }
-  ]
-}
 
 const options = {
   responsive: true,
   maintainAspectRatio: false
 }
 
-const { onPaneReady, onNodeDragStop, onConnect, addEdges, setTransform, toObject, nodeTypes, addNodes, getNodes } = useVueFlow()
+const elements = useElementsStore().elements
 
-useElementsStore().elements.forEach((e) => console.log(e))
+const labels = []
+const dataSet = []
+
+elements.forEach(e => {
+  if (e.type !== 'gameplay-beat') return;
+
+  labels.push(e.id)
+  dataSet.push(e.data)
+})
+
+const data = {
+  labels: labels,
+  datasets: [
+    {
+      label: 'First',
+      backgroundColor: '#f87979',
+      data: dataSet
+    }
+  ]
+}
 
 </script>
 
@@ -57,7 +51,4 @@ useElementsStore().elements.forEach((e) => console.log(e))
 </template>
 
 <style scoped lang="scss">
-.test {
-  height: auto;
-}
 </style>
