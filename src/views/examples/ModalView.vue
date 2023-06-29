@@ -4,7 +4,7 @@ import Preview from "@/components/Preview.vue";
 </script>
 
 <template>
-<Preview />
+  <Preview />
 </template>
 
 <style scoped>

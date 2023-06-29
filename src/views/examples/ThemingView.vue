@@ -52,9 +52,7 @@ const elements = ref([
 </script>
 
 <template>
-  <div class="box content">
-    <VueFlow v-model="elements" />
-  </div>
+  <VueFlow v-model="elements" />
 </template>
 
 <style scoped>

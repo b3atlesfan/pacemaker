@@ -4,9 +4,7 @@ import TheWelcome from "@/components/examples/TheWelcome.vue";
 </script>
 
 <template>
-  <main class="box content">
-    <VueFlowExample />
-  </main>
+  <VueFlowExample />
 </template>
 
 <style lang="scss" scoped>
