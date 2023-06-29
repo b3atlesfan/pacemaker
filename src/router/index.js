@@ -5,7 +5,6 @@ import CustomNodeView from "@/views/examples/CustomNodeView.vue";
 import CustomNodeExampleView from "@/views/examples/CustomNodeExampleView.vue";
 import MainView from "@/views/MainView.vue";
 import ModalView from "@/views/examples/ModalView.vue";
-import BarView from "@/views/examples/BarView.vue";
 import PlaygroundView from "@/views/PlaygroundView.vue";
 
 const router = createRouter({
@@ -40,11 +39,6 @@ const router = createRouter({
       path: '/customnodesexample',
       name: 'customnodesexample',
       component: CustomNodeExampleView
-    },
-    {
-      path: '/modal',
-      name: 'modal',
-      component: BarView
     },
     {
       path: '/theming',
