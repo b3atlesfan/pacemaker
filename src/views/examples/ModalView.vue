@@ -1,6 +1,6 @@
 <script setup>
 
-import Preview from "@/components/Preview.vue";
+import Preview from "@/components/examples/Preview.vue";
 </script>
 
 <template>
