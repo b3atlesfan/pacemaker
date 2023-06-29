@@ -2,12 +2,15 @@
 import { RouterView } from 'vue-router'
 import TheHeader from "@/components/TheHeader.vue";
 import {ModalsContainer} from "vue-final-modal";
+import FillScreenBox from "@/components/FillScreenBox.vue";
 </script>
 
 <template>
   <div class="box">
     <TheHeader />
-    <RouterView />
+    <FillScreenBox>
+      <RouterView />
+    </FillScreenBox>
     <ModalsContainer />
   </div>
 </template>
