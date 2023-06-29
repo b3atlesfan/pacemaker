@@ -13,8 +13,10 @@
     "@vue-flow/controls": "^1.1.0",
     "@vue-flow/core": "^1.20.2",
     "@vue-flow/minimap": "^1.1.1",
+    "chart.js": "^4.3.0",
     "sass": "^1.63.4",
     "vue": "^3.3.4",
+    "vue-chartjs": "^5.2.0",
     "vue-final-modal": "^4.4.2",
     "vue-router": "^4.2.2"
   },
