@@ -13,6 +13,7 @@ import {ModalsContainer, useModal, VueFinalModal} from 'vue-final-modal'
 import ModalConfirm from '@/components/CreateBeatModal.vue'
 import {useElementsStore} from "@/stores/elements";
 import {storeToRefs} from "pinia";
+import PacingChart from "@/components/PacingChart.vue";
 
 
 /**
@@ -187,4 +188,5 @@ function createNode(name, difficulty) {
     <ThePanel :dark=dark @onResetTransform="open" @onShuffleNodes="updatePos" @onToggleDarkMode="toggleClass" @onLogToObject="logToObject"/>
 
   </VueFlow>
+  <PacingChart />
 </template>
