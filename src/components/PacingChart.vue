@@ -39,7 +39,7 @@ const data = ref({
   labels: labels,
   datasets: [
     {
-      label: 'Difficulty',
+      label: 'Intensity',
       backgroundColor: '#f87979',
       data: dataSet
     }

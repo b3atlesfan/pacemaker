@@ -22,7 +22,7 @@ const props = defineProps({
   <div class="offset">
     <ul>
       <li>{{ props.label }}</li>
-      <li>Difficulty: {{ props.data }} / 10</li>
+      <li>Intensity: {{ props.data }} </li>
     </ul>
     <Handle id="a_in" type="target" :position="Position.Left"  />
     <Handle id="a_out" type="source" :position="Position.Right" />

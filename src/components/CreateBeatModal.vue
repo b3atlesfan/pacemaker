@@ -53,7 +53,7 @@ const name = ref("")
       />
     </div>
     <div class="flex">
-      <p>Difficulty</p>
+      <p>Intensity</p>
       <input
           type="number"
           class="bg-gray-200 mx-3 px-1"
