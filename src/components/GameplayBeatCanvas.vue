@@ -62,7 +62,8 @@ function onContextMenu(mouseEvent) {
         label: "Create beat",
         onClick: () => {
           pos = {x: mouseEvent.x, y: mouseEvent.y }
-          open()
+          createNode("hello", 5)
+          //open()
           /*
           console.log([mouseEvent.x, mouseEvent.y])
           const pos = { x: mouseEvent.x, y: mouseEvent.y }
