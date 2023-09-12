@@ -1,5 +1,7 @@
 <script setup>
 import {Handle, Position} from "@vue-flow/core";
+import {getCurrentInstance, reactive, ref} from "vue";
+import Icon from "@/components/Icon.vue";
 
 const props = defineProps({
   id: {
@@ -16,13 +18,59 @@ const props = defineProps({
   },
 })
 
+const isLocked = ref(true)
+let isBeingEdited = false
+const componentKey = ref(0)
+
+const isBeingEditedReactive = reactive({ value: false })
+
+function saveClicked() {
+  console.log("save clicked")
+  console.log(isBeingEdited.value)
+  //isBeingEdited.value = !isBeingEdited.value
+  isBeingEdited = !isBeingEdited
+  componentKey.value += 1
+  console.log(isBeingEdited)
+  console.log(isBeingEdited.value)
+}
+
+function editClicked() {
+  console.log("edit clicked")
+  isBeingEdited.value = true
+}
+
+
 </script>
 
 <template>
   <div class="container">
 
     <div class="edit-btn">
-      <v-btn icon="$vuetify"></v-btn>
+
+      <svg v-if="isBeingEdited" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" @click="saveClicked()">
+        <path fill="currentColor"
+              d="M5.75 3A2.75 2.75 0 0 0 3 5.75v12.5A2.75 2.75 0 0 0 5.75 21h4.249a2.112 2.112 0 0 1 .062-.593l.227-.907H7.5v-5.25a.75.75 0 0 1 .75-.75h6.603l1.435-1.435A2.258 2.258 0 0 0 15.75 12h-7.5A2.25 2.25 0 0 0 6 14.25v5.25h-.25c-.69 0-1.25-.56-1.25-1.25V5.75c0-.69.56-1.25 1.25-1.25H7v2.75A2.25 2.25 0 0 0 9.25 9.5h4.5A2.25 2.25 0 0 0 16 7.25V4.523c.358.06.692.23.952.49l2.035 2.035c.329.328.513.773.513 1.238v1.721a3.01 3.01 0 0 1 .213-.007h.002c.437 0 .875.087 1.285.261V8.287a3.25 3.25 0 0 0-.952-2.299l-2.035-2.035A3.25 3.25 0 0 0 15.714 3H5.75ZM8.5 7.25V4.5h6v2.75a.75.75 0 0 1-.75.75h-4.5a.75.75 0 0 1-.75-.75ZM19.715 11h-.002c-.585 0-1.17.223-1.615.67l-5.902 5.902a2.684 2.684 0 0 0-.707 1.247l-.458 1.831a1.087 1.087 0 0 0 1.319 1.318l1.83-.457a2.684 2.684 0 0 0 1.248-.707l5.902-5.902A2.285 2.285 0 0 0 19.715 11Z"/>
+      </svg>
+      <svg v-else xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" @click="saveClicked()">
+        <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+          <path d="M7 7H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-1"/>
+          <path d="M20.385 6.585a2.1 2.1 0 0 0-2.97-2.97L9 12v3h3l8.385-8.415zM16 5l3 3"/>
+        </g>
+      </svg>
+
+      <svg v-if="isLocked.value" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+        <path fill="currentColor"
+              d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm9 14H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2s-2 .9-2 2s.9 2 2 2z"/>
+      </svg>
+      <svg v-else xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+        <path fill="currentColor"
+              d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2s-2 .9-2 2s.9 2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6h1.9c0-1.71 1.39-3.1 3.1-3.1c1.71 0 3.1 1.39 3.1 3.1v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm0 12H6V10h12v10z"/>
+      </svg>
+
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+        <path fill="currentColor"
+              d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1zM18 7H6v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7z"/>
+      </svg>
     </div>
 
     <div class="basic-stats-label">
@@ -37,6 +85,7 @@ const props = defineProps({
     </div>
     <div class="general-stats">
       Type: Puzzle, Action, Narrative, ...
+      Act: 1, 2, 3
     </div>
 
     <div class="desired-stats-label">
@@ -50,8 +99,8 @@ const props = defineProps({
       Current:
     </div>
 
-    <Handle id="a_in" type="target" :position="Position.Left"  />
-    <Handle id="a_out" type="source" :position="Position.Right" />
+    <Handle id="a_in" type="target" :position="Position.Left"/>
+    <Handle id="a_out" type="source" :position="Position.Right"/>
   </div>
 </template>
 
@@ -69,6 +118,8 @@ const props = defineProps({
   grid-column-start: 3;
   grid-row-start: 1;
   justify-self: end;
+  align-self: center;
+  display: flex;
 }
 
 .basic-stats-label {
@@ -77,6 +128,7 @@ const props = defineProps({
   justify-self: center;
   align-self: center;
 }
+
 .basic-stats {
   grid-column-start: 2;
   grid-row-start: 1;
@@ -89,6 +141,7 @@ const props = defineProps({
   grid-row-start: 2;
   justify-self: center;
 }
+
 .general-stats {
   grid-column-start: 2;
   grid-column-end: 4;
@@ -101,6 +154,7 @@ const props = defineProps({
   grid-row-start: 3;
   justify-self: center;
 }
+
 .desired-stats {
   grid-column-start: 2;
   grid-row-start: 3;
