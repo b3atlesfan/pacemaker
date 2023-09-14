@@ -189,5 +189,7 @@ function createNode(name, difficulty) {
     <ThePanel :dark=dark @onResetTransform="open" @onShuffleNodes="updatePos" @onToggleDarkMode="toggleClass" @onLogToObject="logToObject"/>
 
   </VueFlow>
+  <!--
   <PacingChart />
+  -->
 </template>
