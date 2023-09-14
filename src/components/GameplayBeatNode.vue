@@ -1,11 +1,26 @@
 <script setup>
 import {Handle, Position} from "@vue-flow/core";
 import {ref} from "vue";
+import GeneralSection from "@/components/GeneralStats.vue";
+import DesiredStats from "@/components/DesiredStats.vue";
+import CurrentStats from "@/components/CurrentStats.vue";
 
 const props = defineProps({
   id: {
     type: String,
     required: true,
+  },
+  general: {
+    type: Object,
+    required: false,
+  },
+  desired: {
+    type: Object,
+    required: false,
+  },
+  current: {
+    type: Object,
+    required: false,
   },
   data: {
     type: Number,
@@ -86,19 +101,21 @@ function unlockClicked() {
       General:
     </div>
     <div class="general-stats">
-      Type: Puzzle, Action, Narrative, ...
-      Act: 1, 2, 3
+      <GeneralSection :data="props.general" />
     </div>
 
     <div class="desired-stats-label">
       Desired:
     </div>
     <div class="desired-stats">
-      Intensity: {{ props.data }}
+      <DesiredStats :data="props.desired" />
     </div>
 
-    <div class="current-stats">
+    <div class="current-stats-label">
       Current:
+    </div>
+    <div class="current-stats">
+      <CurrentStats :data="props.current" />
     </div>
 
     <Handle id="a_in" type="target" :position="Position.Left"/>
@@ -163,8 +180,14 @@ function unlockClicked() {
   justify-self: center;
 }
 
-.current-stats {
+.current-stats-label {
   grid-column-start: 1;
+  grid-row-start: 4;
+  justify-self: center;
+}
+
+.current-stats {
+  grid-column-start: 2;
   grid-row-start: 4;
   justify-self: center;
 }
