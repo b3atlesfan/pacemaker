@@ -1,9 +1,11 @@
-<script setup>
+<script setup lang="ts">
 import {Handle, Position} from "@vue-flow/core";
 import {ref} from "vue";
 import GeneralSection from "@/components/GeneralStats.vue";
 import DesiredStats from "@/components/DesiredStats.vue";
 import CurrentStats from "@/components/CurrentStats.vue";
+import {BeatContent} from "@/assets/BeatContent";
+import BeatContentComp from "@/components/BeatContentHolder.vue";
 
 const props = defineProps({
   id: {
@@ -57,11 +59,21 @@ function unlockClicked() {
   isLocked.value = false
 }
 
+const content = new BeatContent("mr cool", "Puzzle", 20, ["Jump"], ["Dash"], ["Enqueue", "Dequeue"])
+
+console.log(content.intensity + content.introducedSkills[0])
+
 </script>
 
 <template>
   <div class="container">
 
+    <div>
+      Name:
+    </div>
+    <div>
+      {{ props.label }}
+    </div>
     <div class="edit-icons">
 
       <svg v-if="isBeingEdited" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" @click="saveClicked()">
@@ -90,20 +102,17 @@ function unlockClicked() {
       </svg>
     </div>
 
-    <div class="basic-stats-label">
-      Name:
+    <div>
+      Content:
     </div>
-    <div class="basic-stats">
-      {{ props.label }}
-    </div>
-
-    <div class="general-stats-label">
-      General:
-    </div>
-    <div class="general-stats">
+    <div class="content">
+      <!--
       <GeneralSection :data="props.general" />
+      -->
+      <BeatContentComp :content="content" />
     </div>
 
+    <!--
     <div class="desired-stats-label">
       Desired:
     </div>
@@ -117,6 +126,7 @@ function unlockClicked() {
     <div class="current-stats">
       <CurrentStats :data="props.current" />
     </div>
+    -->
 
     <Handle id="a_in" type="target" :position="Position.Left"/>
     <Handle id="a_out" type="source" :position="Position.Right"/>
@@ -127,69 +137,23 @@ function unlockClicked() {
 
 .container {
   display: grid;
-  grid-template-columns: auto auto auto;
   column-gap: 10px;
   row-gap: 10px;
-  grid-template-rows: auto auto auto auto;
+  grid-template-rows: auto;
+  grid-template-columns: auto auto auto;
+  justify-items: left;
+  /*background-color: antiquewhite;*/
 }
 
 .edit-icons {
-  grid-column-start: 3;
-  grid-row-start: 1;
   justify-self: end;
-  align-self: center;
   display: flex;
 }
 
-.basic-stats-label {
-  grid-column-start: 1;
-  grid-row-start: 1;
-  justify-self: center;
-  align-self: center;
-}
-
-.basic-stats {
-  grid-column-start: 2;
-  grid-row-start: 1;
-  justify-self: center;
-  align-self: center;
-}
-
-.general-stats-label {
-  grid-column-start: 1;
-  grid-row-start: 2;
-  justify-self: center;
-}
-
-.general-stats {
-  grid-column-start: 2;
-  grid-column-end: 4;
-  grid-row-start: 2;
-  justify-self: center;
-}
-
-.desired-stats-label {
-  grid-column-start: 1;
-  grid-row-start: 3;
-  justify-self: center;
-}
-
-.desired-stats {
-  grid-column-start: 2;
-  grid-row-start: 3;
-  justify-self: center;
-}
-
-.current-stats-label {
-  grid-column-start: 1;
-  grid-row-start: 4;
-  justify-self: center;
-}
-
-.current-stats {
-  grid-column-start: 2;
-  grid-row-start: 4;
-  justify-self: center;
+.content {
+  grid-column: span 2;
+  background-color: #42b983;
+  border-radius: 5px;
 }
 
 </style>

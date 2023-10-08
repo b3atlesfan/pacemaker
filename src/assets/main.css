@@ -64,7 +64,10 @@ body,
 }
 
 .basicflow.dark .vue-flow__node-gameplay-beat {
-    @apply rounded border-pink-300 border-2 mx-1 my-1 p-1 bg-green-100 text-black;
+    /*@apply rounded border-pink-300 border-2 mx-1 my-1 p-1 bg-green-100 text-black;*/
+    /*background: #2c3e50;*/
+    @apply rounded border-2 p-1;
+    text-transform: none;
 }
 
 

@@ -3,15 +3,15 @@ export type Category = typeof Categories[number];
 
 export class BeatContent {
     // TODO: id?
-    name: string
+    description: string
     category: Category
     intensity: number
     introducedSkills: string[]
     reinforcedSkills: string[]
     requiredSkills: string[]
 
-    constructor(name: string, category: Category, intensity: number, introducedSkills: string[], reinforcedSkills: string[], requiredSkills: string[]) {
-        this.name = name
+    constructor(description: string, category: Category, intensity: number, introducedSkills: string[], reinforcedSkills: string[], requiredSkills: string[]) {
+        this.description = description
         this.category = category
         this.intensity = intensity
         this.introducedSkills = introducedSkills

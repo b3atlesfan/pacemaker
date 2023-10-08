@@ -12,8 +12,8 @@ const props = defineProps({
 
 <template>
   <div class="container">
-    <div>Name:</div>
-    <div class="centering">{{ props.content.name }}</div>
+    <div>Description:</div>
+    <div class="centering">{{ props.content.description }}</div>
 
     <div>Intensity:</div>
     <div class="centering">{{ props.content.intensity }}</div>
@@ -29,7 +29,7 @@ const props = defineProps({
       <v-chip v-for="(skill) in props.content?.introducedSkills"> {{ skill }} </v-chip>
     </div>
 
-    <div>Enforces:</div>
+    <div>Reinforces:</div>
     <div class="centering">
       <v-chip v-for="(skill) in props.content?.reinforcedSkills"> {{ skill }} </v-chip>
     </div>
@@ -47,6 +47,7 @@ const props = defineProps({
   justify-items: start;
   grid-template-rows: auto;
   grid-template-columns: auto auto;
+  padding: 5px;
 }
 
 .centering {
