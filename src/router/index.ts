@@ -6,6 +6,7 @@ import CustomNodeExampleView from "@/views/examples/CustomNodeExampleView.vue";
 import MainView from "@/views/MainView.vue";
 import ModalView from "@/views/examples/ModalView.vue";
 import PlaygroundView from "@/views/PlaygroundView.vue";
+import ComponentTester from "@/components/ComponentTester.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -39,6 +40,11 @@ const router = createRouter({
       path: '/customnodesexample',
       name: 'customnodesexample',
       component: CustomNodeExampleView
+    },
+    {
+      path: '/componentTester',
+      name: 'componentTester',
+      component: ComponentTester
     },
     {
       path: '/theming',
