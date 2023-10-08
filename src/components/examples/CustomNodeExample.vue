@@ -1,7 +1,7 @@
 <script setup>
 import {Handle, Position} from '@vue-flow/core'
 import {computed} from 'vue'
-import {colors} from '@/assets/vueflow_examples/presets.js'
+import {colors} from '@/assets/vueflow_examples/presets.ts'
 
 const props = defineProps({
   data: {

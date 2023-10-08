@@ -3,7 +3,7 @@ import { MiniMap } from '@vue-flow/minimap'
 import { Position, VueFlow, useVueFlow } from '@vue-flow/core'
 import { h, onMounted, ref } from 'vue'
 import ColorSelectorNode from '@/components/examples/CustomNodeExample.vue'
-import { presets } from '@/assets/vueflow_examples/presets.js'
+import { presets } from '@/assets/vueflow_examples/presets.ts'
 
 const { findNode } = useVueFlow()
 

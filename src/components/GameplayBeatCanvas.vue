@@ -3,7 +3,7 @@ import {isNode, MarkerType, Panel, PanelPosition, useVueFlow, VueFlow} from '@vu
 import {Background} from '@vue-flow/background'
 import {Controls} from '@vue-flow/controls'
 import {markRaw, ref} from 'vue'
-import {initialElements} from '@/assets/vueflow_examples/initial-elements.js'
+import {initialElements} from '@/assets/vueflow_examples/initial-elements.ts'
 import ContextMenu from '@imengyu/vue3-context-menu'
 import {GameplayBeat} from "@/assets/GameplayBeat"
 import GameplayBeatNode from "@/components/GameplayBeatNode.vue";

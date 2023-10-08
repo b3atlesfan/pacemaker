@@ -1,10 +1,10 @@
-<script setup>
+<script setup lang="ts">
 import { Panel, PanelPosition, VueFlow, isNode, useVueFlow } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import { Controls } from '@vue-flow/controls'
 import { MiniMap } from '@vue-flow/minimap'
 import { ref } from 'vue'
-import { initialElements } from '@/assets/vueflow_examples/initial-elements.js'
+import { initialElements } from '@/assets/vueflow_examples/initial-elements'
 
 /**
  * useVueFlow provides all event handlers and store properties
