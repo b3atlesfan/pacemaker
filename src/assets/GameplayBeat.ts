@@ -1,16 +1,21 @@
+import {BeatContent} from "@/assets/BeatContent";
+
 export class GameplayBeat {
-    id
-    type
-    label
-    data
+    store: string
+    type: string
+    id: string
+    label: string
+    content: BeatContent
     position
 
-    constructor(id, label, data, position) {
+    constructor(id: string, label: string, content: BeatContent, position) {
         //super();
+        this.store = "elements"
+        this.type = "gameplay-beat"
+
         this.id = id
-        this.type = 'gameplay-beat'
         this.label = label
-        this.data = data
+        this.content = content
         this.position = position
     }
 }

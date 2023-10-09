@@ -2,7 +2,7 @@
 import {VueFinalModal} from "vue-final-modal";
 import {ref} from "vue";
 
-const emit = defineEmits(['close', 'createNode'])
+const emit = defineEmits(['close', 'delete'])
 
 const getInitialValues = () => ({
   modelValue: false,
@@ -42,30 +42,17 @@ const name = ref("")
       content-class="max-w-xl mx-4 p-4 bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-lg space-y-2"
   >
     <h1 class="text-xl">
-      Hello World!
+      Warning!
     </h1>
-    <div class="flex">
-      <p>Name</p>
-      <input
-          type="text"
-          class="bg-gray-200 mx-3 px-1"
-          @input="name = $event.target.value"
-      />
-    </div>
-    <div class="flex">
-      <p>Intensity</p>
-      <input
-          type="number"
-          class="bg-gray-200 mx-3 px-1"
-          v-model="difficulty"
-      />
+    <div>
+      Do you want to delete this node?
     </div>
     <div>
       <button @click="$emit('close')">
         Close
       </button>
-      <button class="float-right" @click="$emit('createNode', name, difficulty)">
-        Confirm
+      <button class="float-right" @click="$emit('delete')">
+        Delete
       </button>
     </div>
   </VueFinalModal>
