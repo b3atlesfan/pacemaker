@@ -9,8 +9,6 @@ import {GameplayBeat} from "@/assets/GameplayBeat"
 import GameplayBeatNode from "@/components/GameplayBeatNode.vue";
 import PanelButton from "@/components/PanelButton.vue";
 import ThePanel from "@/components/ThePanel.vue";
-import {ModalsContainer, useModal, VueFinalModal} from 'vue-final-modal'
-import ModalConfirm from '@/components/CreateBeatModal.vue'
 import {useElementsStore} from "@/stores/elements";
 import {storeToRefs} from "pinia";
 import PacingChart from "@/components/PacingChart.vue";
@@ -73,6 +71,7 @@ function onContextMenu(mouseEvent) {
            */
         }
       },
+        /*
       {
         label: "A submenu",
         children: [
@@ -81,6 +80,7 @@ function onContextMenu(mouseEvent) {
           { label: "Item3" },
         ]
       },
+         */
     ]
   });
 }
@@ -149,23 +149,6 @@ function resetTransform() {
 function toggleClass() {
   return (dark.value = !dark.value)
 }
-
-const { open, close } = useModal({
-  component: ModalConfirm,
-  attrs: {
-    title: 'Hello World!',
-    onClose() {
-      close()
-    },
-    onCreateNode(name, difficulty) {
-      createNode(name, difficulty)
-      close()
-    }
-  },
-  slots: {
-    default: '<p>UseModal: The content of the modal</p>',
-  },
-})
 
 function createNode(name, difficulty) {
   const beat = new GameplayBeat('' + id, name, difficulty, vueFlowInstance.project(pos))
