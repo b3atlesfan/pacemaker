@@ -7,6 +7,7 @@ import ContextMenu from '@imengyu/vue3-context-menu'
 import { createApp } from 'vue'
 import { createVfm } from "vue-final-modal";
 import { createPinia } from "pinia";
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import App from './App.vue'
 import router from './router'
 
@@ -26,7 +27,9 @@ const vuetify = createVuetify({
 app.use(ContextMenu)
 app.use(router)
 app.use(createVfm())
-app.use(createPinia())
+const pinia = createPinia()
+pinia.use(piniaPluginPersistedstate)
+app.use(pinia)
 app.use(vuetify)
 
 app.mount('#app')
