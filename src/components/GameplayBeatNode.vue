@@ -1,30 +1,23 @@
 <script setup lang="ts">
-import {Handle, Position} from "@vue-flow/core";
+import {Handle, Position, useVueFlow} from "@vue-flow/core";
 import {ref} from "vue";
 import {BeatContent} from "@/assets/BeatContent";
 import BeatContentComp from "@/components/BeatContentHolder.vue";
 import {useModal} from "vue-final-modal";
 import ModalConfirm from "@/components/DeleteBeatModal.vue";
+import {BeatManager} from "@/assets/BeatManager";
 
+const { removeNodes } = useVueFlow()
+
+// data has to be named data because of how the node package works, but in our case data is content
+// or better later: a pointer towards the content
 const props = defineProps({
   id: {
     type: String,
     required: true,
   },
-  general: {
-    type: Object,
-    required: false,
-  },
-  desired: {
-    type: Object,
-    required: false,
-  },
-  current: {
-    type: Object,
-    required: false,
-  },
   data: {
-    type: Number,
+    type: BeatContent,
     required: true,
   },
   label: {
@@ -68,6 +61,8 @@ console.log(content.intensity + content.introducedSkills[0])
 function changeLabel(newName: string) {
   console.log(newName)
   labelRef.value = newName
+  let manager = new BeatManager()
+  manager.editNodeLabel(props.id, newName)
 }
 
 const { open, close } = useModal({
@@ -89,6 +84,8 @@ const { open, close } = useModal({
 
 function onDeleteBeat() {
   console.log("delete")
+  //emits('delete-node', props.id)
+  removeNodes(props.id)
 }
 
 </script>
@@ -100,10 +97,10 @@ function onDeleteBeat() {
       Name:
     </div>
     <div style="background: grey" v-if="isBeingEdited">
-      <input type="text" :value="labelRef" @input="changeLabel($event.target.value)"/>
+      <input type="text" :value="props.label" @input="changeLabel($event.target.value)"/>
     </div>
     <div v-else>
-      {{ labelRef }}
+      {{ props.label }}
     </div>
     <div class="edit-icons">
 
@@ -147,7 +144,7 @@ function onDeleteBeat() {
       <!--
       <GeneralSection :data="props.general" />
       -->
-      <BeatContentComp :content="content" />
+      <BeatContentComp :content="props.data" />
     </div>
 
     <!--

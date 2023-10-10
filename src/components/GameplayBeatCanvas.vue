@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import {isNode, MarkerType, Panel, PanelPosition, useVueFlow, VueFlow} from '@vue-flow/core'
 import {Background} from '@vue-flow/background'
 import {Controls} from '@vue-flow/controls'
@@ -12,13 +12,15 @@ import ThePanel from "@/components/ThePanel.vue";
 import {useElementsStore} from "@/stores/elements";
 import {storeToRefs} from "pinia";
 import PacingChart from "@/components/PacingChart.vue";
+import {BeatContent} from "@/assets/BeatContent";
+import {BeatManager} from "@/assets/BeatManager";
 
-
+const beatManager = new BeatManager()
 /**
  * useVueFlow provides all event handlers and store properties
  * You can pass the composable an object that has the same properties as the VueFlow component props
  */
-const { onPaneReady, onNodeDragStop, onConnect, addEdges, setTransform, toObject, nodeTypes, addNodes, getNodes } = useVueFlow()
+const { onPaneReady, onNodeDragStop, onConnect, addEdges, setTransform, toObject, nodeTypes, addNodes, getNodes, removeNodes } = useVueFlow()
 
 
 nodeTypes.value = {
@@ -60,7 +62,8 @@ function onContextMenu(mouseEvent) {
         label: "Create beat",
         onClick: () => {
           pos = {x: mouseEvent.x, y: mouseEvent.y }
-          createNode("hello", 5)
+          beatManager.createNode("My Bois", pos)
+          //createNode("hello", 5)
           //open()
           /*
           console.log([mouseEvent.x, mouseEvent.y])
@@ -150,12 +153,7 @@ function toggleClass() {
   return (dark.value = !dark.value)
 }
 
-function createNode(name, difficulty) {
-  const beat = new GameplayBeat('' + id, name, difficulty, vueFlowInstance.project(pos))
-  addNodes(beat)
-  console.log(getNodes.value)
-  id++
-}
+const content = new BeatContent("mr cool 2.0", "Puzzle", 20, ["Jump"], ["Dash"], ["Enqueue", "Dequeue"])
 
 </script>
 
