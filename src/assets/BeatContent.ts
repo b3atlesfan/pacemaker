@@ -1,6 +1,9 @@
 export const Categories = ["Puzzle", "Narrative", "Execution", "Action"] as const;
 export type Category = typeof Categories[number];
 
+export const Skills = ["Jump", "Dash", "Platform", "Enqueue"] as const;
+export type Skill = typeof Skills[number];
+
 export class BeatContent {
     id: number
     description: string
