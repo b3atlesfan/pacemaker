@@ -1,5 +1,4 @@
 import { defineStore } from "pinia";
-import {GameplayBeat} from "@/assets/GameplayBeat";
 
 type elementType = { id: string }
 

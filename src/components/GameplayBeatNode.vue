@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import {Handle, Position, useVueFlow} from "@vue-flow/core";
-import {ref} from "vue";
+import {inject, ref} from "vue";
 import {BeatContent} from "@/assets/BeatContent";
-import BeatContentComp from "@/components/BeatContentHolder.vue";
+import BeatContentHolder from "@/components/BeatContentHolder.vue";
 import {useModal} from "vue-final-modal";
 import ModalConfirm from "@/components/DeleteBeatModal.vue";
-import {BeatManager} from "@/assets/BeatManager";
+import { BeatManager } from "@/assets/BeatManager";
 
-const { removeNodes } = useVueFlow()
 
 // data has to be named data because of how the node package works, but in our case data is content
 // or better later: a pointer towards the content
@@ -16,53 +15,43 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  data: {
-    type: BeatContent,
-    required: true,
-  },
   label: {
     type: String,
     required: false,
   },
+  data: {
+    type: Object,
+    required: false,
+  },
 })
 
-const isBeingEdited = ref(false)
-const isLocked = ref(true)
+const beatManager = BeatManager.getInstance()
 
-const label = props.label
-const labelRef = ref(label)
+const isBeingEdited = ref(false)
+const isLocked = ref(false)
 
 function saveClicked() {
-  console.log("save clicked")
-  console.log(isBeingEdited.value)
   isBeingEdited.value = false
-  console.log(isBeingEdited.value)
 }
 
 function editClicked() {
-  console.log("edit clicked")
   isBeingEdited.value = true
 }
 
 function lockClicked() {
-  console.log("lock clicked")
   isLocked.value = true
 }
 
 function unlockClicked() {
-  console.log("unlock clicked")
   isLocked.value = false
 }
 
-const content = new BeatContent("mr cool", "Puzzle", 20, ["Jump"], ["Dash"], ["Enqueue", "Dequeue"])
-
-console.log(content.intensity + content.introducedSkills[0])
-
 function changeLabel(newName: string) {
-  console.log(newName)
-  labelRef.value = newName
-  let manager = new BeatManager()
-  manager.editNodeLabel(props.id, newName)
+  beatManager.editNodeLabel(props.id, newName)
+}
+
+function onDeleteBeat() {
+  beatManager.deleteNode(props.id)
 }
 
 const { open, close } = useModal({
@@ -81,12 +70,6 @@ const { open, close } = useModal({
     default: '<p>UseModal: The content of the modal</p>',
   },
 })
-
-function onDeleteBeat() {
-  console.log("delete")
-  //emits('delete-node', props.id)
-  removeNodes(props.id)
-}
 
 </script>
 
@@ -144,7 +127,7 @@ function onDeleteBeat() {
       <!--
       <GeneralSection :data="props.general" />
       -->
-      <BeatContentComp :content="props.data" />
+      <BeatContentHolder :content="props.data as BeatContent" />
     </div>
 
     <!--

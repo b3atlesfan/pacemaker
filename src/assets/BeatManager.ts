@@ -1,37 +1,58 @@
-import {useVueFlow, VueFlowStore} from "@vue-flow/core";
+import {isNode, useVueFlow, VueFlowStore} from "@vue-flow/core";
 import {GameplayBeat} from "@/assets/GameplayBeat";
 import {BeatContent} from "@/assets/BeatContent";
 import {storeToRefs} from "pinia";
 import {useElementsStore} from "@/stores/elements";
+import {IdManager} from "@/assets/IdManager";
 
 export class BeatManager {
-    id: number
+    idManager: IdManager
     vueFlowStore: VueFlowStore
     elements
     //const { onPaneReady, onNodeDragStop, onConnect, addEdges, setTransform, toObject, nodeTypes, addNodes, getNodes, removeNodes } = useVueFlow()
 
-    constructor() {
-        this.vueFlowStore = useVueFlow()
-        this.id = 0
-        this.elements = storeToRefs(useElementsStore())
+    static instance: BeatManager
+
+    public static getInstance(): BeatManager {
+        if (!BeatManager.instance) {
+            BeatManager.instance = new BeatManager()
+        }
+
+        return BeatManager.instance
     }
 
-    createNode(label: string, pos: {x: number, y: number}) {
+    constructor() {
+        this.vueFlowStore = useVueFlow()
+        this.elements = storeToRefs(useElementsStore())
+        this.idManager = new IdManager()
+
+        this.elements.elements.value.forEach(elem => {
+            if (isNode(elem)) this.idManager.takeId(elem.id)
+        })
+    }
+
+    createNode(pos: {x: number, y: number}) {
         const content = new BeatContent("mr cool 2.0", "Puzzle", 20, ["Jump"], ["Dash"], ["Enqueue", "Dequeue"])
-        const beat = new GameplayBeat('' + this.id, label, content, this.vueFlowStore.project(pos))
-        //this.vueFlowStore.addNodes(beat)
+        const id = this.idManager.getId()
+        const beat = new GameplayBeat('' + id, 'Beat ' + id, content, this.vueFlowStore.project(pos))
+
         this.elements.elements.value.push(beat)
-        this.vueFlowStore.updateNodeInternals()
-        console.log(this.vueFlowStore.getNodes.value)
-        this.id++
+
     }
 
     deleteNode(id: string) {
         this.vueFlowStore.removeNodes(id)
+        this.idManager.returnId(parseInt(id))
+        //this.elements.elements.value
     }
 
     editNodeLabel(id: string, label: string) {
+        this.elements.elements.value.forEach(elem => console.log("elem id is " + elem.id))
+
         let currentNode = this.elements.elements.value.find(elem => elem.id == id)
-        currentNode.label = label
+
+        if (currentNode == undefined) return
+
+        (currentNode as GameplayBeat).label = label
     }
 }

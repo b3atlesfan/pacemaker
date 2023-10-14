@@ -2,7 +2,7 @@
 import {isNode, MarkerType, Panel, PanelPosition, useVueFlow, VueFlow} from '@vue-flow/core'
 import {Background} from '@vue-flow/background'
 import {Controls} from '@vue-flow/controls'
-import {markRaw, ref} from 'vue'
+import {inject, markRaw, ref} from 'vue'
 import {initialElements} from '@/assets/vueflow_examples/initial-elements.ts'
 import ContextMenu from '@imengyu/vue3-context-menu'
 import {GameplayBeat} from "@/assets/GameplayBeat"
@@ -15,7 +15,7 @@ import PacingChart from "@/components/PacingChart.vue";
 import {BeatContent} from "@/assets/BeatContent";
 import {BeatManager} from "@/assets/BeatManager";
 
-const beatManager = new BeatManager()
+const beatManager = BeatManager.getInstance()
 /**
  * useVueFlow provides all event handlers and store properties
  * You can pass the composable an object that has the same properties as the VueFlow component props
@@ -40,14 +40,6 @@ onPaneReady((flowInstance) => {
   vueFlowInstance = flowInstance
 })
 
-let id = 0
-
-elements.value.forEach(e => {
-  if (e.type !== 'gameplay-beat') return;
-  id++
-})
-
-
 let pos
 
 function onContextMenu(mouseEvent) {
@@ -62,7 +54,7 @@ function onContextMenu(mouseEvent) {
         label: "Create beat",
         onClick: () => {
           pos = {x: mouseEvent.x, y: mouseEvent.y }
-          beatManager.createNode("My Bois", pos)
+          beatManager.createNode(pos)
           //createNode("hello", 5)
           //open()
           /*
@@ -167,7 +159,7 @@ const content = new BeatContent("mr cool 2.0", "Puzzle", 20, ["Jump"], ["Dash"],
 
     <Controls />
 
-    <ThePanel :dark=dark @onResetTransform="open" @onShuffleNodes="updatePos" @onToggleDarkMode="toggleClass" @onLogToObject="logToObject"/>
+    <ThePanel :dark=dark @onShuffleNodes="updatePos" @onToggleDarkMode="toggleClass" @onLogToObject="logToObject"/>
 
   </VueFlow>
   <!--
