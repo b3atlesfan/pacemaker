@@ -145,8 +145,6 @@ function toggleClass() {
   return (dark.value = !dark.value)
 }
 
-const content = new BeatContent("mr cool 2.0", "Puzzle", 20, ["Jump"], ["Dash"], ["Enqueue", "Dequeue"])
-
 </script>
 
 <template>

@@ -1,19 +1,50 @@
 <script setup lang="ts">
-import {BeatContent} from "@/assets/BeatContent";
 import BeatContentHolder from "@/components/BeatContentHolder.vue";
+import BeatContentCreatorButton from "@/components/BeatContentCreatorButton.vue";
 
-const content = new BeatContent("mr cool", "Puzzle", 20, ["dash"], ["jump"], ["enqueue", "queue order"])
+import {storeToRefs} from "pinia";
+import {useContentsStore} from "@/stores/contents";
+
+const { contents } = storeToRefs(useContentsStore())
+
 </script>
 
 <template>
-  <div class="centering">
-    <BeatContentHolder  :content="content"/>
+  <div class="container2">
+    <BeatContentCreatorButton/>
+
+    <div class="centering">
+      <v-card v-for="content in contents">
+        <BeatContentHolder  :content="content"/>
+      </v-card>
+    </div>
   </div>
 </template>
 
 <style scoped>
 .centering {
-  //align-self: center;
+  align-self: center;
   justify-self: center;
 }
+
+.container2 {
+  max-width: 500px;
+}
+
+.container {
+  display: grid;
+  justify-items: start;
+  grid-template-rows: auto;
+  grid-template-columns: auto auto;
+  padding: 5px;
+}
+
+.column1 {
+  grid-column-start: 1;
+}
+
+.column2 {
+  grid-column-start: 2;
+}
+
 </style>
