@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {BeatContent, Categories} from "@/assets/BeatContent";
+import {BeatContentManager} from "@/assets/BeatContentManager";
 
 const props = defineProps({
   content: {
@@ -7,6 +8,8 @@ const props = defineProps({
     required: true,
   }
 })
+
+const beatContentManager = BeatContentManager.getInstance()
 
 </script>
 
@@ -38,6 +41,8 @@ const props = defineProps({
     <div class="column2">
       <v-chip v-for="(skill) in props.content?.requiredSkills"> {{ skill }} </v-chip>
     </div>
+
+    <v-btn @click="beatContentManager.deleteContent(props.content.id)">Delete</v-btn>
   </div>
 </template>
 

@@ -4,8 +4,11 @@ import BeatContentCreatorButton from "@/components/BeatContentCreatorButton.vue"
 
 import {storeToRefs} from "pinia";
 import {useContentsStore} from "@/stores/contents";
+import {BeatContentManager} from "@/assets/BeatContentManager";
 
 const { contents } = storeToRefs(useContentsStore())
+
+const beatContentManager = BeatContentManager.getInstance()
 
 </script>
 
