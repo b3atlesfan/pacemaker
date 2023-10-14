@@ -28,7 +28,7 @@ const props = defineProps({
 const beatManager = BeatManager.getInstance()
 
 const isBeingEdited = ref(false)
-const isLocked = ref(false)
+const isLocked = ref(true)
 
 function saveClicked() {
   isBeingEdited.value = false
