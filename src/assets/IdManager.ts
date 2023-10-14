@@ -29,7 +29,7 @@ export class IdManager {
         console.log("return id " + id)
         this.idIsTaken[id] = false
 
-        console.log("current id" + this.id)
+        console.log("current id " + this.id)
 
         if (id < this.id) {
             console.log("is smaller")
@@ -38,7 +38,7 @@ export class IdManager {
     }
 
     takeId(id: number) {
-        this.idIsTaken[id] = false
+        this.idIsTaken[id] = true
         this._findNextId()
     }
 }

@@ -1,4 +1,4 @@
-import {isNode, useVueFlow, VueFlowStore} from "@vue-flow/core";
+import {isNode, MaybeElement, useVueFlow, VueFlowStore} from "@vue-flow/core";
 import {GameplayBeat} from "@/assets/GameplayBeat";
 import {BeatContent} from "@/assets/BeatContent";
 import {storeToRefs} from "pinia";
@@ -27,7 +27,7 @@ export class BeatManager {
         this.idManager = new IdManager()
 
         this.elements.elements.value.forEach(elem => {
-            if (isNode(elem)) this.idManager.takeId(elem.id)
+            if (isNode(elem as MaybeElement)) this.idManager.takeId(parseInt(elem.id))
         })
     }
 
