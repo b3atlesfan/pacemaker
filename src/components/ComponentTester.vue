@@ -18,7 +18,7 @@ const beatContentManager = BeatContentManager.getInstance()
 
     <div class="centering">
       <v-card v-for="content in contents">
-        <BeatContentHolder  :content="content"/>
+        <BeatContentHolder :content="content" :is-in-beat="false"/>
       </v-card>
     </div>
   </div>
@@ -32,22 +32,6 @@ const beatContentManager = BeatContentManager.getInstance()
 
 .container2 {
   max-width: 500px;
-}
-
-.container {
-  display: grid;
-  justify-items: start;
-  grid-template-rows: auto;
-  grid-template-columns: auto auto;
-  padding: 5px;
-}
-
-.column1 {
-  grid-column-start: 1;
-}
-
-.column2 {
-  grid-column-start: 2;
 }
 
 </style>

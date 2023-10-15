@@ -6,7 +6,7 @@ import {BeatContentManager} from "@/assets/BeatContentManager";
 
 const contentManager = BeatContentManager.getInstance()
 
-function onSaveClick() {
+function onSaveClicked() {
   dialog.value = false
   contentManager.createContent(description.value, categories.value, slider.value, introducedSkills.value, reinforcedSkills.value, requiredSkills.value)
   //const content = new BeatContent(2, description.value, categories.value, slider.value, introducedSkills.value, reinforcedSkills.value, requiredSkills.value)
@@ -124,7 +124,7 @@ const requiredSkills = ref([] as Skill[])
 
       <v-card-actions>
         <v-btn color="secondary" @click="dialog = false">Exit</v-btn>
-        <v-btn color="primary" @click="onSaveClick()">Save</v-btn>
+        <v-btn color="primary" @click="onSaveClicked()">Save</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

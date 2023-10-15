@@ -6,6 +6,10 @@ const props = defineProps({
   content: {
     type: BeatContent,
     required: true,
+  },
+  isInBeat: {
+    type: Boolean,
+    required: true,
   }
 })
 
@@ -14,36 +18,50 @@ const beatContentManager = BeatContentManager.getInstance()
 </script>
 
 <template>
-  <div class="container">
-    <div class="column1">Description:</div>
-    <div class="column2">{{ props.content.description }}</div>
+  <v-card>
+    <v-container>
+      <v-row no-gutters justify="start">
+        <v-col justify="start">Description:</v-col>
+        <v-col>{{ props.content.description }} + {{ props.content.id }}</v-col>
+      </v-row>
 
-    <div class="column1">Intensity:</div>
-    <div class="column2">{{ props.content.intensity }}</div>
+      <v-row>
+        <v-col>Intensity:</v-col>
+        <v-col>{{ props.content.intensity }}</v-col>
+      </v-row>
 
-    <div class="column1">Type:</div>
-    <div class="column2">
-      <!--<v-select :items="Categories" variant="solo-filled"></v-select>-->
-      <v-chip>{{ props.content.category }}</v-chip>
-    </div>
+      <v-row>
+        <v-col>Type:</v-col>
+        <v-col>
+          <v-chip>{{ props.content.category }}</v-chip>
+        </v-col>
+      </v-row>
 
-    <div class="column1">Introduces:</div>
-    <div class="column2">
-      <v-chip v-for="(skill) in props.content?.introducedSkills"> {{ skill }} </v-chip>
-    </div>
+      <v-row>
+        <v-col>Introduces:</v-col>
+        <v-col>
+          <v-chip v-for="(skill) in props.content?.introducedSkills"> {{ skill }} </v-chip>
+        </v-col>
+      </v-row>
 
-    <div class="column1">Reinforces:</div>
-    <div class="column2">
-      <v-chip v-for="(skill) in props.content?.reinforcedSkills"> {{ skill }} </v-chip>
-    </div>
+      <v-row>
+        <v-col>Reinforces:</v-col>
+        <v-col>
+          <v-chip v-for="(skill) in props.content?.reinforcedSkills"> {{ skill }} </v-chip>
+        </v-col>
+      </v-row>
 
-    <div class="column1">Requires:</div>
-    <div class="column2">
-      <v-chip v-for="(skill) in props.content?.requiredSkills"> {{ skill }} </v-chip>
-    </div>
+      <v-row>
+        <v-col>Requires:</v-col>
+        <v-col>
+          <v-chip v-for="(skill) in props.content?.requiredSkills"> {{ skill }} </v-chip>
+        </v-col>
+      </v-row>
 
-    <v-btn @click="beatContentManager.deleteContent(props.content.id)">Delete</v-btn>
-  </div>
+      <v-btn v-if="props.isInBeat" @click="$emit('onRemove')">Remove</v-btn>
+      <v-btn v-else @click="$emit('onDelete', props.content.id)">Delete</v-btn>
+    </v-container>
+  </v-card>
 </template>
 
 <style scoped>

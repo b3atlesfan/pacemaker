@@ -8,17 +8,17 @@ export class GameplayBeat {
 
     id: string
     label: string
-    data: BeatContent
+    data: number
     position: XYPosition
 
-    constructor(id: string, label: string, data: BeatContent, position: XYPosition) {
+    constructor(id: string, label: string, contentId: number, position: XYPosition) {
         //super();
         this.store = "elements"
         this.type = "gameplay-beat"
 
         this.id = id
         this.label = label
-        this.data = data
+        this.data = contentId
         this.position = position
     }
 }

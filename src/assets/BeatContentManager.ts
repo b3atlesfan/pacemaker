@@ -46,7 +46,15 @@ export class BeatContentManager {
         const index = this.contentsStore.contents.value.findIndex(x => x.id == id)
         if (index > -1) {
             this.contentsStore.contents.value.splice(index, 1)
+            this.idManager.returnId(id)
         }
+    }
+
+    getContent(id: number) : BeatContent {
+        console.log("it is now called")
+        const result = this.contentsStore.contents.value.find(x => x.id == id) as BeatContent
+        console.log("result is " + result)
+        return result
     }
 
     editNodeLabel(id: string, label: string) {

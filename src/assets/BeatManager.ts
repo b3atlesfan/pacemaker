@@ -34,7 +34,7 @@ export class BeatManager {
     createNode(pos: {x: number, y: number}) {
         const content = new BeatContent(1, "mr cool 2.0", "Puzzle", 20, ["Jump"], ["Dash"], ["Enqueue", "Dequeue"])
         const id = this.idManager.getId()
-        const beat = new GameplayBeat('' + id, 'Beat ' + id, content, this.vueFlowStore.project(pos))
+        const beat = new GameplayBeat('' + id, 'Beat ' + id, -1, this.vueFlowStore.project(pos))
 
         this.elements.elements.value.push(beat)
 
@@ -54,5 +54,13 @@ export class BeatManager {
         if (currentNode == undefined) return
 
         (currentNode as GameplayBeat).label = label
+    }
+
+    editContentId(beatId: string, contentId: number) {
+        let currentNode = this.elements.elements.value.find(elem => elem.id == beatId)
+
+        if (currentNode == undefined) return
+
+        (currentNode as GameplayBeat).data = contentId
     }
 }
