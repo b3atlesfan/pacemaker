@@ -1,6 +1,4 @@
 import {XYPosition} from "@vue-flow/core";
-import {BeatContent} from "@/assets/BeatContent";
-import {BeatManager} from "@/assets/BeatManager";
 
 export class GameplayBeat {
     store: string

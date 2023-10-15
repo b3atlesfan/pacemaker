@@ -2,7 +2,7 @@ import {isNode, MaybeElement, useVueFlow, VueFlowStore} from "@vue-flow/core";
 import {GameplayBeat} from "@/assets/GameplayBeat";
 import {BeatContent} from "@/assets/BeatContent";
 import {storeToRefs} from "pinia";
-import {useElementsStore} from "@/stores/elements";
+import {useElementsStore} from "@/store/elements";
 import {IdManager} from "@/assets/IdManager";
 
 export class BeatManager {

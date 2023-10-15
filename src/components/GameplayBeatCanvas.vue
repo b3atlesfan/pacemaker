@@ -1,18 +1,12 @@
 <script setup lang="ts">
-import {isNode, MarkerType, Panel, PanelPosition, useVueFlow, VueFlow} from '@vue-flow/core'
+import {isNode, MarkerType, useVueFlow, VueFlow} from '@vue-flow/core'
 import {Background} from '@vue-flow/background'
 import {Controls} from '@vue-flow/controls'
-import {inject, markRaw, ref} from 'vue'
-import {initialElements} from '@/assets/vueflow_examples/initial-elements.ts'
-import ContextMenu from '@imengyu/vue3-context-menu'
-import {GameplayBeat} from "@/assets/GameplayBeat"
+import {markRaw, ref} from 'vue'
 import GameplayBeatNode from "@/components/GameplayBeatNode.vue";
-import PanelButton from "@/components/PanelButton.vue";
 import ThePanel from "@/components/ThePanel.vue";
-import {useElementsStore} from "@/stores/elements";
+import {useElementsStore} from "@/store/elements";
 import {storeToRefs} from "pinia";
-import PacingChart from "@/components/PacingChart.vue";
-import {BeatContent} from "@/assets/BeatContent";
 import {BeatManager} from "@/assets/BeatManager";
 
 const beatManager = BeatManager.getInstance()
@@ -20,13 +14,12 @@ const beatManager = BeatManager.getInstance()
  * useVueFlow provides all event handlers and store properties
  * You can pass the composable an object that has the same properties as the VueFlow component props
  */
-const { onPaneReady, onNodeDragStop, onConnect, addEdges, setTransform, toObject, nodeTypes, addNodes, getNodes, removeNodes } = useVueFlow()
+const { onNodeDragStop, onConnect, addEdges, setTransform, toObject, nodeTypes, addNodes, getNodes, removeNodes } = useVueFlow()
 
 /*
 nodeTypes.value = {
-  'gameplay-beat': markRaw(GameplayBeatNode)
-}
-*/
+  "gameplay-beat": markRaw(GameplayBeatNode)
+}*/
 
 /**
  * Our elements
@@ -34,51 +27,14 @@ nodeTypes.value = {
 // const elements = ref(initialElements)
 const { elements } = storeToRefs(useElementsStore())
 
-let vueFlowInstance
-
-onPaneReady((flowInstance) => {
-  flowInstance.fitView()
-  vueFlowInstance = flowInstance
-})
-
 let pos
 
-function onContextMenu(mouseEvent) {
-  //prevent the browser's default menu
+function onContextMenu(mouseEvent: MouseEvent) {
+  // prevent the browser's default menu
   mouseEvent.preventDefault();
-  //show your menu
-  ContextMenu.showContextMenu({
-    x: mouseEvent.x,
-    y: mouseEvent.y,
-    items: [
-      {
-        label: "Create beat",
-        onClick: () => {
-          pos = {x: mouseEvent.x, y: mouseEvent.y }
-          beatManager.createNode(pos)
-          //createNode("hello", 5)
-          //open()
-          /*
-          console.log([mouseEvent.x, mouseEvent.y])
-          const pos = { x: mouseEvent.x, y: mouseEvent.y }
-          const beat = new GameplayBeat('' + id, 'Beat ' + id, 1, vueFlowInstance.project(pos))
-          addNodes(beat)
-          id++
-           */
-        }
-      },
-        /*
-      {
-        label: "A submenu",
-        children: [
-          { label: "Item1" },
-          { label: "Item2" },
-          { label: "Item3" },
-        ]
-      },
-         */
-    ]
-  });
+  // for now, just create node
+  pos = { x: mouseEvent.x, y: mouseEvent.y }
+  beatManager.createNode(pos)
 }
 
 /**
@@ -146,6 +102,18 @@ function toggleClass() {
   return (dark.value = !dark.value)
 }
 
+function onAddContent(id: string) {
+  console.log('add content ' + id)
+}
+
+function onEdit(id: string) {
+  console.log('edit ' + id)
+}
+
+function onDelete(id: string) {
+  console.log('delete ' + id)
+}
+
 </script>
 
 <template>
@@ -153,19 +121,24 @@ function toggleClass() {
     <Background :pattern-color="dark ? '#FFFFFB' : '#aaa'" gap="50" />
 
     <template #node-gameplay-beat="props">
-      <GameplayBeatNode v-bind="props" @on-emit-click="console.log('hello')" />
+      <GameplayBeatNode v-bind="props" @on-add-content-clicked="onAddContent" @on-edit-clicked="onEdit" @on-delete-clicked="onDelete" />
     </template>
 
     <!--
     <MiniMap />
-    -->
+
 
     <Controls />
 
     <ThePanel :dark=dark @onShuffleNodes="updatePos" @onToggleDarkMode="toggleClass" @onLogToObject="logToObject"/>
+    -->
 
   </VueFlow>
   <!--
   <PacingChart />
   -->
 </template>
+
+<style>
+
+</style>

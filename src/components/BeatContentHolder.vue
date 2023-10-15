@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import {BeatContent, Categories} from "@/assets/BeatContent";
-import {BeatContentManager} from "@/assets/BeatContentManager";
+import {BeatContent} from "@/assets/BeatContent";
 
 const props = defineProps({
   content: {
@@ -12,8 +11,6 @@ const props = defineProps({
     required: true,
   }
 })
-
-const beatContentManager = BeatContentManager.getInstance()
 
 </script>
 
@@ -65,21 +62,5 @@ const beatContentManager = BeatContentManager.getInstance()
 </template>
 
 <style scoped>
-.container {
-  display: grid;
-  justify-items: start;
-  grid-template-rows: auto;
-  grid-template-columns: auto auto;
-  padding: 5px;
-}
-
-.column1 {
-  grid-column-start: 1;
-}
-
-.column2 {
-  grid-column-start: 2;
-}
-
 
 </style>

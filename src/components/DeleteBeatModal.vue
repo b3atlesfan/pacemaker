@@ -1,5 +1,5 @@
 <script setup>
-import {VueFinalModal} from "vue-final-modal";
+//import {VueFinalModal} from "vue-final-modal";
 import {ref} from "vue";
 
 const emit = defineEmits(['close', 'delete'])
@@ -26,6 +26,7 @@ const name = ref("")
 </script>
 
 <template>
+  <!--
   <VueFinalModal
       v-model="options.modelValue"
       :teleport-to="options.teleportTo"
@@ -56,6 +57,7 @@ const name = ref("")
       </button>
     </div>
   </VueFinalModal>
+  -->
 </template>
 
 <style scoped>

@@ -1,7 +1,6 @@
-import {isNode, MaybeElement, useVueFlow, VueFlowStore} from "@vue-flow/core";
 import {storeToRefs} from "pinia";
 import {IdManager} from "@/assets/IdManager";
-import {useContentsStore} from "@/stores/contents";
+import {useContentsStore} from "@/store/contents";
 import {BeatContent, Category, Skill} from "@/assets/BeatContent";
 
 export class BeatContentManager {

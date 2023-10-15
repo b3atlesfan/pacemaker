@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {ref} from "vue";
-import {useContentsStore} from "@/stores/contents";
+import {useContentsStore} from "@/store/contents";
 import {storeToRefs} from "pinia";
 import BeatContentCreatorButton from "@/components/BeatContentCreatorButton.vue";
 import BeatContentHolder from "@/components/BeatContentHolder.vue";

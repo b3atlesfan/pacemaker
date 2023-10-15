@@ -1,29 +1,69 @@
-# pacemaker
-A practical tool for pacing video games
+# essentials
 
-## Recommended IDE Setup
+## Project setup
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+```
+# yarn
+yarn
 
-## Customize configuration
-
-See [Vite Configuration Reference](https://vitejs.dev/config/).
-
-## Project Setup
-
-```sh
+# npm
 npm install
+
+# pnpm
+pnpm install
+
+# bun 
+bun install
 ```
 
-### Compile and Hot-Reload for Development
+### Compiles and hot-reloads for development
 
-```sh
+```
+# yarn
+yarn dev
+
+# npm
 npm run dev
+
+# pnpm
+pnpm dev
+
+# bun 
+bun run dev
 ```
 
-### Compile and Minify for Production
+### Compiles and minifies for production
 
-```sh
+```
+# yarn
+yarn build
+
+# npm
 npm run build
+
+# pnpm
+pnpm build
+
+# bun 
+bun run build
 ```
 
+### Lints and fixes files
+
+```
+# yarn
+yarn lint
+
+# npm
+npm run lint
+
+# pnpm
+pnpm lint
+
+# bun 
+bun run lint
+```
+
+### Customize configuration
+
+See [Configuration Reference](https://vitejs.dev/config/).
