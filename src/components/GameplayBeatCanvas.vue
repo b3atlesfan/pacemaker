@@ -22,10 +22,11 @@ const beatManager = BeatManager.getInstance()
  */
 const { onPaneReady, onNodeDragStop, onConnect, addEdges, setTransform, toObject, nodeTypes, addNodes, getNodes, removeNodes } = useVueFlow()
 
-
+/*
 nodeTypes.value = {
   'gameplay-beat': markRaw(GameplayBeatNode)
 }
+*/
 
 /**
  * Our elements
@@ -150,6 +151,10 @@ function toggleClass() {
 <template>
   <VueFlow v-model="elements" :class="{ dark }" class="basicflow" :default-viewport="{ zoom: 1.5 }" :min-zoom="0.2" :max-zoom="4" @paneContextMenu="onContextMenu($event)">
     <Background :pattern-color="dark ? '#FFFFFB' : '#aaa'" gap="50" />
+
+    <template #node-gameplay-beat="props">
+      <GameplayBeatNode v-bind="props" @on-emit-click="console.log('hello')" />
+    </template>
 
     <!--
     <MiniMap />

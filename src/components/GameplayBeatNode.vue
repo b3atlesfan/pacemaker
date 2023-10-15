@@ -139,6 +139,7 @@ function onRemove() {
     <v-row>
       <v-col>Content:</v-col>
       <v-col>
+        <v-btn @click="() => {$emit('onEmitClick'); console.log('helo')}">Emit</v-btn>
         <BeatContentSelector v-if="content == undefined" @on-save-clicked="onSave"></BeatContentSelector>
         <p v-else>{{ props.data }} and {{ contentF() }} and {{ content }}</p>
 
