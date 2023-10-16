@@ -1,23 +1,14 @@
 <script setup lang="ts">
 import {ref} from "vue";
-import {storeToRefs} from "pinia";
-import {BeatContent, Categories, Category, Skills, Skill} from "@/assets/BeatContent";
-import {BeatContentManager} from "@/assets/BeatContentManager";
+import {Categories, Category, Skills, Skill} from "@/assets/BeatContent";
 
-const contentManager = BeatContentManager.getInstance()
-
-function onSaveClicked() {
-  dialog.value = false
-  contentManager.createContent(description.value, categories.value, slider.value, introducedSkills.value, reinforcedSkills.value, requiredSkills.value)
-  //const content = new BeatContent(2, description.value, categories.value, slider.value, introducedSkills.value, reinforcedSkills.value, requiredSkills.value)
-  //contents.value.push(content)
-}
+const emit = defineEmits(['onCreateContent'])
 
 const description = ref("")
 
 const dialog = ref(false)
 
-const slider = ref(40)
+const slider = ref(0)
 const min = ref(0)
 const max = ref(100)
 
@@ -28,6 +19,26 @@ const possibleSkills = ref(Skills)
 const introducedSkills = ref([] as Skill[])
 const reinforcedSkills = ref([] as Skill[])
 const requiredSkills = ref([] as Skill[])
+
+
+function onSaveClicked() {
+  emit('onCreateContent', description.value, categories.value, slider.value, introducedSkills.value, reinforcedSkills.value, requiredSkills.value)
+  resetValues()
+}
+
+function resetValues() {
+  description.value = ""
+
+  dialog.value = false
+
+  slider.value = 0
+
+  categories.value = "" as Category
+
+  introducedSkills.value = [] as Skill[]
+  reinforcedSkills.value = [] as Skill[]
+  requiredSkills.value = [] as Skill[]
+}
 
 </script>
 
