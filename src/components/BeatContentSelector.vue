@@ -19,6 +19,7 @@ const id = ref(-1)
 
 function onSave() {
   emit('onSave', id.value)
+  onSelect(id.value)
 }
 
 function onExit() {
@@ -30,9 +31,7 @@ function onCreate() {
 }
 
 function onSelect(selectedId: number) {
-  console.log(id)
   id.value = id.value == selectedId ? -1 : selectedId
-  console.log(id)
 }
 
 function onDelete(selectedId: number) {
