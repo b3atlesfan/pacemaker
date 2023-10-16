@@ -3,11 +3,14 @@
 import {useContentsStore} from "@/store/contents";
 import {storeToRefs} from "pinia";
 import BeatContentHolder from "@/components/BeatContentHolder.vue";
-import BeatContentCreatorButton from "@/components/BeatContentCreatorButton.vue";
+import ContentCreatorForm from "@/components/ContentCreatorForm.vue";
 import {BeatContentManager} from "@/assets/BeatContentManager";
 import {Category, Skill} from "@/assets/BeatContent";
+import {ref} from "vue";
 
 const { contents } = storeToRefs(useContentsStore())
+
+const dialog = ref(false)
 
 const contentManager = BeatContentManager.getInstance()
 
@@ -17,11 +20,14 @@ function onDeleteContent(id: number) {
 
 function onCreateContent(description: string, categories: Category, intensity: number, introducedSkills: Skill[], reinforcedSkills: Skill[], requiredSkills: Skill[]) {
   contentManager.createContent(description, categories, intensity, introducedSkills, reinforcedSkills, requiredSkills)
+  dialog.value = false
 }
 
 </script>
 
 <template>
+  <ContentCreatorForm :dialog="dialog" @on-create-content="onCreateContent" />
+
   <v-container contained>
 
     <v-row>
@@ -39,7 +45,7 @@ function onCreateContent(description: string, categories: Category, intensity: n
 
     <v-row>
       <v-col>
-        <BeatContentCreatorButton @on-create-content="onCreateContent"/>
+        <v-btn @click="dialog = true">Create</v-btn>
       </v-col>
     </v-row>
 

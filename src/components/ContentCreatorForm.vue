@@ -2,11 +2,16 @@
 import {ref} from "vue";
 import {Categories, Category, Skills, Skill} from "@/assets/BeatContent";
 
+const props = defineProps({
+  dialog: {
+    type: Boolean,
+    required: true,
+  }
+})
+
 const emit = defineEmits(['onCreateContent'])
 
 const description = ref("")
-
-const dialog = ref(false)
 
 const slider = ref(0)
 const min = ref(0)
@@ -29,8 +34,6 @@ function onSaveClicked() {
 function resetValues() {
   description.value = ""
 
-  dialog.value = false
-
   slider.value = 0
 
   categories.value = "" as Category
@@ -43,9 +46,7 @@ function resetValues() {
 </script>
 
 <template>
-  <v-btn @click="dialog = true">Create</v-btn>
-
-  <v-dialog v-model="dialog" width="500px">
+  <v-dialog v-model="props.dialog" width="500px">
     <v-card>
       <v-card-title>Create content</v-card-title>
 

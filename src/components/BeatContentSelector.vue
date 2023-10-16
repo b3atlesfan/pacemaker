@@ -2,7 +2,7 @@
 import {ref} from "vue";
 import {useContentsStore} from "@/store/contents";
 import {storeToRefs} from "pinia";
-import BeatContentCreatorButton from "@/components/BeatContentCreatorButton.vue";
+import ContentCreatorForm from "@/components/ContentCreatorForm.vue";
 import BeatContentHolder from "@/components/BeatContentHolder.vue";
 import {BeatContentManager} from "@/assets/BeatContentManager";
 
@@ -63,7 +63,9 @@ function onDelete(selectedId: number) {
 
       <v-card-actions>
         <v-btn color="secondary" @click="dialog = false">Exit</v-btn>
-        <BeatContentCreatorButton></BeatContentCreatorButton>
+        <!--
+        <ContentCreatorForm></ContentCreatorForm>
+        -->
         <v-btn color="primary" @click="onSaveClicked()">Save</v-btn>
       </v-card-actions>
     </v-card>
