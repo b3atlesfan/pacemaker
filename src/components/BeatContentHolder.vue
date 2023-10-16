@@ -57,8 +57,7 @@ const props = defineProps({
         </v-col>
       </v-row>
 
-      <v-btn v-if="props.isInBeat" @click="$emit('onRemove')">Remove</v-btn>
-      <v-btn v-else @click="$emit('onDelete', props.content.id)">Delete</v-btn>
+      <v-btn v-if="!props.isInBeat" @click="$emit('onDelete', props.content.id)">Delete</v-btn>
     </v-container>
   </v-card>
 </template>

@@ -16,7 +16,7 @@ const props = defineProps({
   },
   label: {
     type: String,
-    required: false,
+    required: true,
   },
   data: {
     type: Number,
@@ -91,15 +91,10 @@ function onEditLabel() {
       <v-row>
         <v-col>Content:</v-col>
         <v-col>
-          <v-card>
-            <v-btn @click="emit('onAddContentClicked', props.id)">Add</v-btn>
-            <!--
-            <BeatContentSelector v-if="content == undefined" @on-save-clicked="onSave"></BeatContentSelector>
-            <p v-else>{{ props.data }} and {{ contentF() }} and {{ content }}</p>
+          <v-btn v-if="props.data == -1" @click="emit('onAddContentClicked', props.id)">Add</v-btn>
 
-            <BeatContentHolder v-else :content="content" :is-in-beat="true" @on-remove="onRemove"/>
-            -->
-          </v-card>
+          <BeatContentHolder v-else :content="content" :is-in-beat="true"/>
+          <v-btn>Remove</v-btn>
         </v-col>
       </v-row>
     </v-container>

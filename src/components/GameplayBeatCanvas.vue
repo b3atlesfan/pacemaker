@@ -8,8 +8,20 @@ import ThePanel from "@/components/ThePanel.vue";
 import {useElementsStore} from "@/store/elements";
 import {storeToRefs} from "pinia";
 import {BeatManager} from "@/assets/BeatManager";
+import BeatContentSelector from "@/components/BeatContentSelector.vue";
+import ContentCreatorForm from "@/components/ContentCreatorForm.vue";
+import {Category, Skill} from "@/assets/BeatContent";
+import {BeatContentManager} from "@/assets/BeatContentManager";
+
+const contentSelectorDialog = ref(false)
+const contentCreatorDialog = ref(false)
+
+const dark = ref(true)
+
+let beatId = ""
 
 const beatManager = BeatManager.getInstance()
+const contentManager = BeatContentManager.getInstance()
 /**
  * useVueFlow provides all event handlers and store properties
  * You can pass the composable an object that has the same properties as the VueFlow component props
@@ -67,7 +79,6 @@ onConnect((params) => {
   addEdges(edge)
 })
 
-const dark = ref(true)
 
 /**
  * To update node properties you can simply use your elements v-model and mutate the elements directly
@@ -103,7 +114,8 @@ function toggleClass() {
 }
 
 function onAddContent(id: string) {
-  console.log('add content ' + id)
+  beatId = id
+  contentSelectorDialog.value = true
 }
 
 function onEditLabel(id: string, label: string) {
@@ -111,13 +123,35 @@ function onEditLabel(id: string, label: string) {
 }
 
 function onDelete(id: string) {
-  console.log('delete ' + id)
   beatManager.deleteNode(id)
+}
+
+function onExit() {
+  contentSelectorDialog.value = false
+}
+
+function onCreate() {
+  contentCreatorDialog.value = true
+}
+
+function onSave(contentId: number) {
+  console.log(beatId)
+  console.log(contentId)
+  beatManager.editContentId(beatId, contentId)
+  contentSelectorDialog.value = false
+}
+
+function onCreateContent(description: string, categories: Category, intensity: number, introducedSkills: Skill[], reinforcedSkills: Skill[], requiredSkills: Skill[]) {
+  contentManager.createContent(description, categories, intensity, introducedSkills, reinforcedSkills, requiredSkills)
+  contentCreatorDialog.value = false
 }
 
 </script>
 
 <template>
+  <BeatContentSelector :dialog="contentSelectorDialog" @on-exit="onExit" @on-create="onCreate" @on-save="onSave"></BeatContentSelector>
+  <ContentCreatorForm :dialog="contentCreatorDialog" @on-create-content="onCreateContent"></ContentCreatorForm>
+
   <VueFlow v-model="elements" :class="{ dark }" class="basicflow" :default-viewport="{ zoom: 1.5 }" :min-zoom="0.2" :max-zoom="4" @paneContextMenu="onContextMenu($event)">
     <Background :pattern-color="dark ? '#FFFFFB' : '#aaa'" gap="50" />
 

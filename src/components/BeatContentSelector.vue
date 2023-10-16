@@ -6,19 +6,31 @@ import ContentCreatorForm from "@/components/ContentCreatorForm.vue";
 import BeatContentHolder from "@/components/BeatContentHolder.vue";
 import {BeatContentManager} from "@/assets/BeatContentManager";
 
-const emit = defineEmits(['onSaveClicked'])
+const props = defineProps({
+  dialog: {
+    Type: Boolean,
+    required: true,
+  }
+})
+
+const emit = defineEmits(['onSave', 'onExit', 'onCreate'])
 
 const manager = BeatContentManager.getInstance()
 
 const { contents } = storeToRefs(useContentsStore())
 
-const dialog = ref(false)
-
 const id = ref(-1)
 
-function onSaveClicked() {
-  dialog.value = false
-  emit('onSaveClicked', id.value)
+function onSave() {
+  emit('onSave', id.value)
+}
+
+function onExit() {
+  emit('onExit')
+}
+
+function onCreate() {
+  emit('onCreate')
 }
 
 function onSelect(selectedId: number) {
@@ -34,9 +46,7 @@ function onDelete(selectedId: number) {
 </script>
 
 <template>
-  <v-btn @click="dialog = true">Add</v-btn>
-
-  <v-dialog v-model="dialog" width="500px">
+  <v-dialog v-model="props.dialog" width="500px">
     <v-card>
       <v-item-group selected-class="bg-primary">
         <v-container>
@@ -62,11 +72,9 @@ function onDelete(selectedId: number) {
       </v-item-group>
 
       <v-card-actions>
-        <v-btn color="secondary" @click="dialog = false">Exit</v-btn>
-        <!--
-        <ContentCreatorForm></ContentCreatorForm>
-        -->
-        <v-btn color="primary" @click="onSaveClicked()">Save</v-btn>
+        <v-btn color="secondary" @click="onExit">Exit</v-btn>
+        <v-btn color="tertiary" @click="onCreate">Create</v-btn>
+        <v-btn color="primary" @click="onSave">Save</v-btn>
       </v-card-actions>
     </v-card>
 
