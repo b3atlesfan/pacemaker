@@ -63,4 +63,16 @@ export class BeatManager {
 
         (currentNode as GameplayBeat).data = contentId
     }
+
+    onDeleteContent(contentId: number) {
+        this.elements.elements.value.forEach(elem => {
+            if (!isNode(elem as MaybeElement)) return
+
+            let currentNode = (elem as GameplayBeat)
+
+            if (currentNode.data != contentId) return
+
+            currentNode.data = -1
+        })
+    }
 }

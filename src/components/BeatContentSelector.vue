@@ -63,7 +63,7 @@ function onDelete(selectedId: number) {
                     height="auto"
                     @click="() => {onSelect(content.id);}"
                 >
-                  <BeatContentHolder :content="content" :is-in-beat="false" @on-delete="onDelete"/>
+                  <BeatContentHolder :content-id="content.id" :is-in-beat="false" @on-delete="onDelete"/>
                 </v-card>
               </v-item>
             </v-col>

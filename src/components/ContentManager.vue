@@ -39,7 +39,7 @@ function onCreateContent(description: string, categories: Category, intensity: n
         md="4"
         lg="2"
       >
-        <BeatContentHolder :content="content" :is-in-beat="false" @on-delete="onDeleteContent"></BeatContentHolder>
+        <BeatContentHolder :content-id="content.id" :is-in-beat="false" @on-delete="onDeleteContent"></BeatContentHolder>
       </v-col>
     </v-row>
 

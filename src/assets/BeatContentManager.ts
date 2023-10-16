@@ -2,6 +2,7 @@ import {storeToRefs} from "pinia";
 import {IdManager} from "@/assets/IdManager";
 import {useContentsStore} from "@/store/contents";
 import {BeatContent, Category, Skill} from "@/assets/BeatContent";
+import {BeatManager} from "@/assets/BeatManager";
 
 export class BeatContentManager {
     idManager: IdManager
@@ -46,6 +47,7 @@ export class BeatContentManager {
         if (index > -1) {
             this.contentsStore.contents.value.splice(index, 1)
             this.idManager.returnId(id)
+            BeatManager.getInstance().onDeleteContent(id)
         }
     }
 

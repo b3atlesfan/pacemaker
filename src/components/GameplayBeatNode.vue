@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import {Handle, Position} from "@vue-flow/core";
-import {computed, ref} from "vue";
+import {ref} from "vue";
 import BeatContentHolder from "@/components/BeatContentHolder.vue";
-import { BeatManager } from "@/assets/BeatManager";
-import {BeatContentManager} from "@/assets/BeatContentManager";
 
 const emit = defineEmits(['onAddContent', 'onEditLabel', 'onDelete'])
 
@@ -24,29 +22,13 @@ const props = defineProps({
   },
 })
 
-const contentManager = BeatContentManager.getInstance()
-
-const content = computed(() => contentManager.getContent(props.data))
-
 const label = ref(props.label)
-
-function contentF() {
-  return contentManager.getContent(props.data)
-}
 
 const isBeingEdited = ref(false)
 const isLocked = ref(true)
 
 function invertIsBeingEdited() {
   isBeingEdited.value = !isBeingEdited.value
-}
-
-function lockClicked() {
-  isLocked.value = true
-}
-
-function unlockClicked() {
-  isLocked.value = false
 }
 
 function onEditLabel() {
@@ -93,7 +75,7 @@ function onEditLabel() {
         <v-col>
           <v-btn v-if="props.data == -1" @click="emit('onAddContentClicked', props.id)">Add</v-btn>
 
-          <BeatContentHolder v-else :content="content" :is-in-beat="true"/>
+          <BeatContentHolder v-else :content-id="props.data" :is-in-beat="true"/>
           <v-btn>Remove</v-btn>
         </v-col>
       </v-row>
