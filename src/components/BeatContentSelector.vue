@@ -2,16 +2,12 @@
 import {ref} from "vue";
 import {useContentsStore} from "@/store/contents";
 import {storeToRefs} from "pinia";
-import ContentCreatorForm from "@/components/ContentCreatorForm.vue";
 import BeatContentHolder from "@/components/BeatContentHolder.vue";
 import {BeatContentManager} from "@/assets/BeatContentManager";
 
-const props = defineProps({
-  dialog: {
-    Type: Boolean,
-    required: true,
-  }
-})
+const props = defineProps<{
+  dialog: boolean
+}>()
 
 const emit = defineEmits(['onSave', 'onExit', 'onCreate'])
 
@@ -57,13 +53,8 @@ function onDelete(selectedId: number) {
                 md="6"
             >
               <v-item>
-                <v-card
-                    :color="id == content.id ? 'primary' : ''"
-                    dark
-                    height="auto"
-                    @click="() => {onSelect(content.id);}"
-                >
-                  <BeatContentHolder :content-id="content.id" :is-in-beat="false" @on-delete="onDelete"/>
+                <v-card @click="() => {onSelect(content.id);}">
+                  <BeatContentHolder :color="id == content.id ? 'primary' : ''" :content-id="content.id" :is-in-beat="false" @on-delete="onDelete"/>
                 </v-card>
               </v-item>
             </v-col>

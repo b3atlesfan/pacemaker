@@ -2,16 +2,11 @@
 import {BeatContentManager} from "@/assets/BeatContentManager";
 import {computed} from "vue";
 
-const props = defineProps({
-  contentId: {
-    type: Number,
-    required: true,
-  },
-  isInBeat: {
-    type: Boolean,
-    required: true,
-  }
-})
+const props = defineProps<{
+  contentId: number,
+  isInBeat: boolean,
+  color?: string,
+}>()
 
 const contentManager = BeatContentManager.getInstance()
 
@@ -20,7 +15,7 @@ const content = computed(() => contentManager.getContent(props.contentId))
 </script>
 
 <template>
-  <v-card>
+  <v-card :color="props.color ? props.color : ''">
     <v-container>
       <v-row no-gutters justify="start">
         <v-col justify="start">Description:</v-col>
