@@ -106,12 +106,13 @@ function onAddContent(id: string) {
   console.log('add content ' + id)
 }
 
-function onEdit(id: string) {
-  console.log('edit ' + id)
+function onEditLabel(id: string, label: string) {
+  beatManager.editNodeLabel(id, label)
 }
 
 function onDelete(id: string) {
   console.log('delete ' + id)
+  beatManager.deleteNode(id)
 }
 
 </script>
@@ -121,7 +122,7 @@ function onDelete(id: string) {
     <Background :pattern-color="dark ? '#FFFFFB' : '#aaa'" gap="50" />
 
     <template #node-gameplay-beat="props">
-      <GameplayBeatNode v-bind="props" @on-add-content-clicked="onAddContent" @on-edit-clicked="onEdit" @on-delete-clicked="onDelete" />
+      <GameplayBeatNode v-bind="props" @on-add-content-clicked="onAddContent" @on-edit-label="onEditLabel" @on-delete-clicked="onDelete" />
     </template>
 
     <!--
