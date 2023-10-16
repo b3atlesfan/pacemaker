@@ -3,7 +3,7 @@ import {Handle, Position} from "@vue-flow/core";
 import {ref} from "vue";
 import BeatContentHolder from "@/components/BeatContentHolder.vue";
 
-const emit = defineEmits(['onAddContent', 'onEditLabel', 'onDelete'])
+const emit = defineEmits(['onAddContent', 'onRemoveContent', 'onEditLabel', 'onDelete'])
 
 // data has to be named data because of how the node package works, but in our case data is content
 // or better later: a pointer towards the content
@@ -25,7 +25,6 @@ const props = defineProps({
 const label = ref(props.label)
 
 const isBeingEdited = ref(false)
-const isLocked = ref(true)
 
 function invertIsBeingEdited() {
   isBeingEdited.value = !isBeingEdited.value
@@ -34,6 +33,18 @@ function invertIsBeingEdited() {
 function onEditLabel() {
   invertIsBeingEdited()
   emit('onEditLabel', props.id, label.value)
+}
+
+function onAddContent() {
+  emit('onAddContentClicked', props.id)
+}
+
+function onRemoveContent() {
+  emit('onRemoveContent', props.id)
+}
+
+function onDelete() {
+  emit('onDeleteClicked', props.id)
 }
 
 </script>
@@ -60,7 +71,7 @@ function onEditLabel() {
                 <v-list-item-title>Edit</v-list-item-title>
               </v-list-item>
 
-              <v-list-item @click="emit('onDeleteClicked', props.id)">
+              <v-list-item @click="onDelete">
                 <v-list-item-title>Delete</v-list-item-title>
               </v-list-item>
             </v-list>
@@ -71,12 +82,14 @@ function onEditLabel() {
 
 
       <v-row>
-        <v-col>Content:</v-col>
         <v-col>
-          <v-btn v-if="props.data == -1" @click="emit('onAddContentClicked', props.id)">Add</v-btn>
+          Content:
+          <v-btn v-if="props.data != -1" @click="onRemoveContent">Remove</v-btn>
+        </v-col>
+        <v-col>
+          <v-btn v-if="props.data == -1" @click="onAddContent">Add</v-btn>
 
           <BeatContentHolder v-else :content-id="props.data" :is-in-beat="true"/>
-          <v-btn>Remove</v-btn>
         </v-col>
       </v-row>
     </v-container>

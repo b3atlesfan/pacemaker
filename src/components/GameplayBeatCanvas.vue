@@ -118,6 +118,10 @@ function onAddContent(id: string) {
   contentSelectorDialog.value = true
 }
 
+function onRemoveContent(id: string) {
+  beatManager.editContentId(id, -1)
+}
+
 function onEditLabel(id: string, label: string) {
   beatManager.editNodeLabel(id, label)
 }
@@ -156,7 +160,7 @@ function onCreateContent(description: string, categories: Category, intensity: n
     <Background :pattern-color="dark ? '#FFFFFB' : '#aaa'" gap="50" />
 
     <template #node-gameplay-beat="props">
-      <GameplayBeatNode v-bind="props" @on-add-content-clicked="onAddContent" @on-edit-label="onEditLabel" @on-delete-clicked="onDelete" />
+      <GameplayBeatNode v-bind="props" @on-add-content-clicked="onAddContent" @on-remove-content="onRemoveContent" @on-edit-label="onEditLabel" @on-delete-clicked="onDelete" />
     </template>
 
     <!--
