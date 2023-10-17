@@ -7,20 +7,12 @@ const emit = defineEmits(['onAddContent', 'onRemoveContent', 'onEditLabel', 'onD
 
 // data has to be named data because of how the node package works, but in our case data is content
 // or better later: a pointer towards the content
-const props = defineProps({
-  id: {
-    type: String,
-    required: true,
-  },
-  label: {
-    type: String,
-    required: true,
-  },
-  data: {
-    type: Number,
-    required: true,
-  },
-})
+const props = defineProps<{
+  id: string,
+  selected: boolean,
+  label?: string | Object,
+  data: number,
+}>()
 
 const label = ref(props.label)
 
@@ -36,7 +28,7 @@ function onEditLabel() {
 }
 
 function onAddContent() {
-  emit('onAddContentClicked', props.id)
+  emit('onAddContent', props.id)
 }
 
 function onRemoveContent() {
@@ -44,13 +36,13 @@ function onRemoveContent() {
 }
 
 function onDelete() {
-  emit('onDeleteClicked', props.id)
+  emit('onDelete', props.id)
 }
 
 </script>
 
 <template>
-  <v-card min-width="200px" width="auto" color="tertiary">
+  <v-card min-width="200px" width="auto" :color="props.selected ? 'secondary' : 'tertiary'">
     <v-container class="text-left">
       <v-row>
         <v-col>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {isNode, MarkerType, useVueFlow, VueFlow} from '@vue-flow/core'
+import {isNode, MarkerType, MaybeElement, useVueFlow, VueFlow} from '@vue-flow/core'
 import {Background} from '@vue-flow/background'
 import {Controls} from '@vue-flow/controls'
 import {markRaw, ref} from 'vue'
@@ -79,22 +79,6 @@ onConnect((params) => {
   addEdges(edge)
 })
 
-
-/**
- * To update node properties you can simply use your elements v-model and mutate the elements directly
- * Changes should always be reflected on the graph reactively, without the need to overwrite the elements
- */
-function updatePos() {
-  return elements.value.forEach((el) => {
-    if (isNode(el)) {
-      el.position = {
-        x: Math.random() * 400,
-        y: Math.random() * 400,
-      }
-    }
-  })
-}
-
 /**
  * toObject transforms your current graph data to an easily persist-able object
  */
@@ -157,10 +141,10 @@ function onCreateContent(description: string, categories: Category, intensity: n
   <ContentCreatorForm :dialog="contentCreatorDialog" @on-create-content="onCreateContent"></ContentCreatorForm>
 
   <VueFlow v-model="elements" :class="{ dark }" class="basicflow" :default-viewport="{ zoom: 1.5 }" :min-zoom="0.2" :max-zoom="4" @paneContextMenu="onContextMenu($event)">
-    <Background :pattern-color="dark ? '#FFFFFB' : '#aaa'" gap="50" />
+    <Background :pattern-color="dark ? '#FFFFFB' : '#aaa'" :gap="50" />
 
-    <template #node-gameplay-beat="props">
-      <GameplayBeatNode v-bind="props" @on-add-content-clicked="onAddContent" @on-remove-content="onRemoveContent" @on-edit-label="onEditLabel" @on-delete-clicked="onDelete" />
+    <template #node-gameplay-beat="{ id, label, selected, data }">
+      <GameplayBeatNode :id="id" :label="label" :selected="selected" :data="data" @on-add-content="onAddContent" @on-remove-content="onRemoveContent" @on-edit-label="onEditLabel" @on-delete="onDelete" />
     </template>
 
     <!--

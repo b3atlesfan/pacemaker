@@ -11,7 +11,12 @@ const routes = [
     path: '/content',
     name: 'content',
     component: () => import('@/views/ContentView.vue')
-  }
+  },
+  {
+    path: '/visualizer',
+    name: 'visualizer',
+    component: () => import('@/views/VisualizerView.vue')
+  },
 ]
 
 const router = createRouter({
