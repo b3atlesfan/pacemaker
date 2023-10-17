@@ -1,7 +1,20 @@
 <script setup lang="ts">
-
 import GameplayBeatCanvas from "@/components/GameplayBeatCanvas.vue";
-import Flow from "@/components/Flow.vue";
+import {computed, ref} from "vue";
+import {BeatManager} from "@/assets/BeatManager";
+
+const nodeLabel = ref("hi")
+
+const beatManager = BeatManager.getInstance()
+
+const selectedBeat = computed(() => beatManager.getSelectedBeat())
+
+const selectedBeats = ref([] as number[])
+
+function onSelectStartNode() {
+  selectedBeats.value.push(selectedBeat.value.id)
+}
+
 </script>
 
 <template>
@@ -9,14 +22,19 @@ import Flow from "@/components/Flow.vue";
 
     <GameplayBeatCanvas></GameplayBeatCanvas>
 
+    <v-container class="col1">
 
-    <div class="col1">
-      placeholder path selector2
-    </div>
+      <v-row>
+        <v-btn @click="onSelectStartNode">Select Start Node</v-btn>
+      </v-row>
+      <v-row>{{ nodeLabel }}</v-row>
+      <v-row>{{ selectedBeat?.id }}</v-row>
+      <v-row v-for="id in selectedBeats">{{ id }}</v-row>
+    </v-container>
 
-    <div class="col2">
+    <v-container class="col2">
       placeholder visualizer
-    </div>
+    </v-container>
 
   </div>
 <!--
@@ -59,7 +77,6 @@ import Flow from "@/components/Flow.vue";
 
 .col1 {
   grid-column-start: 1;
-  background-color: antiquewhite;
 }
 
 .col2 {

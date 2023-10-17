@@ -75,4 +75,10 @@ export class BeatManager {
             currentNode.data = -1
         })
     }
+
+    getSelectedBeat() : GameplayBeat {
+      let beat = this.elements.elements.value.find(elem => elem.selected)
+
+      return beat as GameplayBeat
+    }
 }
