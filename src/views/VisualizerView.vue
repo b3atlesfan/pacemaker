@@ -2,6 +2,7 @@
 import GameplayBeatCanvas from "@/components/GameplayBeatCanvas.vue";
 import {computed, ref} from "vue";
 import {BeatManager} from "@/assets/BeatManager";
+import {GameplayBeat} from "@/assets/GameplayBeat";
 
 const nodeLabel = ref("hi")
 
@@ -9,10 +10,14 @@ const beatManager = BeatManager.getInstance()
 
 const selectedBeat = computed(() => beatManager.getSelectedBeat())
 
-const selectedBeats = ref([] as number[])
+const selectedBeats = ref([] as GameplayBeat[])
 
 function onSelectStartNode() {
-  selectedBeats.value.push(selectedBeat.value.id)
+  selectedBeats.value.push(selectedBeat.value)
+}
+
+function onClear() {
+  selectedBeats.value = []
 }
 
 </script>
@@ -25,11 +30,33 @@ function onSelectStartNode() {
     <v-container class="col1">
 
       <v-row>
-        <v-btn @click="onSelectStartNode">Select Start Node</v-btn>
+        <v-col>
+          <v-btn @click="onSelectStartNode">Select Start Node</v-btn>
+        </v-col>
+        <v-col>
+          <v-btn @click="onClear">Clear</v-btn>
+        </v-col>
       </v-row>
-      <v-row>{{ nodeLabel }}</v-row>
-      <v-row>{{ selectedBeat?.id }}</v-row>
-      <v-row v-for="id in selectedBeats">{{ id }}</v-row>
+
+      <v-row>
+        <v-col>
+          Currently selected:
+        </v-col>
+        <v-col>
+          {{ selectedBeat?.label }}
+        </v-col>
+        <v-col>
+          {{ selectedBeat?.id }}
+        </v-col>
+      </v-row>
+
+      <v-row>
+        <v-col v-for="(beat, i) in selectedBeats" cols="3">
+          <v-card :title="i == 0 ? 'Start Beat' : (i == selectedBeats.length - 1 ? 'Goal Beat' : 'Intermediate Beat')">
+            <v-container>{{ beat.label }}</v-container>
+          </v-card>
+        </v-col>
+      </v-row>
     </v-container>
 
     <v-container class="col2">
@@ -37,31 +64,6 @@ function onSelectStartNode() {
     </v-container>
 
   </div>
-<!--
-  <v-container class="multiflows">
-    <v-row class="height:100%">
-      <v-col cols="6">
-        <v-row class="child">
-          <GameplayBeatCanvas></GameplayBeatCanvas>
-        </v-row>
-        <v-row class="child">
-          <v-card title="placeholder path selector"></v-card>
-        </v-row>
-      </v-col>
-      <v-col cols="6"></v-col>
-    </v-row>
-
-    <v-card title="not nice">
-      <GameplayBeatCanvas></GameplayBeatCanvas>
-    </v-card>
-
-  </v-container>
-  -->
-  <!--
-  <v-card title="nice" class="multiflows">
-    <GameplayBeatCanvas></GameplayBeatCanvas>
-  </v-card>
-  -->
 
 </template>
 
@@ -73,10 +75,14 @@ function onSelectStartNode() {
   grid-template-rows: repeat(2, 1fr);
   width: 100%;
   height: 100%;
+  position: absolute;
+  top: 0;
+  bottom: 0;
 }
 
 .col1 {
   grid-column-start: 1;
+  overflow-y: scroll;
 }
 
 .col2 {
