@@ -4,7 +4,10 @@ import {computed, ref} from "vue";
 import {BeatManager} from "@/assets/BeatManager";
 import {GameplayBeat} from "@/assets/GameplayBeat";
 
-const nodeLabel = ref("hi")
+const data = ref([])
+const categories = ref([])
+
+
 
 const beatManager = BeatManager.getInstance()
 
@@ -12,8 +15,24 @@ const selectedBeat = computed(() => beatManager.getSelectedBeat())
 
 const selectedBeats = ref([] as GameplayBeat[])
 
+const options = ref({
+  chart: {
+    id: 'vuechart-example'
+  },
+  xaxis: {
+    categories: [] as string[]
+  }
+})
+
+const series = ref([{
+  name: 'series-1',
+  data: [] as number[]
+}])
+
 function onSelectStartNode() {
   selectedBeats.value.push(selectedBeat.value)
+  series.value[0].data.push(parseInt(selectedBeat.value.id))
+  options.value.xaxis.categories.push(selectedBeats.value.length.toString())
 }
 
 function onClear() {
@@ -55,7 +74,7 @@ function onClear() {
     </v-container>
 
     <v-container class="col2">
-      placeholder visualizer
+      <apexchart width="500" type="line" :options="options" :series="series"></apexchart>
     </v-container>
 
   </div>
