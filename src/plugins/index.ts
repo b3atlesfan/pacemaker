@@ -6,6 +6,7 @@
 
 // Plugins
 import vuetify from './vuetify'
+import VueApexCharts from "vue3-apexcharts";
 import pinia from '../store'
 import router from '../router'
 
@@ -17,4 +18,5 @@ export function registerPlugins (app: App) {
     .use(vuetify)
     .use(router)
     .use(pinia)
+    .use(VueApexCharts)
 }

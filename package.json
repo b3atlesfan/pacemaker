@@ -14,12 +14,14 @@
     "@vue-flow/controls": "^1.1.0",
     "@vue-flow/core": "^1.23.0",
     "@vue-flow/minimap": "^1.2.0",
+    "apexcharts": "^3.44.0",
     "core-js": "^3.29.0",
     "pinia": "^2.0.0",
     "pinia-plugin-persistedstate": "^3.2.0",
     "roboto-fontface": "*",
     "vue": "^3.2.0",
     "vue-router": "^4.0.0",
+    "vue3-apexcharts": "^1.4.4",
     "vuetify": "^3.0.0"
   },
   "devDependencies": {
