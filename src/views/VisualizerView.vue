@@ -31,22 +31,17 @@ function onClear() {
 
       <v-row>
         <v-col>
-          <v-btn @click="onSelectStartNode">Select Start Node</v-btn>
-        </v-col>
-        <v-col>
           <v-btn @click="onClear">Clear</v-btn>
         </v-col>
-      </v-row>
-
-      <v-row>
         <v-col>
-          Currently selected:
+          <v-btn @click="onSelectStartNode">Add Node</v-btn>
         </v-col>
-        <v-col>
-          {{ selectedBeat?.label }}
-        </v-col>
-        <v-col>
-          {{ selectedBeat?.id }}
+        <v-col cols="6">
+          <v-card color="secondary">
+            <v-container>
+              Currently selected: {{ selectedBeat ? selectedBeat.label : '--'}}
+            </v-container>
+          </v-card>
         </v-col>
       </v-row>
 
