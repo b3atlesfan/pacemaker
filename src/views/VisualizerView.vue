@@ -19,6 +19,22 @@ const options = ref({
   },
   xaxis: {
     categories: [] as string[]
+  },
+  stroke: {
+    width: 5,
+    curve: 'smooth'
+  },
+  fill: {
+    type: 'gradient',
+    gradient: {
+      shade: 'dark',
+      gradientToColors: [ '#FDD835'],
+      shadeIntensity: 1,
+      type: 'horizontal',
+      opacityFrom: 1,
+      opacityTo: 1,
+      stops: [0, 100, 100, 100]
+    },
   }
 })
 
