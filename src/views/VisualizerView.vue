@@ -3,11 +3,9 @@ import GameplayBeatCanvas from "@/components/GameplayBeatCanvas.vue";
 import {computed, ref} from "vue";
 import {BeatManager} from "@/assets/BeatManager";
 import {GameplayBeat} from "@/assets/GameplayBeat";
+import {useVueFlow} from "@vue-flow/core";
 
-const data = ref([])
-const categories = ref([])
-
-
+const vue = useVueFlow()
 
 const beatManager = BeatManager.getInstance()
 
@@ -31,12 +29,105 @@ const series = ref([{
 
 function onSelectStartNode() {
   selectedBeats.value.push(selectedBeat.value)
-  series.value[0].data.push(parseInt(selectedBeat.value.id))
-  options.value.xaxis.categories.push(selectedBeats.value.length.toString())
+  addToData(parseInt(selectedBeat.value.id))
 }
 
 function onClear() {
   selectedBeats.value = []
+  clearData()
+}
+
+function addToData(id: number) {
+  series.value[0].data.push(id)
+  options.value.xaxis.categories.push(options.value.xaxis.categories.length.toString())
+}
+
+function clearData() {
+  series.value[0].data.splice(0, series.value[0].data.length)
+  options.value.xaxis.categories.splice(0, options.value.xaxis.categories.length)
+}
+
+class DNode {
+  id: number
+  cost: number
+  prev: DNode | null
+
+  constructor(id: number, cost: number = 0, prev: DNode | null = null) {
+    this.id = id
+    this.cost = cost
+    this.prev = prev
+  }
+}
+
+function onShow() {
+  console.log(vue.getOutgoers(selectedBeat.value.id))
+
+  const dict : { [key: string]: { cost: number, prev: number}} = {}
+
+  dict["hello"] = {cost: 3, prev: 3}
+
+  //
+
+  if (selectedBeats.value.length == 0) return
+
+  const outGoers = vue.getOutgoers(selectedBeats.value[0].id)
+  const targetId = parseInt(selectedBeats.value[selectedBeats.value.length - 1].id)
+
+  if (outGoers.length == 0) return
+
+  const nodesToVisit: DNode[] = []
+
+  const startNode = new DNode(parseInt(selectedBeats.value[0].id), 0)
+  outGoers.forEach(outGoer => nodesToVisit.push(new DNode(parseInt(outGoer.id), startNode.cost + 1, startNode)))
+
+  let result: DNode = startNode
+
+  while (nodesToVisit.length != 0) {
+
+    nodesToVisit.sort((first, second) => first.id < second.id ? 1 : -1)
+
+    const current = nodesToVisit.pop()
+
+    if (current == undefined) break
+
+    if (current.id == targetId) {
+      result = current
+      break
+    }
+
+    const currentOutGoers = vue.getOutgoers(current.id.toString())
+
+    currentOutGoers.forEach(outGoer => {
+      const index = nodesToVisit.findIndex(node => node.id == parseInt(outGoer.id))
+
+      if (index != -1) {
+        nodesToVisit[index].cost = current.cost + 1
+        nodesToVisit[index].prev = current
+      } else {
+        nodesToVisit.push(new DNode(parseInt(outGoer.id), current.cost + 1, current))
+      }
+    })
+
+  }
+
+  const path: number[] = []
+
+  while (result.prev != null) {
+    console.log(result.id)
+    path.push(result.id)
+    result = result.prev
+  }
+
+  console.log(result.id)
+
+  path.push(result.id)
+
+  clearData()
+
+  for (let i = path.length - 1; i >= 0; i--) {
+    addToData(path[i])
+  }
+
 }
 
 </script>
@@ -54,6 +145,9 @@ function onClear() {
         </v-col>
         <v-col>
           <v-btn @click="onSelectStartNode">Add Node</v-btn>
+        </v-col>
+        <v-col>
+          <v-btn @click="onShow">Show</v-btn>
         </v-col>
         <v-col cols="6">
           <v-card color="secondary">
