@@ -10,12 +10,12 @@
 }
 
 .basicflow.dark {
-    background: #57534e;
+    background: #EDE7F6;
     color: #fffffb;
 }
 
 .basicflow.dark .vue-flow__node {
-    background: #292524;
+    background: #EDE7F6;
     color: #fffffb
 }
 

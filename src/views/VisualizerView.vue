@@ -257,7 +257,7 @@ const series2 = [
           <v-btn @click="onShow">Show</v-btn>
         </v-col>
         <v-col cols="6">
-          <v-card color="secondary">
+          <v-card color="primary-50">
             <v-container>
               Currently selected: {{ selectedBeat ? selectedBeat.label : '--'}}
             </v-container>

@@ -4,7 +4,7 @@
 
 <template>
   <v-app class="overflow-hidden">
-    <v-navigation-drawer color="secondary" expand-on-hover rail floating>
+    <v-navigation-drawer color="primary" expand-on-hover rail floating>
       <v-list>
         <v-list-item
             prepend-avatar="@/assets/images/pacemaker_icon_cropped.png"
