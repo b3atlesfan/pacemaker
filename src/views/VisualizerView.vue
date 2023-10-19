@@ -159,6 +159,84 @@ function onShow() {
   }
 }
 
+const items = computed(() => {
+  const result = []
+
+  for (let i = 0; i < selectedBeats.value.length; i++) {
+    if (i > 0) {
+      result.push({
+        type: 'divider',
+      })
+    }
+
+    const icon = i == selectedBeats.value.length - 1 ? 'mdi-flag-checkered' : 'mdi-circle-medium'
+
+    result.push({
+      title: selectedBeats.value[i].label,
+      props: {
+        prependIcon: icon,
+      },
+    })
+  }
+
+  return result
+})
+
+const chartOptions = {
+  chart: {
+    type: 'boxPlot',
+    height: 350
+  },
+  title: {
+    text: 'Basic BoxPlot Chart',
+    align: 'left'
+  },
+  plotOptions: {
+    boxPlot: {
+      colors: {
+        upper: '#5C4742',
+        lower: '#5C4742'
+      }
+    }
+  }
+}
+
+const series2 = [
+  {
+    type: 'boxPlot',
+    data: [
+      {
+        x: 'Jan 2015',
+        y: [40, 40, 40, 60, 60]
+      },
+      {
+        x: 'Jan 2016',
+        y: [43, 65, 69, 76, 81]
+      },
+      {
+        x: 'Jan 2017',
+        y: [31, 39, 45, 51, 59]
+      },
+      {
+        x: 'Jan 2018',
+        y: [39, 46, 55, 65, 71]
+      },
+      {
+        x: 'Jan 2019',
+        y: [29, 31, 35, 39, 44]
+      },
+      {
+        x: 'Jan 2020',
+        y: [41, 49, 58, 61, 67]
+      },
+      {
+        x: 'Jan 2021',
+        y: [54, 59, 66, 71, 88]
+      }
+    ]
+  }
+]
+
 </script>
 
 <template>
@@ -166,7 +244,7 @@ function onShow() {
 
     <GameplayBeatCanvas></GameplayBeatCanvas>
 
-    <v-container class="col1">
+    <v-container class="col2">
 
       <v-row>
         <v-col>
@@ -188,16 +266,39 @@ function onShow() {
       </v-row>
 
       <v-row>
-        <v-col v-for="(beat, i) in selectedBeats" cols="3">
-          <v-card :title="i == 0 ? 'Start Beat' : (i == selectedBeats.length - 1 ? 'Goal Beat' : 'Intermediate Beat')">
-            <v-container>{{ beat.label }}</v-container>
-          </v-card>
-        </v-col>
+        <!--
+        <v-list width="100%" elevation="6">
+          <v-list-item v-for="(beat, i) in selectedBeats"
+                       :prepend-icon="i == selectedBeats.length - 1 ? 'mdi-flag-checkered' : 'mdi-circle-medium'">
+            {{ beat.label }}
+          </v-list-item>
+
+          <v-list-item v-for="(beat, i) in selectedBeats" type="divider">
+          </v-list-item>
+        </v-list>
+        -->
+        <v-list :items="items" width="100%" elevation="6"></v-list>
       </v-row>
     </v-container>
 
-    <v-container class="col2">
-      <apexchart width="500" type="line" :options="options" :series="series"></apexchart>
+    <v-container class="col1">
+      <v-row>
+        <v-col cols="4">
+          <v-card>
+            <apexchart width="100%" type="line" :options="options" :series="series"></apexchart>
+          </v-card>
+        </v-col>
+        <v-col cols="4">
+          <v-card>
+            <apexchart width="100%" type="boxPlot" :options="chartOptions" :series="series2"></apexchart>
+          </v-card>
+        </v-col>
+        <v-col cols="4">
+          <v-card>
+            <apexchart width="100%" type="line" :options="options" :series="series"></apexchart>
+          </v-card>
+        </v-col>
+      </v-row>
     </v-container>
 
   </div>
@@ -208,8 +309,8 @@ function onShow() {
 
 .container {
   display: grid;
-  grid-template-columns: 67% 33%;
-  grid-template-rows: 67% 33%;
+  grid-template-columns: 75% 25%;
+  grid-template-rows: 60% 40%;
   width: 100%;
   height: 100%;
   position: absolute;
@@ -218,14 +319,14 @@ function onShow() {
 }
 
 .col1 {
-  grid-column-start: 1;
+  grid-column: 1 / span 2;
   overflow-y: scroll;
 }
 
 .col2 {
   grid-column-start: 2;
-  grid-row: 1 / span 2;
-  background-color: aquamarine;
+  grid-row: 1;
+  overflow-y: scroll;
 }
 
 </style>

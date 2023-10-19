@@ -28,17 +28,16 @@ function onDelete() {
 
 <template>
   <Panel :position="PanelPosition.TopRight" class="controls">
+    <v-btn icon="mdi-plus" @click="onAdd"></v-btn>
+    <!--
+    <v-btn icon="mdi-minus" @click="onRemove"></v-btn>
+    -->
     <v-btn-group v-if="props.nodeIsSelected">
-      <v-btn icon="mdi-plus" @click="onAdd"></v-btn>
-      <v-btn icon="mdi-minus" @click="onRemove"></v-btn>
       <v-btn icon="mdi-pencil" @click="onEdit"></v-btn>
       <v-btn icon="mdi-delete" @click="onDelete"></v-btn>
     </v-btn-group>
 
-    <v-btn icon="mdi-plus"></v-btn>
-    <v-btn icon="mdi-minus"></v-btn>
-    <v-btn icon="mdi-pencil"></v-btn>
-    <v-btn icon="mdi-delete"></v-btn>
+
     <!--
     <PanelButton :dark="dark" title="Reset Transform"
                  background-color="#6f3381" fill-color="#fffffb" view-box="0 0 32 32"
