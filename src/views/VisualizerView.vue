@@ -55,7 +55,18 @@ function onClear() {
 
 function addToData(id: number) {
   series.value[0].data.push(id)
-  options.value.xaxis.categories.push(options.value.xaxis.categories.length.toString())
+
+  const result = beatManager.elements.elements.value.find(element => element.id == id.toString())
+  let value = ""
+  if (result) {
+    const beat = result as GameplayBeat
+    value = beat.label
+    //console.log("what? " + value)
+  }
+
+  options.value.xaxis.categories.push(value)
+
+  //options.value.xaxis.categories.forEach(category => console.log(category))
 }
 
 function clearData() {
@@ -86,17 +97,15 @@ function onShow() {
 
   if (selectedBeats.value.length == 0) return
 
-  const outGoers = vue.getOutgoers(selectedBeats.value[0].id)
-  const targetId = parseInt(selectedBeats.value[selectedBeats.value.length - 1].id)
-
-  if (outGoers.length == 0) return
-
   const nodesToVisit: DNode[] = []
 
   const startNode = new DNode(parseInt(selectedBeats.value[0].id), 0)
-  outGoers.forEach(outGoer => nodesToVisit.push(new DNode(parseInt(outGoer.id), startNode.cost + 1, startNode)))
+  nodesToVisit.push(startNode)
 
   let result: DNode = startNode
+
+  let index = 1
+  let targetId = parseInt(selectedBeats.value[index].id)
 
   while (nodesToVisit.length != 0) {
 
@@ -107,20 +116,27 @@ function onShow() {
     if (current == undefined) break
 
     if (current.id == targetId) {
-      result = current
-      break
+      index++
+      if (index >= selectedBeats.value.length) {
+        result = current
+        break
+      } else {
+        nodesToVisit.splice(0, nodesToVisit.length)
+        targetId = parseInt(selectedBeats.value[index].id)
+      }
     }
 
     const currentOutGoers = vue.getOutgoers(current.id.toString())
 
     currentOutGoers.forEach(outGoer => {
+
       const index = nodesToVisit.findIndex(node => node.id == parseInt(outGoer.id))
 
-      if (index != -1) {
+      if (index == -1) {
+        nodesToVisit.push(new DNode(parseInt(outGoer.id), current.cost + 1, current))
+      } else if (nodesToVisit[index].cost > current.cost + 1) {
         nodesToVisit[index].cost = current.cost + 1
         nodesToVisit[index].prev = current
-      } else {
-        nodesToVisit.push(new DNode(parseInt(outGoer.id), current.cost + 1, current))
       }
     })
 
@@ -129,12 +145,9 @@ function onShow() {
   const path: number[] = []
 
   while (result.prev != null) {
-    console.log(result.id)
     path.push(result.id)
     result = result.prev
   }
-
-  console.log(result.id)
 
   path.push(result.id)
 
@@ -143,7 +156,6 @@ function onShow() {
   for (let i = path.length - 1; i >= 0; i--) {
     addToData(path[i])
   }
-
 }
 
 </script>
