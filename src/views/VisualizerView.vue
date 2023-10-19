@@ -18,7 +18,7 @@ const options = ref({
     id: 'vuechart-example'
   },
   xaxis: {
-    categories: [] as string[]
+    type: 'numeric'
   },
   stroke: {
     width: 5,
@@ -40,12 +40,12 @@ const options = ref({
 
 const series = ref([{
   name: 'series-1',
-  data: [] as number[]
+  data: [[] as number[]]
 }])
 
 function onSelectStartNode() {
   selectedBeats.value.push(selectedBeat.value)
-  addToData(parseInt(selectedBeat.value.id))
+  //addToData(parseInt(selectedBeat.value.id))
 }
 
 function onClear() {
@@ -53,25 +53,26 @@ function onClear() {
   clearData()
 }
 
-function addToData(id: number) {
-  series.value[0].data.push(id)
-
-  const result = beatManager.elements.elements.value.find(element => element.id == id.toString())
+function addToData(value: number, position: number) {
+/*
+  const result = beatManager.elements.elements.value.find(element => element.id == value.toString())
   let value = ""
   if (result) {
     const beat = result as GameplayBeat
     value = beat.label
     //console.log("what? " + value)
   }
-
-  options.value.xaxis.categories.push(value)
+*/
+  //options.value.xaxis.categories.push(value)
 
   //options.value.xaxis.categories.forEach(category => console.log(category))
+
+  series.value[0].data.push([position, value])
 }
 
 function clearData() {
   series.value[0].data.splice(0, series.value[0].data.length)
-  options.value.xaxis.categories.splice(0, options.value.xaxis.categories.length)
+  //options.value.xaxis.categories.splice(0, options.value.xaxis.categories.length)
 }
 
 class DNode {
@@ -154,7 +155,7 @@ function onShow() {
   clearData()
 
   for (let i = path.length - 1; i >= 0; i--) {
-    addToData(path[i])
+    addToData(path[i], (path.length - 1 - i)*5)
   }
 }
 
@@ -207,8 +208,8 @@ function onShow() {
 
 .container {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(2, 1fr);
+  grid-template-columns: 67% 33%;
+  grid-template-rows: 67% 33%;
   width: 100%;
   height: 100%;
   position: absolute;
