@@ -2,7 +2,7 @@
 import {isNode, MarkerType, MaybeElement, useVueFlow, VueFlow} from '@vue-flow/core'
 import {Background} from '@vue-flow/background'
 import {Controls} from '@vue-flow/controls'
-import {markRaw, ref} from 'vue'
+import {computed, markRaw, ref} from 'vue'
 import GameplayBeatNode from "@/components/GameplayBeatNode.vue";
 import ThePanel from "@/components/ThePanel.vue";
 import {useElementsStore} from "@/store/elements";
@@ -26,7 +26,7 @@ const contentManager = BeatContentManager.getInstance()
  * useVueFlow provides all event handlers and store properties
  * You can pass the composable an object that has the same properties as the VueFlow component props
  */
-const { onNodeDragStop, onConnect, addEdges, setTransform, toObject, nodeTypes, addNodes, getNodes, removeNodes } = useVueFlow()
+const { onNodeDragStop, onConnect, addEdges, setTransform, toObject, nodeTypes, addNodes, getNodes, removeNodes, getSelectedElements } = useVueFlow()
 
 /*
 nodeTypes.value = {
@@ -107,11 +107,29 @@ function onRemoveContent(id: string) {
 }
 
 function onEditLabel(id: string, label: string) {
+  editId.value = ""
   beatManager.editNodeLabel(id, label)
 }
 
 function onDelete(id: string) {
   beatManager.deleteNode(id)
+}
+
+function onSelectionPanelDelete() {
+  console.log("onSelectionPanelDelete")
+  beatManager.deleteNode(getSelectedElements.value[0].id)
+}
+
+function onSelectionPanelAdd() {
+  console.log("onSelectionPanelDelete")
+  onAddContent(getSelectedElements.value[0].id)
+}
+
+const editId = ref("")
+
+function onSelectionPanelEdit() {
+  console.log("onSelectionPanelDelete")
+  editId.value = getSelectedElements.value[0].id
 }
 
 function onExit() {
@@ -134,6 +152,8 @@ function onCreateContent(description: string, categories: Category, intensity: n
   contentCreatorDialog.value = false
 }
 
+
+
 </script>
 
 <template>
@@ -144,7 +164,7 @@ function onCreateContent(description: string, categories: Category, intensity: n
     <Background :pattern-color="dark ? '#FFFFFB' : '#aaa'" :gap="50" />
 
     <template #node-gameplay-beat="{ id, label, selected, data }">
-      <GameplayBeatNode :id="id" :label="label" :selected="selected" :data="data" @on-add-content="onAddContent" @on-remove-content="onRemoveContent" @on-edit-label="onEditLabel" @on-delete="onDelete" />
+      <GameplayBeatNode :id="id" :label="label" :selected="selected" :data="data" :is-being-edited="id == editId" @on-add-content="onAddContent" @on-remove-content="onRemoveContent" @on-edit-label="onEditLabel" @on-delete="onDelete" />
     </template>
 
     <!--
@@ -152,9 +172,9 @@ function onCreateContent(description: string, categories: Category, intensity: n
 
 
     <Controls />
-
-    <ThePanel :dark=dark @onShuffleNodes="updatePos" @onToggleDarkMode="toggleClass" @onLogToObject="logToObject"/>
     -->
+
+    <ThePanel :node-is-selected="getSelectedElements.length == 1" @on-delete="onSelectionPanelDelete" @on-add="onSelectionPanelAdd" @on-edit="onSelectionPanelEdit"/>
 
   </VueFlow>
   <!--

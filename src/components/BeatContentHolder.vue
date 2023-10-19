@@ -15,11 +15,12 @@ const content = computed(() => contentManager.getContent(props.contentId))
 </script>
 
 <template>
+
   <v-card :color="props.color ? props.color : ''">
     <v-container>
       <v-row no-gutters justify="start">
         <v-col justify="start">Description:</v-col>
-        <v-col>{{ content.description }} + {{ content.id }}</v-col>
+        <v-col>{{ content.description }}</v-col>
       </v-row>
 
       <v-row>

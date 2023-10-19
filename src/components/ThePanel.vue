@@ -1,20 +1,45 @@
-<script setup>
+<script setup lang="ts">
 import {Panel, PanelPosition} from "@vue-flow/core";
 import PanelButton from "@/components/PanelButton.vue";
 
-const props = defineProps({
-  dark: {
-    type: Boolean,
-    required: true
-  }
-})
+const props = defineProps<{
+  nodeIsSelected: boolean,
+}>()
 
-const emits = defineEmits(["onResetTransform", "onShuffleNodes", "onToggleDarkMode", "onLogToObject"])
+const emit = defineEmits(["onAdd", "onRemove", "onEdit", "onDelete"])
+
+function onAdd() {
+  emit("onAdd")
+}
+
+function onRemove() {
+  emit("onRemove")
+}
+
+function onEdit() {
+  emit("onEdit")
+}
+
+function onDelete() {
+  emit("onDelete")
+}
 
 </script>
 
 <template>
   <Panel :position="PanelPosition.TopRight" class="controls">
+    <v-btn-group v-if="props.nodeIsSelected">
+      <v-btn icon="mdi-plus" @click="onAdd"></v-btn>
+      <v-btn icon="mdi-minus" @click="onRemove"></v-btn>
+      <v-btn icon="mdi-pencil" @click="onEdit"></v-btn>
+      <v-btn icon="mdi-delete" @click="onDelete"></v-btn>
+    </v-btn-group>
+
+    <v-btn icon="mdi-plus"></v-btn>
+    <v-btn icon="mdi-minus"></v-btn>
+    <v-btn icon="mdi-pencil"></v-btn>
+    <v-btn icon="mdi-delete"></v-btn>
+    <!--
     <PanelButton :dark="dark" title="Reset Transform"
                  background-color="#6f3381" fill-color="#fffffb" view-box="0 0 32 32"
                  svg-string="M18 28A12 12 0 1 0 6 16v6.2l-3.6-3.6L1 20l6 6l6-6l-1.4-1.4L8 22.2V16a10 10 0 1 1 10 10Z"
@@ -34,6 +59,7 @@ const emits = defineEmits(["onResetTransform", "onShuffleNodes", "onToggleDarkMo
                  svg-string="M20 19V7H4v12h16m0-16a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16m-7 14v-2h5v2h-5m-3.42-4L5.57 9H8.4l3.3 3.3c.39.39.39 1.03 0 1.42L8.42 17H5.59l3.99-4Z"
                  @onClick="$emit('onLogToObject')"
     />
+    -->
   </Panel>
 </template>
 

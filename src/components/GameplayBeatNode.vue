@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {Handle, Position} from "@vue-flow/core";
-import {ref} from "vue";
+import {computed, ref} from "vue";
 import BeatContentHolder from "@/components/BeatContentHolder.vue";
 
 const emit = defineEmits(['onAddContent', 'onRemoveContent', 'onEditLabel', 'onDelete'])
@@ -12,18 +12,15 @@ const props = defineProps<{
   selected: boolean,
   label?: string | Object,
   data: number,
+  isBeingEdited: boolean,
 }>()
+
+
+const hasContent = computed(() => props.data != -1)
 
 const label = ref(props.label)
 
-const isBeingEdited = ref(false)
-
-function invertIsBeingEdited() {
-  isBeingEdited.value = !isBeingEdited.value
-}
-
 function onEditLabel() {
-  invertIsBeingEdited()
   emit('onEditLabel', props.id, label.value)
 }
 
@@ -39,39 +36,27 @@ function onDelete() {
   emit('onDelete', props.id)
 }
 
+
 </script>
 
 <template>
   <v-card min-width="200px" width="auto" :color="props.selected ? 'secondary' : 'tertiary'">
-    <v-container class="text-left">
-      <v-row>
-        <v-col>
-          <v-text-field v-if="isBeingEdited" v-model="label" @keydown.enter="onEditLabel()"></v-text-field>
-          <p v-else>{{ props.label }}</p>
-        </v-col>
-        <v-col cols="3">
-          <v-menu>
-            <template v-slot:activator="{props}">
-              <v-btn icon="mdi-dots-vertical" v-bind="props" density="comfortable" location="right"></v-btn>
-            </template>
+    <template v-slot:title>
+      <v-text-field v-if="props.isBeingEdited" v-model="label" @keydown.enter="onEditLabel()"></v-text-field>
+      <p v-else>{{ props.label }}</p>
+    </template>
 
-            <v-list>
-              <v-list-item v-if="isBeingEdited" @click="onEditLabel">
-                <v-list-item-title>Save</v-list-item-title>
-              </v-list-item>
-              <v-list-item v-else @click="invertIsBeingEdited()">
-                <v-list-item-title>Edit</v-list-item-title>
-              </v-list-item>
 
-              <v-list-item @click="onDelete">
-                <v-list-item-title>Delete</v-list-item-title>
-              </v-list-item>
-            </v-list>
-
-          </v-menu>
-        </v-col>
-      </v-row>
-
+    <v-expansion-panels v-if="props.selected">
+      <v-expansion-panel title="Content" :color="props.selected ? 'secondary' : 'tertiary'">
+        <v-expansion-panel-text>
+          <v-btn v-if="!hasContent" icon="mdi-plus" @click="onAddContent"></v-btn>
+          <BeatContentHolder v-else :content-id="props.data" :is-in-beat="true"/>
+        </v-expansion-panel-text>
+      </v-expansion-panel>
+    </v-expansion-panels>
+    <!--
+      <v-btn icon="mdi-plus"></v-btn>
 
       <v-row>
         <v-col>
@@ -85,6 +70,7 @@ function onDelete() {
         </v-col>
       </v-row>
     </v-container>
+    -->
   </v-card>
 
 
