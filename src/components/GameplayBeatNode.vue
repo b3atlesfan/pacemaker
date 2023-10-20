@@ -20,6 +20,8 @@ const hasContent = computed(() => props.data != -1)
 
 const label = ref(props.label)
 
+const color = computed(() => props.selected ? 'secondary' : 'primary')
+
 function onEditLabel() {
   emit('onEditLabel', props.id, label.value)
 }
@@ -40,7 +42,7 @@ function onDelete() {
 </script>
 
 <template>
-  <v-card min-width="200px" width="auto" :color="props.selected ? 'primary' : 'secondary'">
+  <v-card min-width="200px" width="auto" :color="color">
     <template v-slot:title>
       <v-text-field v-if="props.isBeingEdited" v-model="label" @keydown.enter="onEditLabel()"></v-text-field>
       <p v-else>{{ props.label }}</p>
@@ -48,7 +50,7 @@ function onDelete() {
 
 
     <v-expansion-panels v-if="props.selected">
-      <v-expansion-panel title="Content" :color="props.selected ? 'primary' : 'secondary'">
+      <v-expansion-panel title="Content" :color="color">
         <v-expansion-panel-text>
           <v-btn v-if="!hasContent" icon="mdi-plus" @click="onAddContent"></v-btn>
           <BeatContentHolder v-else :content-id="props.data" :is-in-beat="true"/>
