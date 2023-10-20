@@ -17,6 +17,10 @@ const options = ref({
   chart: {
     id: 'vuechart-example'
   },
+  title: {
+    text: 'Beat Chart',
+    align: 'left'
+  },
   xaxis: {
     type: 'numeric'
   },
@@ -28,7 +32,7 @@ const options = ref({
     type: 'gradient',
     gradient: {
       shade: 'dark',
-      gradientToColors: [ '#FDD835'],
+      gradientToColors: [ '#79000e'],
       shadeIntensity: 1,
       type: 'horizontal',
       opacityFrom: 1,
@@ -188,7 +192,7 @@ const chartOptions = {
     height: 350
   },
   title: {
-    text: 'Basic BoxPlot Chart',
+    text: 'Time Chart',
     align: 'left'
   },
   plotOptions: {
@@ -243,18 +247,37 @@ const series2 = [
   <v-container>
     <v-row>
       <v-col cols="4">
-        <v-card>
+        <v-card elevation="3">
           <apexchart width="100%" type="line" :options="options" :series="series"></apexchart>
         </v-card>
       </v-col>
       <v-col cols="4">
-        <v-card>
+        <v-card elevation="3">
           <apexchart width="100%" type="boxPlot" :options="chartOptions" :series="series2"></apexchart>
         </v-card>
       </v-col>
       <v-col cols="4">
-        <v-card>
+        <v-card elevation="3">
           <apexchart width="100%" type="line" :options="options" :series="series"></apexchart>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <v-row>
+      <v-col>
+        <v-btn @click="onClear">Clear</v-btn>
+      </v-col>
+      <v-col>
+        <v-btn @click="onSelectStartNode">Add Node</v-btn>
+      </v-col>
+      <v-col>
+        <v-btn @click="onShow">Show</v-btn>
+      </v-col>
+      <v-col cols="6">
+        <v-card color="primary-50">
+          <v-container>
+            Currently selected: {{ selectedBeat ? selectedBeat.label : '--'}}
+          </v-container>
         </v-card>
       </v-col>
     </v-row>
@@ -263,7 +286,7 @@ const series2 = [
   <v-container class="container2">
     <v-row>
       <v-col cols="12">
-        <v-card class="container2" >
+        <v-card class="container2" elevation="3">
           <GameplayBeatCanvas></GameplayBeatCanvas>
         </v-card>
       </v-col>
