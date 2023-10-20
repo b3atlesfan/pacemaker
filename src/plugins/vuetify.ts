@@ -42,7 +42,7 @@ export default createVuetify({
         dark: true,
         colors: {
           background: '#121212',
-          surface: '#121212',
+          surface: '#555555',
           primary: '#bb86fc',
           'primary-variant': '#3700b3',
           secondary: '#03dac6',
@@ -53,9 +53,41 @@ export default createVuetify({
           "on-surface": '#ffffff',
           "on-error": '#000000',
         }
-      }
+      },
+      materialCustomThemeLight: {
+        dark: false,
+        colors: {
+          background: '#fdffe8',
+          surface: '#ffffff',
+          primary: '#6053ff',
+          'primary-variant': '#3700b3',
+          secondary: '#03dac6',
+          error: 'b00020',
+          "on-primary": '#ffffff',
+          "on-secondary": '#000000',
+          "on-background": '#000000',
+          "on-surface": '#000000',
+          "on-error": '#ffffff',
+        }
+      },
+      blueGray: {
+        dark: true,
+        colors: {
+          background: '#cfd8dc',
+          surface: '#ECEFF1',
+          primary: '#604059',
+          'primary-variant': '#3700b3',
+          secondary: '#ECEFF1',
+          error: 'b00020',
+          "on-primary": '#eee7eb',
+          "on-secondary": '#263238',
+          "on-background": '#263238',
+          "on-surface": '#263238',
+          "on-error": '#ECEFF1',
+        }
+      },
     },
-    defaultTheme: 'light',
+    defaultTheme: 'blueGray',
   },
   blueprint: md3,
 })

@@ -7,7 +7,7 @@
     <v-navigation-drawer color="primary" expand-on-hover rail floating>
       <v-list>
         <v-list-item
-            prepend-avatar="@/assets/images/pacemaker_icon_cropped.png"
+            prepend-icon="mdi-heart-pulse"
             title="PaceMaker"
         ></v-list-item>
       </v-list>
