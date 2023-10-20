@@ -86,8 +86,40 @@ export default createVuetify({
           "on-error": '#ECEFF1',
         }
       },
+      blueGrayLight: {
+        dark: false,
+        colors: {
+          background: '#cfd8dc',
+          surface: '#ECEFF1',
+          primary: '#604059',
+          'primary-variant': '#3700b3',
+          secondary: '#4e9d71',
+          error: 'b00020',
+          "on-primary": '#eee7eb',
+          "on-secondary": '#ECEFF1',
+          "on-background": '#263238',
+          "on-surface": '#263238',
+          "on-error": '#ECEFF1',
+        }
+      },
+      green: {
+        dark: false,
+        colors: {
+          background: '#FAFAFA',
+          surface: '#ffffff',
+          primary: '#79000e',
+          'primary-variant': '#3700b3',
+          secondary: '#00796B',
+          error: 'b00020',
+          "on-primary": '#ffffff',
+          "on-secondary": '#ffffff',
+          "on-background": '#000000',
+          "on-surface": '#000000',
+          "on-error": '#ECEFF1',
+        }
+      },
     },
-    defaultTheme: 'blueGray',
+    defaultTheme: 'green',
   },
   blueprint: md3,
 })

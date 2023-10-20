@@ -27,7 +27,7 @@ function onDelete() {
 
 <template>
   <Panel :position="PanelPosition.BottomRight">
-    <v-card title="Path settings">
+    <v-card title="Path settings" elevation="6">
       <v-container>
         <v-row>
           <v-btn-group>
@@ -36,7 +36,7 @@ function onDelete() {
             <v-btn @click="onShow">Show</v-btn>
           </v-btn-group>
 
-          <v-col cols="6">
+          <v-col cols="12">
             <v-card color="primary-50">
               <v-container>
                 Currently selected: {{ selectedBeat ? selectedBeat.label : '--'}}
@@ -49,11 +49,11 @@ function onDelete() {
   </Panel>
 
   <Panel :position="PanelPosition.TopRight" class="controls">
-    <v-btn icon="mdi-plus" @click="onAdd"></v-btn>
+    <v-btn v-if="props.nodeIsSelected" icon="mdi-plus" @click="onAdd" color="secondary"></v-btn>
     <!--
     <v-btn icon="mdi-minus" @click="onRemove"></v-btn>
     -->
-    <v-btn-group v-if="props.nodeIsSelected">
+    <v-btn-group v-if="props.nodeIsSelected" color="secondary">
       <v-btn icon="mdi-pencil" @click="onEdit"></v-btn>
       <v-btn icon="mdi-delete" @click="onDelete"></v-btn>
     </v-btn-group>

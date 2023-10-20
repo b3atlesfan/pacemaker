@@ -161,7 +161,7 @@ function onCreateContent(description: string, categories: Category, intensity: n
   <ContentCreatorForm :dialog="contentCreatorDialog" @on-create-content="onCreateContent"></ContentCreatorForm>
 
   <VueFlow v-model="elements" :class="{ dark }" class="basicflow" :default-viewport="{ zoom: 1.5 }" :min-zoom="0.2" :max-zoom="4" @paneContextMenu="onContextMenu($event)">
-    <Background :pattern-color="dark ? '#ECEFF1' : '#03dac6'" :gap="50" />
+    <Background :pattern-color="dark ? '#000000' : '#03dac6'" :gap="50" />
 
     <template #node-gameplay-beat="{ id, label, selected, data }">
       <GameplayBeatNode :id="id" :label="label" :selected="selected" :data="data" :is-being-edited="id == editId" @on-add-content="onAddContent" @on-remove-content="onRemoveContent" @on-edit-label="onEditLabel" @on-delete="onDelete" />
