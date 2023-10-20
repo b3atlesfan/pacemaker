@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import {Panel, PanelPosition} from "@vue-flow/core";
-import PanelButton from "@/components/PanelButton.vue";
 
 const props = defineProps<{
   nodeIsSelected: boolean,
@@ -27,6 +26,28 @@ function onDelete() {
 </script>
 
 <template>
+  <Panel :position="PanelPosition.BottomRight">
+    <v-card title="Path settings">
+      <v-container>
+        <v-row>
+          <v-btn-group>
+            <v-btn @click="onClear">Clear</v-btn>
+            <v-btn @click="onSelectStartNode">Add Node</v-btn>
+            <v-btn @click="onShow">Show</v-btn>
+          </v-btn-group>
+
+          <v-col cols="6">
+            <v-card color="primary-50">
+              <v-container>
+                Currently selected: {{ selectedBeat ? selectedBeat.label : '--'}}
+              </v-container>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-card>
+  </Panel>
+
   <Panel :position="PanelPosition.TopRight" class="controls">
     <v-btn icon="mdi-plus" @click="onAdd"></v-btn>
     <!--

@@ -240,10 +240,41 @@ const series2 = [
 </script>
 
 <template>
+  <v-container>
+    <v-row>
+      <v-col cols="4">
+        <v-card>
+          <apexchart width="100%" type="line" :options="options" :series="series"></apexchart>
+        </v-card>
+      </v-col>
+      <v-col cols="4">
+        <v-card>
+          <apexchart width="100%" type="boxPlot" :options="chartOptions" :series="series2"></apexchart>
+        </v-card>
+      </v-col>
+      <v-col cols="4">
+        <v-card>
+          <apexchart width="100%" type="line" :options="options" :series="series"></apexchart>
+        </v-card>
+      </v-col>
+    </v-row>
+  </v-container>
+
+  <v-container class="container2">
+    <v-row>
+      <v-col cols="12">
+        <v-card class="container2" >
+          <GameplayBeatCanvas></GameplayBeatCanvas>
+        </v-card>
+      </v-col>
+    </v-row>
+  </v-container>
+<!--
   <div class="container">
 
-    <GameplayBeatCanvas></GameplayBeatCanvas>
-
+    <v-card>
+      <GameplayBeatCanvas></GameplayBeatCanvas>
+    </v-card>
     <v-container class="col2">
 
       <v-row>
@@ -265,7 +296,7 @@ const series2 = [
         </v-col>
       </v-row>
 
-      <v-row>
+      <v-row>-->
         <!--
         <v-list width="100%" elevation="6">
           <v-list-item v-for="(beat, i) in selectedBeats"
@@ -276,7 +307,7 @@ const series2 = [
           <v-list-item v-for="(beat, i) in selectedBeats" type="divider">
           </v-list-item>
         </v-list>
-        -->
+        --><!--
         <v-list :items="items" width="100%" elevation="6"></v-list>
       </v-row>
     </v-container>
@@ -302,10 +333,16 @@ const series2 = [
     </v-container>
 
   </div>
-
+-->
 </template>
 
 <style scoped>
+
+.container2 {
+  display: flex;
+  width: 100%;
+  height: 75%;
+}
 
 .container {
   display: grid;
