@@ -69,6 +69,6 @@ export class BeatContentManager {
         (currentNode as GameplayBeat).label = label
 
          */
-        
+
     }
 }

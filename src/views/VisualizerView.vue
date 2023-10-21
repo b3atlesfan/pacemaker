@@ -152,19 +152,17 @@ function removeFromSelectedBeats(id: number) {
     <v-row>
       <v-col cols="4">
         <v-card elevation="3">
-          <BeatChart :path="path"></BeatChart>
+          <BeatChart :path="path" :compute-options="'beat'"></BeatChart>
+        </v-card>
+      </v-col>
+      <v-col cols="4">
+        <v-card elevation="3">
+          <BeatChart :path="path" :compute-options="'time'"></BeatChart>
         </v-card>
       </v-col>
       <v-col cols="4">
         <v-card elevation="3">
           <BeatTimeline></BeatTimeline>
-        </v-card>
-      </v-col>
-      <v-col cols="4">
-        <v-card elevation="3">
-          <!--
-          <apexchart width="100%" type="line" :options="options" :series="series"></apexchart>
-          -->
         </v-card>
       </v-col>
     </v-row>

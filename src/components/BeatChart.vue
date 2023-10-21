@@ -6,6 +6,7 @@ import {BeatContentManager} from "@/assets/BeatContentManager";
 
 const props = defineProps<{
   path: number[] | undefined,
+  computeOptions: "beat" | "time",
 }>()
 
 const beatManager = BeatManager.getInstance()
@@ -26,7 +27,7 @@ const options = ref({
     },
   },
   title: {
-    text: 'Beat Chart',
+    text: props.computeOptions + ' chart',
     align: 'left'
   },
   xaxis: {
@@ -50,7 +51,15 @@ const options = ref({
   }
 })
 
-const series = computed((): [{name: string, data: number[][]}] | undefined => {
+
+const computeOptions = {
+  beat: computeBeat,
+  time: computeTime,
+}
+
+const series = computed(computeOptions[props.computeOptions])
+
+function computeBeat(): [{name: string, data: number[][]}] | undefined {
   if (props.path == undefined) return
 
   const data: number[][] = []
@@ -67,7 +76,36 @@ const series = computed((): [{name: string, data: number[][]}] | undefined => {
   }
 
   return [{name: 'series-1', data: data}]
-})
+}
+
+function computeTime(): [{name: string, data: number[][]}] | undefined {
+  if (props.path == undefined) return
+
+  const data: number[][] = []
+
+  let currentTime = 0
+  const increment = 30
+
+  for (let i = 0; i < props.path.length; i++) {
+    //console.log("index " + i + " value " + props.path[i])
+    const beat = beatManager.getNode(props.path[i].toString())
+
+    if (beat.data == -1) continue
+
+    const content = contentManager.getContent(beat.data)
+
+    let j = 0
+
+    do {
+      data.push([currentTime, content.intensity])
+      currentTime += increment
+      j += increment
+    } while (content.expectedPlaytime && j < content.expectedPlaytime)
+    
+  }
+
+  return [{name: 'series-1', data: data}]
+}
 
 </script>
 
