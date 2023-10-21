@@ -3,7 +3,6 @@ import {MarkerType, Panel, PanelPosition, useVueFlow, VueFlow} from '@vue-flow/c
 import {Background} from '@vue-flow/background'
 import {ref} from 'vue'
 import GameplayBeatNode from "@/components/GameplayBeatNode.vue";
-import ThePanel from "@/components/ThePanel.vue";
 import {useElementsStore} from "@/store/elements";
 import {storeToRefs} from "pinia";
 import {BeatManager} from "@/assets/BeatManager";
@@ -25,7 +24,8 @@ const contentManager = BeatContentManager.getInstance()
  * useVueFlow provides all event handlers and store properties
  * You can pass the composable an object that has the same properties as the VueFlow component props
  */
-const { onNodeDragStop, onConnect, addEdges, setTransform, toObject, nodeTypes, addNodes, getNodes, removeNodes, getSelectedElements } = useVueFlow()
+const { onNodeDragStop, onConnect, addEdges, setTransform, toObject,
+  nodeTypes, addNodes, getNodes, removeNodes, getSelectedElements, getViewport, fitView, setViewport, project } = useVueFlow()
 
 /*
 nodeTypes.value = {
@@ -45,7 +45,7 @@ function onContextMenu(mouseEvent: MouseEvent) {
   mouseEvent.preventDefault();
   // for now, just create node
   pos = { x: mouseEvent.x, y: mouseEvent.y }
-  beatManager.createNode(pos)
+  beatManager.createNode(project(pos))
 }
 
 /**
@@ -148,7 +148,10 @@ function onCreateContent(description: string, categories: Category, intensity: n
   contentCreatorDialog.value = false
 }
 
-
+function createNode() {
+  const viewport = getViewport()
+  beatManager.createNode({x: -viewport.x / viewport.zoom,  y: -viewport.y / viewport.zoom })
+}
 
 </script>
 
@@ -174,7 +177,7 @@ function onCreateContent(description: string, categories: Category, intensity: n
     <ThePanel :node-is-selected="getSelectedElements.length == 1" @on-delete="onSelectionPanelDelete" @on-add="onSelectionPanelAdd" @on-edit="onSelectionPanelEdit"/>
     -->
 
-    <Panel v-if="getSelectedElements.length == 1" :position="PanelPosition.TopRight" class="controls">
+    <Panel v-if="getSelectedElements.length == 1" :position="PanelPosition.TopRight" >
       <v-btn icon="mdi-plus" @click="onSelectionPanelAdd" color="secondary"></v-btn>
       <!--
       <v-btn icon="mdi-minus" @click="onRemove"></v-btn>
@@ -187,6 +190,25 @@ function onCreateContent(description: string, categories: Category, intensity: n
 
     <Panel v-if="true" :position="PanelPosition.BottomLeft">
       <slot name="panel-bottom-left"></slot>
+    </Panel>
+
+    <Panel :position="PanelPosition.BottomRight">
+      <v-btn icon="mdi-plus" color="secondary" @click="createNode">
+        <v-icon>
+          mdi-plus
+        </v-icon>
+        <v-tooltip activator="parent" location="start">
+          Create Gameplay Beat
+        </v-tooltip>
+      </v-btn>
+      <!--
+      <v-btn icon="mdi-fit-to-screen-outline" color="surface" @click="fitView">
+        <v-icon></v-icon>
+        <v-tooltip activator="parent" location="top">
+          Reset Transform
+        </v-tooltip>
+      </v-btn>
+      -->
     </Panel>
 
   </VueFlow>

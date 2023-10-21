@@ -33,7 +33,7 @@ export class BeatManager {
 
     createNode(pos: {x: number, y: number}) {
         const id = this.idManager.getId()
-        const beat = new GameplayBeat('' + id, 'Beat ' + id, -1, this.vueFlowStore.project(pos))
+        const beat = new GameplayBeat('' + id, 'Beat ' + id, -1, pos)
 
         this.elements.elements.value.push(beat)
 
