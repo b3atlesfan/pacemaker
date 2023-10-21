@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import GameplayBeatCanvas from "@/components/GameplayBeatCanvas.vue";
-import {computed, ref} from "vue";
+import {computed, ref, watch} from "vue";
 import {BeatManager} from "@/assets/BeatManager";
 import {GameplayBeat} from "@/assets/GameplayBeat";
 import {useVueFlow} from "@vue-flow/core";
+import BeatChart from "@/components/BeatChart.vue";
+import BeatTimeline from "@/components/BeatTimeline.vue";
 
 const vue = useVueFlow()
 
@@ -13,80 +15,38 @@ const selectedBeat = computed(() => beatManager.getSelectedBeat())
 
 const selectedBeats = ref([] as GameplayBeat[])
 
-const options = ref({
-  chart: {
-    id: 'vuechart-example'
-  },
-  theme: {
-    mode: 'light',
-    palette: 'palette1',
-    monochrome: {
-      enabled: false,
-      color: '#255aee',
-      shadeTo: 'light',
-      shadeIntensity: 0.65
-    },
-  },
-  title: {
-    text: 'Beat Chart',
-    align: 'left'
-  },
-  xaxis: {
-    type: 'numeric'
-  },
-  stroke: {
-    width: 5,
-    curve: 'smooth'
-  },
-  fill: {
-    type: 'gradient',
-    gradient: {
-      shade: 'dark',
-      gradientToColors: [ '#79000e'],
-      shadeIntensity: 1,
-      type: 'horizontal',
-      opacityFrom: 1,
-      opacityTo: 1,
-      stops: [0, 100, 100, 100]
-    },
+const items = computed(() => {
+  const result = []
+
+  for (let i = 0; i < selectedBeats.value.length; i++) {
+    /*
+    if (i > 0) {
+      result.push({
+        type: 'divider',
+      })
+    }*/
+
+    const icon = i == selectedBeats.value.length - 1 ? 'mdi-flag-checkered' : 'mdi-circle-medium'
+
+    result.push({
+      title: selectedBeats.value[i].label,
+      icon: icon,
+    })
   }
+
+  return result
 })
 
-const series = ref([{
-  name: 'series-1',
-  data: [[] as number[]]
-}])
+const path = computed(computePath)
 
-function onSelectStartNode() {
+function onAddNodes() {
   selectedBeats.value.push(selectedBeat.value)
   //addToData(parseInt(selectedBeat.value.id))
 }
 
 function onClear() {
   selectedBeats.value = []
-  clearData()
-}
-
-function addToData(value: number, position: number) {
-/*
-  const result = beatManager.elements.elements.value.find(element => element.id == value.toString())
-  let value = ""
-  if (result) {
-    const beat = result as GameplayBeat
-    value = beat.label
-    //console.log("what? " + value)
-  }
-*/
-  //options.value.xaxis.categories.push(value)
-
-  //options.value.xaxis.categories.forEach(category => console.log(category))
-
-  series.value[0].data.push([position, value])
-}
-
-function clearData() {
-  series.value[0].data.splice(0, series.value[0].data.length)
-  //options.value.xaxis.categories.splice(0, options.value.xaxis.categories.length)
+  //clearData()
 }
 
 class DNode {
@@ -101,6 +61,85 @@ class DNode {
   }
 }
 
+function computePath() {
+  const path: number[] = []
+
+  if (selectedBeats.value.length == 0) {
+    console.log("length is 0")
+    return path
+  }
+
+  if (selectedBeats.value.length == 1) {
+    console.log("length is 1")
+    path.push(parseInt(selectedBeats.value[0].id))
+    return path
+  }
+
+  const nodesToVisit: DNode[] = []
+
+  const startNode = new DNode(parseInt(selectedBeats.value[0].id), 0)
+  nodesToVisit.push(startNode)
+
+  let result: DNode = startNode
+
+  let index = 1
+  let targetId = parseInt(selectedBeats.value[index].id)
+
+
+  let rounds = 0
+  while (nodesToVisit.length != 0 && rounds < 100) {
+
+    console.log("iteration")
+
+    nodesToVisit.sort((first, second) => first.cost < second.cost ? 1 : -1)
+
+    nodesToVisit.forEach(node => console.log(node.id + " cost " + node.cost))
+
+    const current = nodesToVisit.pop()
+
+    if (current == undefined) break
+
+    if (current.id == targetId) {
+      index++
+      if (index >= selectedBeats.value.length) {
+        result = current
+        break
+      } else {
+        nodesToVisit.splice(0, nodesToVisit.length)
+        targetId = parseInt(selectedBeats.value[index].id)
+      }
+    }
+
+    const currentOutGoers = vue.getOutgoers(current.id.toString())
+
+    currentOutGoers.forEach(outGoer => {
+
+      const index = nodesToVisit.findIndex(node => node.id == parseInt(outGoer.id))
+
+      if (index == -1) {
+        nodesToVisit.push(new DNode(parseInt(outGoer.id), current.cost + 1, current))
+      } else if (nodesToVisit[index].cost > current.cost + 1) {
+        nodesToVisit[index].cost = current.cost + 1
+        nodesToVisit[index].prev = current
+      }
+    })
+
+    rounds++
+  }
+
+  while (result.prev != null) {
+    path.push(result.id)
+    result = result.prev
+  }
+
+  path.push(result.id)
+
+  path.reverse()
+
+  return path
+}
+
+/* old (not) working version
 function onShow() {
   console.log(vue.getOutgoers(selectedBeat.value.id))
 
@@ -173,39 +212,29 @@ function onShow() {
   }
 }
 
-const items = computed(() => {
-  const result = []
 
-  for (let i = 0; i < selectedBeats.value.length; i++) {
-    /*
-    if (i > 0) {
-      result.push({
-        type: 'divider',
-      })
-    }*/
+function addToData(value: number, position: number) {
 
-    const icon = i == selectedBeats.value.length - 1 ? 'mdi-flag-checkered' : 'mdi-circle-medium'
+    //const result = beatManager.elements.elements.value.find(element => element.id == value.toString())
+   // let value = ""
+   // if (result) {
+   //   const beat = result as GameplayBeat
+   //   value = beat.label
+      //console.log("what? " + value)
+   // }
 
-    result.push({
-      title: selectedBeats.value[i].label,
-      icon: icon,
-    })
-  }
+  //options.value.xaxis.categories.push(value)
 
-  return result
-})
+  //options.value.xaxis.categories.forEach(category => console.log(category))
 
-function moveUp(index: number) {
-  console.log(index)
-  const targetIndex = index - 1
-
-  switchSelectedBeats(targetIndex, index)
+  //series.value[0].data.push([position, value])
 }
 
-function moveDown(index: number) {
-  console.log(index)
-  switchSelectedBeats(index + 1, index)
+function clearData() {
+  //series.value[0].data.splice(0, series.value[0].data.length)
+  //options.value.xaxis.categories.splice(0, options.value.xaxis.categories.length)
 }
+*/
 
 function switchSelectedBeats(id1: number, id2: number) {
   const temp = selectedBeats.value[id1]
@@ -217,61 +246,6 @@ function removeFromSelectedBeats(id: number) {
   selectedBeats.value.splice(id, 1)
 }
 
-const chartOptions = {
-  chart: {
-    type: 'boxPlot',
-    height: 350
-  },
-  title: {
-    text: 'Time Chart',
-    align: 'left'
-  },
-  plotOptions: {
-    boxPlot: {
-      colors: {
-        upper: '#5C4742',
-        lower: '#5C4742'
-      }
-    }
-  }
-}
-
-const series2 = [
-  {
-    type: 'boxPlot',
-    data: [
-      {
-        x: 'Jan 2015',
-        y: [40, 40, 40, 60, 60]
-      },
-      {
-        x: 'Jan 2016',
-        y: [43, 65, 69, 76, 81]
-      },
-      {
-        x: 'Jan 2017',
-        y: [31, 39, 45, 51, 59]
-      },
-      {
-        x: 'Jan 2018',
-        y: [39, 46, 55, 65, 71]
-      },
-      {
-        x: 'Jan 2019',
-        y: [29, 31, 35, 39, 44]
-      },
-      {
-        x: 'Jan 2020',
-        y: [41, 49, 58, 61, 67]
-      },
-      {
-        x: 'Jan 2021',
-        y: [54, 59, 66, 71, 88]
-      }
-    ]
-  }
-]
-
 </script>
 
 <template>
@@ -279,17 +253,19 @@ const series2 = [
     <v-row>
       <v-col cols="4">
         <v-card elevation="3">
-          <apexchart width="100%" type="line" :options="options" :series="series"></apexchart>
+          <BeatChart :path="path"></BeatChart>
         </v-card>
       </v-col>
       <v-col cols="4">
         <v-card elevation="3">
-          <apexchart width="100%" type="boxPlot" :options="chartOptions" :series="series2"></apexchart>
+          <BeatTimeline></BeatTimeline>
         </v-card>
       </v-col>
       <v-col cols="4">
         <v-card elevation="3">
+          <!--
           <apexchart width="100%" type="line" :options="options" :series="series"></apexchart>
+          -->
         </v-card>
       </v-col>
     </v-row>
@@ -302,32 +278,32 @@ const series2 = [
           <GameplayBeatCanvas>
             <template v-slot:panel-bottom-left>
 
-              <v-container>
-                <v-row>
-                  <v-btn-group color="secondary">
+              <v-list width="auto" elevation="6">
+                <v-list-item>
+                  <v-btn-group>
                     <v-btn @click="onClear">Clear</v-btn>
-                    <v-btn @click="onSelectStartNode">Add Node</v-btn>
+                    <v-btn @click="onAddNodes">Add Node</v-btn>
+                    <!--
                     <v-btn @click="onShow">Show</v-btn>
+                    -->
                   </v-btn-group>
-                </v-row>
+                </v-list-item>
 
-                <v-row>
-                  <v-list :items="items" width="auto" elevation="6">
-                    <v-list-item v-for="(item, i) in items" :title="item.title" :prepend-icon="item.icon">
+                <v-divider></v-divider>
 
-                      <template v-slot:append>
-                        <v-btn-group>
-                          <v-btn icon="mdi-delete" @click="removeFromSelectedBeats(i)"></v-btn>
-                          <v-btn icon="mdi-arrow-down" @click="switchSelectedBeats(i, i+1)" :disabled="i == items.length - 1"></v-btn>
-                          <v-btn icon="mdi-arrow-up" @click="switchSelectedBeats(i, i-1)" :disabled="i == 0"></v-btn>
-                        </v-btn-group>
-                      </template>
+                <v-list-item v-for="(item, i) in items" :title="item.title" :prepend-icon="item.icon">
 
-                    </v-list-item>
-                  </v-list>
-                </v-row>
+                  <template v-slot:append>
+                    <v-btn-group>
+                      <v-btn icon="mdi-delete" @click="removeFromSelectedBeats(i)"></v-btn>
+                      <v-btn icon="mdi-arrow-down" @click="switchSelectedBeats(i, i+1)" :disabled="i == items.length - 1"></v-btn>
+                      <v-btn icon="mdi-arrow-up" @click="switchSelectedBeats(i, i-1)" :disabled="i == 0"></v-btn>
+                    </v-btn-group>
+                  </template>
 
-              </v-container>
+                </v-list-item>
+              </v-list>
+
             </template>
           </GameplayBeatCanvas>
         </v-card>
