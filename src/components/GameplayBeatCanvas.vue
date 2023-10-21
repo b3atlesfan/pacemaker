@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import {isNode, MarkerType, MaybeElement, useVueFlow, VueFlow} from '@vue-flow/core'
+import {MarkerType, Panel, PanelPosition, useVueFlow, VueFlow} from '@vue-flow/core'
 import {Background} from '@vue-flow/background'
-import {Controls} from '@vue-flow/controls'
-import {computed, markRaw, ref} from 'vue'
+import {ref} from 'vue'
 import GameplayBeatNode from "@/components/GameplayBeatNode.vue";
 import ThePanel from "@/components/ThePanel.vue";
 import {useElementsStore} from "@/store/elements";
@@ -174,7 +173,24 @@ function onCreateContent(description: string, categories: Category, intensity: n
     <Controls />
     -->
 
+    <!--
     <ThePanel :node-is-selected="getSelectedElements.length == 1" @on-delete="onSelectionPanelDelete" @on-add="onSelectionPanelAdd" @on-edit="onSelectionPanelEdit"/>
+    -->
+
+    <Panel v-if="getSelectedElements.length == 1" :position="PanelPosition.TopRight" class="controls">
+      <v-btn icon="mdi-plus" @click="onSelectionPanelAdd" color="secondary"></v-btn>
+      <!--
+      <v-btn icon="mdi-minus" @click="onRemove"></v-btn>
+      -->
+      <v-btn-group color="secondary">
+        <v-btn icon="mdi-pencil" @click="onSelectionPanelEdit"></v-btn>
+        <v-btn icon="mdi-delete" @click="onSelectionPanelDelete"></v-btn>
+      </v-btn-group>
+    </Panel>
+
+    <Panel v-if="true" :position="PanelPosition.BottomLeft">
+      <slot name="panel-bottom-left"></slot>
+    </Panel>
 
   </VueFlow>
   <!--

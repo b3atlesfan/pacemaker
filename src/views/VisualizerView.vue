@@ -17,6 +17,16 @@ const options = ref({
   chart: {
     id: 'vuechart-example'
   },
+  theme: {
+    mode: 'light',
+    palette: 'palette1',
+    monochrome: {
+      enabled: false,
+      color: '#255aee',
+      shadeTo: 'light',
+      shadeIntensity: 0.65
+    },
+  },
   title: {
     text: 'Beat Chart',
     align: 'left'
@@ -167,24 +177,45 @@ const items = computed(() => {
   const result = []
 
   for (let i = 0; i < selectedBeats.value.length; i++) {
+    /*
     if (i > 0) {
       result.push({
         type: 'divider',
       })
-    }
+    }*/
 
     const icon = i == selectedBeats.value.length - 1 ? 'mdi-flag-checkered' : 'mdi-circle-medium'
 
     result.push({
       title: selectedBeats.value[i].label,
-      props: {
-        prependIcon: icon,
-      },
+      icon: icon,
     })
   }
 
   return result
 })
+
+function moveUp(index: number) {
+  console.log(index)
+  const targetIndex = index - 1
+
+  switchSelectedBeats(targetIndex, index)
+}
+
+function moveDown(index: number) {
+  console.log(index)
+  switchSelectedBeats(index + 1, index)
+}
+
+function switchSelectedBeats(id1: number, id2: number) {
+  const temp = selectedBeats.value[id1]
+  selectedBeats.value[id1] = selectedBeats.value[id2]
+  selectedBeats.value[id2] = temp
+}
+
+function removeFromSelectedBeats(id: number) {
+  selectedBeats.value.splice(id, 1)
+}
 
 const chartOptions = {
   chart: {
@@ -262,101 +293,47 @@ const series2 = [
         </v-card>
       </v-col>
     </v-row>
-
-    <v-row>
-      <v-col>
-        <v-btn @click="onClear">Clear</v-btn>
-      </v-col>
-      <v-col>
-        <v-btn @click="onSelectStartNode">Add Node</v-btn>
-      </v-col>
-      <v-col>
-        <v-btn @click="onShow">Show</v-btn>
-      </v-col>
-      <v-col cols="6">
-        <v-card color="primary-50">
-          <v-container>
-            Currently selected: {{ selectedBeat ? selectedBeat.label : '--'}}
-          </v-container>
-        </v-card>
-      </v-col>
-    </v-row>
   </v-container>
 
   <v-container class="container2">
     <v-row>
       <v-col cols="12">
         <v-card class="container2" elevation="3">
-          <GameplayBeatCanvas></GameplayBeatCanvas>
+          <GameplayBeatCanvas>
+            <template v-slot:panel-bottom-left>
+
+              <v-container>
+                <v-row>
+                  <v-btn-group color="secondary">
+                    <v-btn @click="onClear">Clear</v-btn>
+                    <v-btn @click="onSelectStartNode">Add Node</v-btn>
+                    <v-btn @click="onShow">Show</v-btn>
+                  </v-btn-group>
+                </v-row>
+
+                <v-row>
+                  <v-list :items="items" width="auto" elevation="6">
+                    <v-list-item v-for="(item, i) in items" :title="item.title" :prepend-icon="item.icon">
+
+                      <template v-slot:append>
+                        <v-btn-group>
+                          <v-btn icon="mdi-delete" @click="removeFromSelectedBeats(i)"></v-btn>
+                          <v-btn icon="mdi-arrow-down" @click="switchSelectedBeats(i, i+1)" :disabled="i == items.length - 1"></v-btn>
+                          <v-btn icon="mdi-arrow-up" @click="switchSelectedBeats(i, i-1)" :disabled="i == 0"></v-btn>
+                        </v-btn-group>
+                      </template>
+
+                    </v-list-item>
+                  </v-list>
+                </v-row>
+
+              </v-container>
+            </template>
+          </GameplayBeatCanvas>
         </v-card>
       </v-col>
     </v-row>
   </v-container>
-<!--
-  <div class="container">
-
-    <v-card>
-      <GameplayBeatCanvas></GameplayBeatCanvas>
-    </v-card>
-    <v-container class="col2">
-
-      <v-row>
-        <v-col>
-          <v-btn @click="onClear">Clear</v-btn>
-        </v-col>
-        <v-col>
-          <v-btn @click="onSelectStartNode">Add Node</v-btn>
-        </v-col>
-        <v-col>
-          <v-btn @click="onShow">Show</v-btn>
-        </v-col>
-        <v-col cols="6">
-          <v-card color="primary-50">
-            <v-container>
-              Currently selected: {{ selectedBeat ? selectedBeat.label : '--'}}
-            </v-container>
-          </v-card>
-        </v-col>
-      </v-row>
-
-      <v-row>-->
-        <!--
-        <v-list width="100%" elevation="6">
-          <v-list-item v-for="(beat, i) in selectedBeats"
-                       :prepend-icon="i == selectedBeats.length - 1 ? 'mdi-flag-checkered' : 'mdi-circle-medium'">
-            {{ beat.label }}
-          </v-list-item>
-
-          <v-list-item v-for="(beat, i) in selectedBeats" type="divider">
-          </v-list-item>
-        </v-list>
-        --><!--
-        <v-list :items="items" width="100%" elevation="6"></v-list>
-      </v-row>
-    </v-container>
-
-    <v-container class="col1">
-      <v-row>
-        <v-col cols="4">
-          <v-card>
-            <apexchart width="100%" type="line" :options="options" :series="series"></apexchart>
-          </v-card>
-        </v-col>
-        <v-col cols="4">
-          <v-card>
-            <apexchart width="100%" type="boxPlot" :options="chartOptions" :series="series2"></apexchart>
-          </v-card>
-        </v-col>
-        <v-col cols="4">
-          <v-card>
-            <apexchart width="100%" type="line" :options="options" :series="series"></apexchart>
-          </v-card>
-        </v-col>
-      </v-row>
-    </v-container>
-
-  </div>
--->
 </template>
 
 <style scoped>
