@@ -46,6 +46,10 @@ export class BeatManager {
         //this.elements.elements.value
     }
 
+    getNode(id: string) {
+      return this.elements.elements.value.find(elem => elem.id == id) as GameplayBeat
+    }
+
     editNodeLabel(id: string, label: string) {
         this.elements.elements.value.forEach(elem => console.log("elem id is " + elem.id))
 

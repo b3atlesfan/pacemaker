@@ -2,12 +2,14 @@
 
 import {BeatManager} from "@/assets/BeatManager";
 import {computed, ref} from "vue";
+import {BeatContentManager} from "@/assets/BeatContentManager";
 
 const props = defineProps<{
   path: number[] | undefined,
 }>()
 
 const beatManager = BeatManager.getInstance()
+const contentManager = BeatContentManager.getInstance()
 
 const options = ref({
   chart: {
@@ -55,7 +57,12 @@ const series = computed((): [{name: string, data: number[][]}] | undefined => {
 
   for (let i = 0; i < props.path.length; i++) {
     //console.log("index " + i + " value " + props.path[i])
-    data.push([i, props.path[i]])
+    const beat = beatManager.getNode(props.path[i].toString())
+
+    if (beat.data == -1) continue
+    const content = contentManager.getContent(beat.data)
+
+    data.push([i, content.intensity])
     //console.log("series.data " + data)
   }
 
