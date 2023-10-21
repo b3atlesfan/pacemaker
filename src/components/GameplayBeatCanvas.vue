@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {MarkerType, Panel, PanelPosition, useVueFlow, VueFlow} from '@vue-flow/core'
 import {Background} from '@vue-flow/background'
-import {ref} from 'vue'
+import {computed, ref} from 'vue'
 import GameplayBeatNode from "@/components/GameplayBeatNode.vue";
 import {useElementsStore} from "@/store/elements";
 import {storeToRefs} from "pinia";
@@ -122,7 +122,17 @@ function onSelectionPanelAdd() {
   onAddContent(getSelectedElements.value[0].id)
 }
 
+function onSelectionPanelRemove() {
+  beatManager.editContentId(getSelectedElements.value[0].id, -1)
+}
+
 const editId = ref("")
+
+const hasContent = computed(() => {
+  if (getSelectedElements.value.length == 0) return false
+
+  return getSelectedElements.value[0].data != -1
+})
 
 function onSelectionPanelEdit() {
   editId.value = getSelectedElements.value[0].id
@@ -178,13 +188,40 @@ function createNode() {
     -->
 
     <Panel v-if="getSelectedElements.length == 1" :position="PanelPosition.TopRight" >
-      <v-btn icon="mdi-plus" @click="onSelectionPanelAdd" color="secondary"></v-btn>
-      <!--
-      <v-btn icon="mdi-minus" @click="onRemove"></v-btn>
-      -->
       <v-btn-group color="secondary">
-        <v-btn icon="mdi-pencil" @click="onSelectionPanelEdit"></v-btn>
-        <v-btn icon="mdi-delete" @click="onSelectionPanelDelete"></v-btn>
+        
+        <v-tooltip text="Edit Beat" location="bottom">
+          <template v-slot:activator="{ props }">
+            <v-btn v-bind="props" icon="mdi-pencil" @click="onSelectionPanelEdit"></v-btn>
+          </template>
+        </v-tooltip>
+
+        <v-tooltip v-if="!hasContent" text="Add Content" location="bottom">
+          <template v-slot:activator="{ props }">
+            <v-btn v-bind="props" icon="mdi-tag-plus" @click="onSelectionPanelAdd" color="secondary"></v-btn>
+          </template>
+        </v-tooltip>
+
+        <v-tooltip v-else text="Remove Content" location="bottom">
+          <template v-slot:activator="{ props }">
+            <v-btn v-bind="props" icon="mdi-tag-minus" @click="onSelectionPanelRemove" color="secondary"></v-btn>
+          </template>
+        </v-tooltip>
+
+        <!--
+        <v-tooltip text="Switch Content" location="bottom">
+          <template v-slot:activator="{ props }">
+            <v-btn v-bind="props" icon="mdi-tag-edit" @click="onRemove" color="secondary"></v-btn>
+          </template>
+        </v-tooltip>
+        -->
+
+        <v-tooltip text="Delete Beat" location="bottom">
+          <template v-slot:activator="{ props }">
+            <v-btn v-bind="props" icon="mdi-delete" @click="onSelectionPanelDelete"></v-btn>
+          </template>
+        </v-tooltip>
+
       </v-btn-group>
     </Panel>
 
@@ -193,14 +230,12 @@ function createNode() {
     </Panel>
 
     <Panel :position="PanelPosition.BottomRight">
-      <v-btn icon="mdi-plus" color="secondary" @click="createNode">
-        <v-icon>
-          mdi-plus
-        </v-icon>
-        <v-tooltip activator="parent" location="start">
-          Create Gameplay Beat
-        </v-tooltip>
-      </v-btn>
+      <v-tooltip text="Create Gameplay Beat" location="start">
+        <template v-slot:activator="{ props }">
+          <v-btn v-bind="props" icon="mdi-plus" color="secondary" @click="createNode"></v-btn>
+        </template>
+      </v-tooltip>
+
       <!--
       <v-btn icon="mdi-fit-to-screen-outline" color="surface" @click="fitView">
         <v-icon></v-icon>

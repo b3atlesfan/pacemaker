@@ -48,7 +48,23 @@ function onDelete() {
       <p v-else>{{ props.label }}</p>
     </template>
 
+    <div v-if="props.selected">
+      <v-list-item v-if="!hasContent" title="No Content" no-gutters>
+        <template v-slot:append>
+          <v-icon @click="onAddContent">
+            mdi-tag-plus
+          </v-icon>
+          <!--
+          <v-btn icon="mdi-tag-plus" @click="onAddContent" color="on-secondary" elevation="0"></v-btn>
+          -->
+        </template>
+      </v-list-item>
+      <BeatContentHolder v-else :content-id="props.data" :is-in-beat="true"/>
+    </div>
 
+
+
+    <!--
     <v-expansion-panels v-if="props.selected">
       <v-expansion-panel title="Content" :color="color">
         <v-expansion-panel-text>
@@ -57,6 +73,7 @@ function onDelete() {
         </v-expansion-panel-text>
       </v-expansion-panel>
     </v-expansion-panels>
+    -->
     <!--
       <v-btn icon="mdi-plus"></v-btn>
 
