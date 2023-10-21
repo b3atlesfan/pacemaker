@@ -5,21 +5,23 @@ export const Skills = ["Jump", "Dash", "Platform", "Enqueue"] as const;
 export type Skill = typeof Skills[number];
 
 export class BeatContent {
-    id: number
-    description: string
-    category: Category
-    intensity: number
-    introducedSkills: string[]
-    reinforcedSkills: string[]
-    requiredSkills: string[]
+  id: number
+  description: string
+  category: Category
+  intensity: number
+  expectedPlaytime: number
+  introducedSkills: string[]
+  reinforcedSkills: string[]
+  requiredSkills: string[]
 
-    constructor(id: number, description: string, category: Category, intensity: number, introducedSkills: string[], reinforcedSkills: string[], requiredSkills: string[]) {
-        this.id = id
-        this.description = description
-        this.category = category
-        this.intensity = intensity
-        this.introducedSkills = introducedSkills
-        this.reinforcedSkills = reinforcedSkills
-        this.requiredSkills = requiredSkills
-    }
+  constructor(id: number, description: string, category: Category, intensity: number, expectedPlaytime: number, introducedSkills: string[], reinforcedSkills: string[], requiredSkills: string[]) {
+    this.id = id
+    this.description = description
+    this.category = category
+    this.intensity = intensity
+    this.expectedPlaytime = expectedPlaytime
+    this.introducedSkills = introducedSkills
+    this.reinforcedSkills = reinforcedSkills
+    this.requiredSkills = requiredSkills
+  }
 }

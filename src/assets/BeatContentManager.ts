@@ -28,9 +28,9 @@ export class BeatContentManager {
         })
     }
 
-    createContent(description: string, category: Category, intensity: number, introducedSkills: Skill[], reinforcedSkills: Skill[], requiredSkills: Skill[]) {
+    createContent(description: string, category: Category, intensity: number, expectedPlaytime: number, introducedSkills: Skill[], reinforcedSkills: Skill[], requiredSkills: Skill[]) {
         const id = this.idManager.getId()
-        const content = new BeatContent(id, description, category, intensity, introducedSkills, reinforcedSkills, requiredSkills)
+        const content = new BeatContent(id, description, category, intensity, expectedPlaytime, introducedSkills, reinforcedSkills, requiredSkills)
 
         this.contentsStore.contents.value.push(content)
         /*
@@ -51,7 +51,7 @@ export class BeatContentManager {
         }
     }
 
-    getContent(id: number) : BeatContent {
+    getContent(id: number): BeatContent {
         //console.log("it is now called")
         const result = this.contentsStore.contents.value.find(x => x.id == id) as BeatContent
         //console.log("result is " + result)
@@ -69,5 +69,6 @@ export class BeatContentManager {
         (currentNode as GameplayBeat).label = label
 
          */
+        
     }
 }

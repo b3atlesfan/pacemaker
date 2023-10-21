@@ -14,6 +14,7 @@ const emit = defineEmits(['onCreateContent'])
 const description = ref("")
 
 const slider = ref(0)
+const playtime = ref(0)
 const min = ref(0)
 const max = ref(100)
 
@@ -27,7 +28,7 @@ const requiredSkills = ref([] as Skill[])
 
 
 function onSaveClicked() {
-  emit('onCreateContent', description.value, categories.value, slider.value, introducedSkills.value, reinforcedSkills.value, requiredSkills.value)
+  emit('onCreateContent', description.value, categories.value, slider.value, playtime.value, introducedSkills.value, reinforcedSkills.value, requiredSkills.value)
   resetValues()
 }
 
@@ -79,6 +80,19 @@ function resetValues() {
                 ></v-text-field>
               </template>
             </v-slider>
+          </v-col>
+        </v-row>
+        <v-row align="center" no-gutters>
+          <v-col>Expected Playtime:</v-col>
+          <v-col>
+              <v-text-field
+                v-model="playtime"
+                hide-details
+                single-line
+                density="compact"
+                type="number"
+                style="width: 90px"
+              ></v-text-field>
           </v-col>
         </v-row>
 

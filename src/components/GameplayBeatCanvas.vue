@@ -143,8 +143,8 @@ function onSave(contentId: number) {
   contentSelectorDialog.value = false
 }
 
-function onCreateContent(description: string, categories: Category, intensity: number, introducedSkills: Skill[], reinforcedSkills: Skill[], requiredSkills: Skill[]) {
-  contentManager.createContent(description, categories, intensity, introducedSkills, reinforcedSkills, requiredSkills)
+function onCreateContent(description: string, categories: Category, intensity: number, expectedPlaytime: number, introducedSkills: Skill[], reinforcedSkills: Skill[], requiredSkills: Skill[]) {
+  contentManager.createContent(description, categories, intensity, expectedPlaytime, introducedSkills, reinforcedSkills, requiredSkills)
   contentCreatorDialog.value = false
 }
 

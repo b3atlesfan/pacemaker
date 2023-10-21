@@ -29,6 +29,11 @@ const content = computed(() => contentManager.getContent(props.contentId))
         <v-col>{{ content.intensity }}</v-col>
       </v-row>
 
+      <v-row v-if="content.expectedPlaytime">
+        <v-col>Playtime:</v-col>
+        <v-col>{{ content.expectedPlaytime }}</v-col>
+      </v-row>
+
       <v-row>
         <v-col>Type:</v-col>
         <v-col>

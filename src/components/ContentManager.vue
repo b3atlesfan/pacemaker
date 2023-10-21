@@ -18,8 +18,8 @@ function onDeleteContent(id: number) {
   contentManager.deleteContent(id)
 }
 
-function onCreateContent(description: string, categories: Category, intensity: number, introducedSkills: Skill[], reinforcedSkills: Skill[], requiredSkills: Skill[]) {
-  contentManager.createContent(description, categories, intensity, introducedSkills, reinforcedSkills, requiredSkills)
+function onCreateContent(description: string, categories: Category, intensity: number, expectedPlaytime: number, introducedSkills: Skill[], reinforcedSkills: Skill[], requiredSkills: Skill[]) {
+  contentManager.createContent(description, categories, intensity, expectedPlaytime, introducedSkills, reinforcedSkills, requiredSkills)
   dialog.value = false
 }
 
@@ -33,7 +33,6 @@ function onCreateContent(description: string, categories: Category, intensity: n
     <v-row>
       <v-col
         v-for="content in contents"
-        :key="content"
         cols="12"
         sm="6"
         md="4"
