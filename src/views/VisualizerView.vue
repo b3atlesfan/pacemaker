@@ -65,12 +65,12 @@ function computePath() {
   const path: number[] = []
 
   if (selectedBeats.value.length == 0) {
-    console.log("length is 0")
+    //console.log("length is 0")
     return path
   }
 
   if (selectedBeats.value.length == 1) {
-    console.log("length is 1")
+    //console.log("length is 1")
     path.push(parseInt(selectedBeats.value[0].id))
     return path
   }
@@ -89,11 +89,7 @@ function computePath() {
   let rounds = 0
   while (nodesToVisit.length != 0 && rounds < 100) {
 
-    console.log("iteration")
-
     nodesToVisit.sort((first, second) => first.cost < second.cost ? 1 : -1)
-
-    nodesToVisit.forEach(node => console.log(node.id + " cost " + node.cost))
 
     const current = nodesToVisit.pop()
 
@@ -138,103 +134,6 @@ function computePath() {
 
   return path
 }
-
-/* old (not) working version
-function onShow() {
-  console.log(vue.getOutgoers(selectedBeat.value.id))
-
-  const dict : { [key: string]: { cost: number, prev: number}} = {}
-
-  dict["hello"] = {cost: 3, prev: 3}
-
-  //
-
-  if (selectedBeats.value.length == 0) return
-
-  const nodesToVisit: DNode[] = []
-
-  const startNode = new DNode(parseInt(selectedBeats.value[0].id), 0)
-  nodesToVisit.push(startNode)
-
-  let result: DNode = startNode
-
-  let index = 1
-  let targetId = parseInt(selectedBeats.value[index].id)
-
-  while (nodesToVisit.length != 0) {
-
-    nodesToVisit.sort((first, second) => first.id < second.id ? 1 : -1)
-
-    const current = nodesToVisit.pop()
-
-    if (current == undefined) break
-
-    if (current.id == targetId) {
-      index++
-      if (index >= selectedBeats.value.length) {
-        result = current
-        break
-      } else {
-        nodesToVisit.splice(0, nodesToVisit.length)
-        targetId = parseInt(selectedBeats.value[index].id)
-      }
-    }
-
-    const currentOutGoers = vue.getOutgoers(current.id.toString())
-
-    currentOutGoers.forEach(outGoer => {
-
-      const index = nodesToVisit.findIndex(node => node.id == parseInt(outGoer.id))
-
-      if (index == -1) {
-        nodesToVisit.push(new DNode(parseInt(outGoer.id), current.cost + 1, current))
-      } else if (nodesToVisit[index].cost > current.cost + 1) {
-        nodesToVisit[index].cost = current.cost + 1
-        nodesToVisit[index].prev = current
-      }
-    })
-
-  }
-
-  const path: number[] = []
-
-  while (result.prev != null) {
-    path.push(result.id)
-    result = result.prev
-  }
-
-  path.push(result.id)
-
-  clearData()
-
-  for (let i = path.length - 1; i >= 0; i--) {
-    addToData(path[i], (path.length - 1 - i)*5)
-  }
-}
-
-
-function addToData(value: number, position: number) {
-
-    //const result = beatManager.elements.elements.value.find(element => element.id == value.toString())
-   // let value = ""
-   // if (result) {
-   //   const beat = result as GameplayBeat
-   //   value = beat.label
-      //console.log("what? " + value)
-   // }
-
-  //options.value.xaxis.categories.push(value)
-
-  //options.value.xaxis.categories.forEach(category => console.log(category))
-
-  //series.value[0].data.push([position, value])
-}
-
-function clearData() {
-  //series.value[0].data.splice(0, series.value[0].data.length)
-  //options.value.xaxis.categories.splice(0, options.value.xaxis.categories.length)
-}
-*/
 
 function switchSelectedBeats(id1: number, id2: number) {
   const temp = selectedBeats.value[id1]

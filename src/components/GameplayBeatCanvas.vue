@@ -115,19 +115,16 @@ function onDelete(id: string) {
 }
 
 function onSelectionPanelDelete() {
-  console.log("onSelectionPanelDelete")
   beatManager.deleteNode(getSelectedElements.value[0].id)
 }
 
 function onSelectionPanelAdd() {
-  console.log("onSelectionPanelDelete")
   onAddContent(getSelectedElements.value[0].id)
 }
 
 const editId = ref("")
 
 function onSelectionPanelEdit() {
-  console.log("onSelectionPanelDelete")
   editId.value = getSelectedElements.value[0].id
 }
 
@@ -140,8 +137,8 @@ function onCreate() {
 }
 
 function onSave(contentId: number) {
-  console.log(beatId)
-  console.log(contentId)
+  //console.log(beatId)
+  //console.log(contentId)
   beatManager.editContentId(beatId, contentId)
   contentSelectorDialog.value = false
 }

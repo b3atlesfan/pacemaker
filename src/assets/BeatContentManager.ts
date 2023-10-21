@@ -52,9 +52,9 @@ export class BeatContentManager {
     }
 
     getContent(id: number) : BeatContent {
-        console.log("it is now called")
+        //console.log("it is now called")
         const result = this.contentsStore.contents.value.find(x => x.id == id) as BeatContent
-        console.log("result is " + result)
+        //console.log("result is " + result)
         return result
     }
 
