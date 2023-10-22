@@ -10,6 +10,9 @@ import BeatContentSelector from "@/components/BeatContentSelector.vue";
 import ContentCreatorForm from "@/components/ContentCreatorForm.vue";
 import {Category, Skill} from "@/assets/BeatContent";
 import {BeatContentManager} from "@/assets/BeatContentManager";
+import {useTheme} from "vuetify";
+
+const theme = useTheme()
 
 const contentSelectorDialog = ref(false)
 const contentCreatorDialog = ref(false)
@@ -151,23 +154,8 @@ function createNode() {
   <ContentCreatorForm :dialog="contentCreatorDialog" @on-create-content="onCreateContent"></ContentCreatorForm>
 
   <VueFlow v-model="elements" :class="{ dark }" class="basicflow" :default-viewport="{ zoom: 1.5 }" :min-zoom="0.2" :max-zoom="4" @paneContextMenu="onContextMenu($event)">
-    <Background :pattern-color="dark ? '#000000' : '#03dac6'" :gap="50" />
 
-    <template #node-gameplay-beat="{ id, label, selected, data }">
-      <GameplayBeatNode :id="id" :label="label" :selected="selected" :data="data" :is-being-edited="id == editId" @on-add-content="onAddContent" @on-remove-content="onRemoveContent" @on-edit-label="onEditLabel" @on-delete="onDelete" />
-    </template>
-
-    <!--
-    <MiniMap />
-
-
-    <Controls />
-    -->
-
-    <!--
-    <ThePanel :node-is-selected="getSelectedElements.length == 1" @on-delete="onSelectionPanelDelete" @on-add="onSelectionPanelAdd" @on-edit="onSelectionPanelEdit"/>
-    -->
-
+    <!-- Selection Panel -->
     <Panel  :position="PanelPosition.TopRight" >
       <v-btn-group v-if="oneNodeIsSelected" color="secondary">
 
@@ -223,10 +211,7 @@ function createNode() {
 
     </Panel>
 
-    <Panel v-if="true" :position="PanelPosition.BottomLeft">
-      <slot name="panel-bottom-left"></slot>
-    </Panel>
-
+    <!-- General Panel -->
     <Panel :position="PanelPosition.BottomRight">
       <v-tooltip text="Create Gameplay Beat" location="start">
         <template v-slot:activator="{ props }">
@@ -244,12 +229,24 @@ function createNode() {
       -->
     </Panel>
 
+    <!-- Slot Panel -->
+    <Panel v-if="true" :position="PanelPosition.BottomLeft">
+      <slot name="panel-bottom-left"></slot>
+    </Panel>
+
+    <Background :pattern-color="theme.current.value.colors['on-surface']" :gap="50" />
+
+    <template #node-gameplay-beat="{ id, label, selected, data }">
+      <GameplayBeatNode :id="id" :label="label" :selected="selected" :data="data" :is-being-edited="id == editId" @on-add-content="onAddContent" @on-remove-content="onRemoveContent" @on-edit-label="onEditLabel" @on-delete="onDelete" />
+    </template>
+
   </VueFlow>
-  <!--
-  <PacingChart />
-  -->
 </template>
 
 <style>
+
+.background {
+  background: rgb(var())
+}
 
 </style>
