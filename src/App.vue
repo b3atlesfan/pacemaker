@@ -31,9 +31,12 @@ function toggleTheme() {
         <v-list-item prepend-icon="mdi-star" title="Starred" value="starred"></v-list-item>
         -->
       </v-list>
+      <v-divider></v-divider>
 
-      <v-switch @change="toggleTheme">
-      </v-switch>
+      <v-list density="compact" nav>
+        <v-list-item prepend-icon="mdi-weather-night" :title="theme.global.current.value.dark ? 'Light Mode' : 'Dark Mode'" @click="toggleTheme"></v-list-item>
+      </v-list>
+
     </v-navigation-drawer>
 
     <v-main class="overflow-hidden">
