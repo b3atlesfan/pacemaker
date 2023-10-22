@@ -3,6 +3,7 @@
 import {BeatManager} from "@/assets/BeatManager";
 import {computed, ref} from "vue";
 import {BeatContentManager} from "@/assets/BeatContentManager";
+import {useTheme} from "vuetify";
 
 const props = defineProps<{
   path: number[] | undefined,
@@ -12,42 +13,46 @@ const props = defineProps<{
 const beatManager = BeatManager.getInstance()
 const contentManager = BeatContentManager.getInstance()
 
-const options = ref({
-  chart: {
-    id: 'vuechart-example'
-  },
-  theme: {
-    mode: 'light',
-    palette: 'palette1',
-    monochrome: {
-      enabled: false,
-      color: '#255aee',
-      shadeTo: 'light',
-      shadeIntensity: 0.65
+const theme = useTheme()
+
+const options = computed(() => {
+  return {
+    chart: {
+      id: 'vuechart-example'
     },
-  },
-  title: {
-    text: props.computeOptions + ' chart',
-    align: 'left'
-  },
-  xaxis: {
-    type: 'numeric'
-  },
-  stroke: {
-    width: 5,
-    curve: 'smooth'
-  },
-  fill: {
-    type: 'gradient',
-    gradient: {
-      shade: 'dark',
-      gradientToColors: [ '#79000e'],
-      shadeIntensity: 1,
-      type: 'horizontal',
-      opacityFrom: 1,
-      opacityTo: 1,
-      stops: [0, 100, 100, 100]
+    theme: {
+      mode: theme.global.current.value.dark ? 'dark' : 'light',
+      palette: 'palette1',
+      monochrome: {
+        enabled: false,
+        color: '#255aee',
+        shadeTo: 'light',
+        shadeIntensity: 0.65
+      },
     },
+    title: {
+      text: props.computeOptions + ' chart',
+      align: 'left'
+    },
+    xaxis: {
+      type: 'numeric'
+    },
+    stroke: {
+      width: 5,
+      curve: 'smooth'
+    },
+    fill: {
+      type: 'gradient',
+      gradient: {
+        shade: 'dark',
+        gradientToColors: ['#79000e'],
+        shadeIntensity: 1,
+        type: 'horizontal',
+        opacityFrom: 1,
+        opacityTo: 1,
+        stops: [0, 100, 100, 100]
+      },
+    }
   }
 })
 
@@ -101,7 +106,7 @@ function computeTime(): [{name: string, data: number[][]}] | undefined {
       currentTime += increment
       j += increment
     } while (content.expectedPlaytime && j < content.expectedPlaytime)
-    
+
   }
 
   return [{name: 'series-1', data: data}]
