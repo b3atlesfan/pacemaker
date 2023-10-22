@@ -245,8 +245,4 @@ function createNode() {
 
 <style>
 
-.background {
-  background: rgb(var())
-}
-
 </style>

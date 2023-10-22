@@ -102,7 +102,7 @@ export default createVuetify({
           "on-error": '#ECEFF1',
         }
       },
-      green: {
+      red: {
         dark: false,
         colors: {
           background: '#FAFAFA',
@@ -118,8 +118,24 @@ export default createVuetify({
           "on-error": '#ECEFF1',
         }
       },
+      redDark: {
+        dark: true,
+        colors: {
+          background: '#121212',
+          surface: '#555555',
+          primary: '#bb86fc',
+          'primary-variant': '#3700b3',
+          secondary: '#03dac6',
+          error: '#cf6679',
+          "on-primary": '#000000',
+          "on-secondary": '#000000',
+          "on-background": '#ffffff',
+          "on-surface": '#ffffff',
+          "on-error": '#000000',
+        }
+      }
     },
-    defaultTheme: 'green',
+    defaultTheme: 'red',
   },
   blueprint: md3,
 })

@@ -10,7 +10,7 @@
 }
 
 .basicflow.dark {
-    background: #ffffff;
+    background: rgb(var(--v-theme-surface));
     color: #fffffb;
 }
 

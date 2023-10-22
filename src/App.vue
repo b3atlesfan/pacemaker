@@ -1,4 +1,12 @@
 <script lang="ts" setup>
+import {useTheme} from "vuetify";
+
+const theme = useTheme()
+
+function toggleTheme() {
+  theme.global.name.value = theme.global.current.value.dark ? 'red' : 'redDark'
+}
+
 
 </script>
 
@@ -23,6 +31,9 @@
         <v-list-item prepend-icon="mdi-star" title="Starred" value="starred"></v-list-item>
         -->
       </v-list>
+
+      <v-switch @change="toggleTheme">
+      </v-switch>
     </v-navigation-drawer>
 
     <v-main class="overflow-hidden">
