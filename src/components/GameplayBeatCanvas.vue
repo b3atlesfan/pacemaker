@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {MarkerType, Panel, PanelPosition, useVueFlow, VueFlow} from '@vue-flow/core'
+import {MarkerType, Panel, PanelPosition, useVueFlow, VueFlow, isNode, isEdge } from '@vue-flow/core'
 import {Background} from '@vue-flow/background'
 import {computed, ref} from 'vue'
 import GameplayBeatNode from "@/components/GameplayBeatNode.vue";
@@ -20,21 +20,30 @@ let beatId = ""
 
 const beatManager = BeatManager.getInstance()
 const contentManager = BeatContentManager.getInstance()
-/**
- * useVueFlow provides all event handlers and store properties
- * You can pass the composable an object that has the same properties as the VueFlow component props
- */
-const { onNodeDragStop, onConnect, addEdges, setTransform, toObject,
-  nodeTypes, addNodes, getNodes, removeNodes, getSelectedElements, getViewport, fitView, setViewport, project } = useVueFlow()
 
-/*
-nodeTypes.value = {
-  "gameplay-beat": markRaw(GameplayBeatNode)
-}*/
+const editId = ref("")
 
-/**
- * Our elements
- */
+const hasContent = computed(() => {
+  if (getSelectedElements.value.length == 0) return false
+
+  return getSelectedElements.value[0].data != -1
+})
+
+const { onNodeDragStop, onConnect, addEdges, removeEdges, setTransform, toObject,
+  nodeTypes, addNodes, getNodes, removeNodes, getSelectedElements, getViewport, fitView, setViewport, project,  } = useVueFlow()
+
+const oneNodeIsSelected = computed(() => {
+  return getSelectedElements.value.length == 1 && isNode(getSelectedElements.value[0])
+})
+
+const oneEdgeIsSelected = computed(() => {
+  return getSelectedElements.value.length == 1 && isEdge(getSelectedElements.value[0])
+})
+
+const multipleElementsSelected = computed(() => {
+  return getSelectedElements.value.length > 1
+})
+
 // const elements = ref(initialElements)
 const { elements } = storeToRefs(useElementsStore())
 
@@ -49,20 +58,12 @@ function onContextMenu(mouseEvent: MouseEvent) {
 }
 
 /**
- * This is a Vue Flow event-hook which can be listened to from anywhere you call the composable, instead of only on the main component
- *
- * onPaneReady is called when viewpane & nodes have visible dimensions
- */
-
-onNodeDragStop((e) => console.log('drag stop', e))
-
-/**
  * onConnect is called when a new connection is created.
  * You can add additional properties to your new edge (like a type or label) or block the creation altogether
  */
 onConnect((params) => {
 
-  console.log([params.sourceHandle, params.targetHandle])
+  //console.log([params.sourceHandle, params.targetHandle])
 
   const edge = {
     id: 'e' + params.source + '-' + params.target,
@@ -77,24 +78,6 @@ onConnect((params) => {
 
   addEdges(edge)
 })
-
-/**
- * toObject transforms your current graph data to an easily persist-able object
- */
-function logToObject() {
-  return console.log(toObject())
-}
-
-/**
- * Resets the current viewpane transformation (zoom & pan)
- */
-function resetTransform() {
-  return setTransform({ x: 0, y: 0, zoom: 1 })
-}
-
-function toggleClass() {
-  return (dark.value = !dark.value)
-}
 
 function onAddContent(id: string) {
   beatId = id
@@ -115,7 +98,13 @@ function onDelete(id: string) {
 }
 
 function onSelectionPanelDelete() {
-  beatManager.deleteNode(getSelectedElements.value[0].id)
+  getSelectedElements.value.forEach(elem => {
+    if (isNode(elem)) {
+      beatManager.deleteNode(elem.id)
+    } else if (isEdge(elem)) {
+      removeEdges(elem.id)
+    }
+  })
 }
 
 function onSelectionPanelAdd() {
@@ -125,14 +114,6 @@ function onSelectionPanelAdd() {
 function onSelectionPanelRemove() {
   beatManager.editContentId(getSelectedElements.value[0].id, -1)
 }
-
-const editId = ref("")
-
-const hasContent = computed(() => {
-  if (getSelectedElements.value.length == 0) return false
-
-  return getSelectedElements.value[0].data != -1
-})
 
 function onSelectionPanelEdit() {
   editId.value = getSelectedElements.value[0].id
@@ -187,9 +168,9 @@ function createNode() {
     <ThePanel :node-is-selected="getSelectedElements.length == 1" @on-delete="onSelectionPanelDelete" @on-add="onSelectionPanelAdd" @on-edit="onSelectionPanelEdit"/>
     -->
 
-    <Panel v-if="getSelectedElements.length == 1" :position="PanelPosition.TopRight" >
-      <v-btn-group color="secondary">
-        
+    <Panel  :position="PanelPosition.TopRight" >
+      <v-btn-group v-if="oneNodeIsSelected" color="secondary">
+
         <v-tooltip text="Edit Beat" location="bottom">
           <template v-slot:activator="{ props }">
             <v-btn v-bind="props" icon="mdi-pencil" @click="onSelectionPanelEdit"></v-btn>
@@ -223,6 +204,23 @@ function createNode() {
         </v-tooltip>
 
       </v-btn-group>
+
+      <v-btn-group v-if="oneEdgeIsSelected" color="secondary">
+        <v-tooltip text="Delete Edge" location="bottom">
+          <template v-slot:activator="{ props }">
+            <v-btn v-bind="props" icon="mdi-delete" @click="onSelectionPanelDelete"></v-btn>
+          </template>
+        </v-tooltip>
+      </v-btn-group>
+
+      <v-btn-group v-if="multipleElementsSelected" color="secondary">
+        <v-tooltip text="Delete All" location="bottom">
+          <template v-slot:activator="{ props }">
+            <v-btn v-bind="props" icon="mdi-delete" @click="onSelectionPanelDelete"></v-btn>
+          </template>
+        </v-tooltip>
+      </v-btn-group>
+
     </Panel>
 
     <Panel v-if="true" :position="PanelPosition.BottomLeft">
