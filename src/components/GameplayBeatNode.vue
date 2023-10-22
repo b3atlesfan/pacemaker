@@ -38,7 +38,6 @@ function onDelete() {
   emit('onDelete', props.id)
 }
 
-
 </script>
 
 <template>
@@ -48,20 +47,36 @@ function onDelete() {
       <p v-else>{{ props.label }}</p>
     </template>
 
-    <div v-if="props.selected">
-      <v-list-item v-if="!hasContent" title="No Content" no-gutters>
-        <template v-slot:append>
-          <v-icon @click="onAddContent">
-            mdi-tag-plus
-          </v-icon>
-          <!--
-          <v-btn icon="mdi-tag-plus" @click="onAddContent" color="on-secondary" elevation="0"></v-btn>
-          -->
-        </template>
-      </v-list-item>
-      <BeatContentHolder v-else :content-id="props.data" :is-in-beat="true"/>
-    </div>
+    <v-card-actions v-if="props.selected && !hasContent" title="No Content">
+      <v-card-text>No Content</v-card-text>
+      <v-spacer></v-spacer>
+      <v-btn icon="mdi-tag-plus" :color="'on-' + color" @click="onAddContent"></v-btn>
+    </v-card-actions>
 
+    <BeatContentHolder
+        v-if="props.selected && hasContent"
+        :content-id="props.data"
+        type='preview'
+        :is-highlighted="true"
+    />
+
+
+    <!--
+        <div v-if="props.selected">
+          <v-list-item v-if="!hasContent" title="No Content" no-gutters>
+            <template v-slot:append>
+              <v-icon @click="onAddContent">
+                mdi-tag-plus
+              </v-icon>
+            </template>
+          </v-list-item>
+          <BeatContentHolder
+              v-else
+              :content-id="props.data"
+              type='preview'
+          />
+        </div>
+    -->
 
 
     <!--

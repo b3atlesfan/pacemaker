@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import {BeatContentManager} from "@/assets/BeatContentManager";
 import {computed} from "vue";
+import ContentPreview from "@/components/ContentPreview.vue";
 
 const props = defineProps<{
   contentId: number,
-  isInBeat: boolean,
+  type: "preview" | "detailed" | "raw",
+  isHighlighted?: boolean,
   color?: string,
 }>()
 
@@ -16,16 +18,25 @@ const content = computed(() => contentManager.getContent(props.contentId))
 
 <template>
 
+  <ContentPreview
+      v-if="props.type == 'preview' || props.type == 'detailed'"
+      :title="content.description"
+      :intensity="content.intensity"
+      :category="content.category"
+      :is-highlighted="props.isHighlighted"
+  ></ContentPreview>
+
+<!--
   <v-expansion-panels>
     <v-expansion-panel :title="content.description" color="secondary">
       <v-expansion-panel-text>
         <v-container>
-          <!--
+
           <v-row no-gutters justify="start">
             <v-col justify="start">Description:</v-col>
             <v-col>{{ content.description }}</v-col>
           </v-row>
-          -->
+
           <v-row>
             <v-col>Intensity:</v-col>
             <v-col>{{ content.intensity }}</v-col>
@@ -69,11 +80,21 @@ const content = computed(() => contentManager.getContent(props.contentId))
       </v-expansion-panel-text>
     </v-expansion-panel>
   </v-expansion-panels>
-<!--
+
   <v-card :color="props.color ? props.color : ''" :title="content.description">
+    <template v-slot:append>
+      <v-btn-group>
+        <v-btn
+            v-if="!props.isInBeat"
+            @click="$emit('onDelete', content.id)"
+            icon="mdi-delete"
+        ></v-btn>
+      </v-btn-group>
+    </template>
+
     <v-container>
       <v-row no-gutters justify="start">
-        <v-col justify="start">Description:</v-col>
+        <v-col>Description:</v-col>
         <v-col>{{ content.description }}</v-col>
       </v-row>
       <v-row>
@@ -86,7 +107,7 @@ const content = computed(() => contentManager.getContent(props.contentId))
         <v-col>{{ content.expectedPlaytime }}</v-col>
       </v-row>
 
-      <v-row>
+      <v-row v-if="content.category">
         <v-col>Type:</v-col>
         <v-col>
           <v-chip>{{ content.category }}</v-chip>
@@ -114,7 +135,6 @@ const content = computed(() => contentManager.getContent(props.contentId))
         </v-col>
       </v-row>
 
-      <v-btn v-if="!props.isInBeat" @click="$emit('onDelete', content.id)">Delete</v-btn>
     </v-container>
   </v-card>
   -->

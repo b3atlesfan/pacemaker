@@ -171,11 +171,20 @@ function createNode() {
           </template>
         </v-tooltip>
 
+        <!--
+        <v-tooltip text="Show Content" location="bottom">
+          <template v-slot:activator="{ props }">
+            <v-btn v-bind="props" icon="mdi-tag-search" color="secondary"></v-btn>
+          </template>
+        </v-tooltip>
+        -->
+
         <v-tooltip v-else text="Remove Content" location="bottom">
           <template v-slot:activator="{ props }">
             <v-btn v-bind="props" icon="mdi-tag-minus" @click="onSelectionPanelRemove" color="secondary"></v-btn>
           </template>
         </v-tooltip>
+
 
         <!--
         <v-tooltip text="Switch Content" location="bottom">
