@@ -13,7 +13,7 @@ const emit = defineEmits(['onSave', 'onExit', 'onCreate'])
 
 const manager = BeatContentManager.getInstance()
 
-const { contents } = storeToRefs(useContentsStore())
+const {contents} = storeToRefs(useContentsStore())
 
 const id = ref(-1)
 
@@ -52,13 +52,14 @@ function onDelete(selectedId: number) {
           <v-container>
             <v-row>
               <v-col
-                  v-for="content in contents"
-                  cols="12"
-                  md="6"
+                v-for="content in contents"
+                cols="12"
+                md="6"
               >
                 <v-item>
                   <v-card @click="() => {onSelect(content.id);}">
-                    <BeatContentHolder :is-highlighted="id == content.id" :content-id="content.id" type="preview" @on-delete="onDelete"/>
+                    <BeatContentHolder :is-highlighted="id == content.id" :content-id="content.id" type="preview"
+                                       @on-delete="onDelete"/>
                   </v-card>
                 </v-item>
               </v-col>
