@@ -2,10 +2,11 @@
 import {BeatContentManager} from "@/assets/BeatContentManager";
 import {computed} from "vue";
 import ContentPreview from "@/components/ContentPreview.vue";
+import ContentDetailedView from "@/components/ContentDetailedView.vue";
 
 const props = defineProps<{
   contentId: number,
-  type: "preview" | "detailed" | "raw",
+  type: "preview" | "detailed",
   isHighlighted?: boolean,
   color?: string,
 }>()
@@ -19,125 +20,20 @@ const content = computed(() => contentManager.getContent(props.contentId))
 <template>
 
   <ContentPreview
-      v-if="props.type == 'preview' || props.type == 'detailed'"
+      v-if="props.type == 'preview'"
       :title="content.description"
       :intensity="content.intensity"
       :category="content.category"
       :is-highlighted="props.isHighlighted"
   ></ContentPreview>
 
-<!--
-  <v-expansion-panels>
-    <v-expansion-panel :title="content.description" color="secondary">
-      <v-expansion-panel-text>
-        <v-container>
+  <ContentDetailedView v-else :content="content">
+    <v-btn
+      @click="$emit('onDelete', content.id)"
+      icon="mdi-delete"
+    ></v-btn>
+  </ContentDetailedView>
 
-          <v-row no-gutters justify="start">
-            <v-col justify="start">Description:</v-col>
-            <v-col>{{ content.description }}</v-col>
-          </v-row>
-
-          <v-row>
-            <v-col>Intensity:</v-col>
-            <v-col>{{ content.intensity }}</v-col>
-          </v-row>
-
-          <v-row v-if="content.expectedPlaytime">
-            <v-col>Playtime:</v-col>
-            <v-col>{{ content.expectedPlaytime }}</v-col>
-          </v-row>
-
-          <v-row>
-            <v-col>Type:</v-col>
-            <v-col>
-              <v-chip>{{ content.category }}</v-chip>
-            </v-col>
-          </v-row>
-
-          <v-row v-if="content.introducedSkills.length > 0">
-            <v-col>Introduces:</v-col>
-            <v-col>
-              <v-chip v-for="(skill) in content?.introducedSkills"> {{ skill }} </v-chip>
-            </v-col>
-          </v-row>
-
-          <v-row v-if="content.reinforcedSkills.length > 0">
-            <v-col>Reinforces:</v-col>
-            <v-col>
-              <v-chip v-for="(skill) in content?.reinforcedSkills"> {{ skill }} </v-chip>
-            </v-col>
-          </v-row>
-
-          <v-row v-if="content.requiredSkills.length > 0">
-            <v-col>Requires:</v-col>
-            <v-col>
-              <v-chip v-for="(skill) in content?.requiredSkills"> {{ skill }} </v-chip>
-            </v-col>
-          </v-row>
-
-          <v-btn v-if="!props.isInBeat" @click="$emit('onDelete', content.id)">Delete</v-btn>
-        </v-container>
-      </v-expansion-panel-text>
-    </v-expansion-panel>
-  </v-expansion-panels>
-
-  <v-card :color="props.color ? props.color : ''" :title="content.description">
-    <template v-slot:append>
-      <v-btn-group>
-        <v-btn
-            v-if="!props.isInBeat"
-            @click="$emit('onDelete', content.id)"
-            icon="mdi-delete"
-        ></v-btn>
-      </v-btn-group>
-    </template>
-
-    <v-container>
-      <v-row no-gutters justify="start">
-        <v-col>Description:</v-col>
-        <v-col>{{ content.description }}</v-col>
-      </v-row>
-      <v-row>
-        <v-col>Intensity:</v-col>
-        <v-col>{{ content.intensity }}</v-col>
-      </v-row>
-
-      <v-row v-if="content.expectedPlaytime">
-        <v-col>Playtime:</v-col>
-        <v-col>{{ content.expectedPlaytime }}</v-col>
-      </v-row>
-
-      <v-row v-if="content.category">
-        <v-col>Type:</v-col>
-        <v-col>
-          <v-chip>{{ content.category }}</v-chip>
-        </v-col>
-      </v-row>
-
-      <v-row v-if="content.introducedSkills.length > 0">
-        <v-col>Introduces:</v-col>
-        <v-col>
-          <v-chip v-for="(skill) in content?.introducedSkills"> {{ skill }} </v-chip>
-        </v-col>
-      </v-row>
-
-      <v-row v-if="content.reinforcedSkills.length > 0">
-        <v-col>Reinforces:</v-col>
-        <v-col>
-          <v-chip v-for="(skill) in content?.reinforcedSkills"> {{ skill }} </v-chip>
-        </v-col>
-      </v-row>
-
-      <v-row v-if="content.requiredSkills.length > 0">
-        <v-col>Requires:</v-col>
-        <v-col>
-          <v-chip v-for="(skill) in content?.requiredSkills"> {{ skill }} </v-chip>
-        </v-col>
-      </v-row>
-
-    </v-container>
-  </v-card>
-  -->
 </template>
 
 <style scoped>

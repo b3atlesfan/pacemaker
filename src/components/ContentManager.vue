@@ -36,9 +36,9 @@ function onCreateContent(description: string, categories: Category, intensity: n
         cols="12"
         sm="6"
         md="4"
-        lg="2"
+        lg="4"
       >
-        <BeatContentHolder :content-id="content.id" type='preview' @on-delete="onDeleteContent"></BeatContentHolder>
+        <BeatContentHolder :content-id="content.id" type='detailed' @on-delete="onDeleteContent"></BeatContentHolder>
       </v-col>
     </v-row>
 
