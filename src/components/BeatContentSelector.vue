@@ -41,7 +41,7 @@ function onDelete(selectedId: number) {
 </script>
 
 <template>
-  <v-dialog v-model="props.dialog" width="500px">
+  <v-dialog v-model="props.dialog" width="500px" persistent>
     <v-card>
       <v-item-group selected-class="bg-primary">
         <v-container>
