@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {MarkerType, Panel, PanelPosition, useVueFlow, VueFlow, isNode, isEdge } from '@vue-flow/core'
+import {MarkerType, Panel, PanelPosition, useVueFlow, VueFlow, isNode, isEdge} from '@vue-flow/core'
 import {Background} from '@vue-flow/background'
 import {computed, ref} from 'vue'
 import GameplayBeatNode from "@/components/GameplayBeatNode.vue";
@@ -32,8 +32,10 @@ const hasContent = computed(() => {
   return getSelectedElements.value[0].data != -1
 })
 
-const { onNodeDragStop, onConnect, addEdges, removeEdges, setTransform, toObject,
-  nodeTypes, addNodes, getNodes, removeNodes, getSelectedElements, getViewport, fitView, setViewport, project,  } = useVueFlow()
+const {
+  onNodeDragStop, onConnect, addEdges, removeEdges, setTransform, toObject,
+  nodeTypes, addNodes, getNodes, removeNodes, getSelectedElements, getViewport, fitView, setViewport, project,
+} = useVueFlow()
 
 const oneNodeIsSelected = computed(() => {
   return getSelectedElements.value.length == 1 && isNode(getSelectedElements.value[0])
@@ -48,7 +50,7 @@ const multipleElementsSelected = computed(() => {
 })
 
 // const elements = ref(initialElements)
-const { elements } = storeToRefs(useElementsStore())
+const {elements} = storeToRefs(useElementsStore())
 
 let pos
 
@@ -56,7 +58,7 @@ function onContextMenu(mouseEvent: MouseEvent) {
   // prevent the browser's default menu
   mouseEvent.preventDefault();
   // for now, just create node
-  pos = { x: mouseEvent.x, y: mouseEvent.y }
+  pos = {x: mouseEvent.x, y: mouseEvent.y}
   beatManager.createNode(project(pos))
 }
 
@@ -144,19 +146,21 @@ function onCreateContent(description: string, categories: Category, intensity: n
 
 function createNode() {
   const viewport = getViewport()
-  beatManager.createNode({x: -viewport.x / viewport.zoom,  y: -viewport.y / viewport.zoom })
+  beatManager.createNode({x: -viewport.x / viewport.zoom, y: -viewport.y / viewport.zoom})
 }
 
 </script>
 
 <template>
-  <BeatContentSelector :dialog="contentSelectorDialog" @on-exit="onExit" @on-create="onCreate" @on-save="onSave"></BeatContentSelector>
+  <BeatContentSelector :dialog="contentSelectorDialog" @on-exit="onExit" @on-create="onCreate"
+                       @on-save="onSave"></BeatContentSelector>
   <ContentCreatorForm :dialog="contentCreatorDialog" @on-create-content="onCreateContent"></ContentCreatorForm>
 
-  <VueFlow v-model="elements" :class="{ dark }" class="basicflow" :default-viewport="{ zoom: 1.5 }" :min-zoom="0.2" :max-zoom="4" @paneContextMenu="onContextMenu($event)">
+  <VueFlow v-model="elements" :class="{ dark }" class="basicflow" :default-viewport="{ zoom: 1.5 }" :min-zoom="0.2"
+           :max-zoom="4" @paneContextMenu="onContextMenu($event)">
 
     <!-- Selection Panel -->
-    <Panel  :position="PanelPosition.TopRight" >
+    <Panel :position="PanelPosition.TopRight">
       <v-btn-group v-if="oneNodeIsSelected" color="secondary">
 
         <v-tooltip text="Edit Beat" location="bottom">
@@ -243,10 +247,13 @@ function createNode() {
       <slot name="panel-bottom-left"></slot>
     </Panel>
 
-    <Background :pattern-color="theme.current.value.colors['on-surface']" :gap="50" />
+    <Background :pattern-color="theme.current.value.colors['on-surface']" :gap="50"/>
 
     <template #node-gameplay-beat="{ id, label, selected, data }">
-      <GameplayBeatNode :id="id" :label="label" :selected="selected" :data="data" :is-being-edited="id == editId" @on-add-content="onAddContent" @on-remove-content="onRemoveContent" @on-edit-label="onEditLabel" @on-delete="onDelete" />
+      <GameplayBeatNode :id="id" :label="label" :selected="selected" :data="data" :is-being-edited="id == editId"
+                        @on-add-content="onAddContent" @on-remove-content="onRemoveContent" @on-edit-label="onEditLabel"
+                        @on-delete="onDelete"
+      />
     </template>
 
   </VueFlow>
