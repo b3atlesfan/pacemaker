@@ -41,30 +41,39 @@ function onDelete(selectedId: number) {
 </script>
 
 <template>
-  <v-dialog v-model="props.dialog" width="500px" persistent>
+  <v-dialog v-model="props.dialog" width="500px" persistent scrollable>
     <v-card>
-      <v-item-group selected-class="bg-primary">
-        <v-container>
-          <v-row>
-            <v-col
-                v-for="content in contents"
-                cols="12"
-                md="6"
-            >
-              <v-item>
-                <v-card @click="() => {onSelect(content.id);}">
-                  <BeatContentHolder :is-highlighted="id == content.id" :content-id="content.id" type="preview" @on-delete="onDelete"/>
-                </v-card>
-              </v-item>
-            </v-col>
-          </v-row>
-        </v-container>
-      </v-item-group>
+      <v-card-title>Select Content</v-card-title>
+
+      <v-divider></v-divider>
+
+      <v-card-text>
+        <v-item-group>
+          <v-container>
+            <v-row>
+              <v-col
+                  v-for="content in contents"
+                  cols="12"
+                  md="6"
+              >
+                <v-item>
+                  <v-card @click="() => {onSelect(content.id);}">
+                    <BeatContentHolder :is-highlighted="id == content.id" :content-id="content.id" type="preview" @on-delete="onDelete"/>
+                  </v-card>
+                </v-item>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-item-group>
+      </v-card-text>
+
+      <v-divider></v-divider>
 
       <v-card-actions>
-        <v-btn color="secondary" @click="onExit">Exit</v-btn>
-        <v-btn color="tertiary" @click="onCreate">Create</v-btn>
-        <v-btn color="primary" @click="onSave">Save</v-btn>
+        <v-btn @click="onCreate">Create</v-btn>
+        <v-spacer></v-spacer>
+        <v-btn @click="onExit">Exit</v-btn>
+        <v-btn @click="onSave">Save</v-btn>
       </v-card-actions>
     </v-card>
 

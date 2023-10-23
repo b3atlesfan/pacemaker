@@ -7,13 +7,15 @@ const props = defineProps<{
   intensity: number,
   category?: Category,
   isHighlighted?: boolean,
+  variant?: 'tonal' | 'elevated',
 }>()
 
 </script>
 
 <template>
   <v-card
-      :variant="props.isHighlighted ? 'tonal' : 'elevated'"
+      :variant="variant"
+      :color="props.isHighlighted ? 'secondary' : ''"
       :title="title"
   >
     <!--

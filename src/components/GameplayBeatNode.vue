@@ -51,7 +51,7 @@ function onDelete() {
       v-if="hasContent"
       :content-id="props.data"
       type='preview'
-      :is-highlighted="true"
+      variant="tonal"
     />
 
     <v-card-actions v-else title="No Content">
@@ -59,8 +59,6 @@ function onDelete() {
       <v-spacer></v-spacer>
       <v-btn icon="mdi-tag-plus" :color="'on-' + color" @click="onAddContent"></v-btn>
     </v-card-actions>
-
-
 
     <!--
         <div v-if="props.selected">
