@@ -47,106 +47,93 @@ function resetValues() {
 </script>
 
 <template>
-  <v-dialog v-model="props.dialog" width="500px">
-    <v-card>
-      <v-card-title>Create content</v-card-title>
+  <v-dialog v-model="props.dialog" width="1024px" persistent>
+    <v-card title="Create Content">
 
-      <v-container>
-        <v-row align="center" no-gutters>
-          <v-col>Description:</v-col>
-          <v-col>
-            <v-text-field v-model="description" label="Description"></v-text-field>
-          </v-col>
-        </v-row>
+      <v-card-text>
+        <v-container>
+          <v-row align="center" no-gutters>
+            <v-col cols="6">
+              <v-text-field v-model="description" label="Name*"></v-text-field>
+            </v-col>
+          </v-row>
 
-        <v-row align="center" no-gutters>
-          <v-col>Intensity:</v-col>
-          <v-col>
-            <v-slider
+          <v-row align="center" no-gutters>
+            <v-col cols="6">
+              <v-slider
                 v-model="slider"
                 class="align-center"
                 :max="max"
                 :min="min"
+                :step="1"
                 hide-details
-            >
-              <template v-slot:append>
-                <v-text-field
+              >
+                <template v-slot:append>
+                  <v-text-field
                     v-model="slider"
-                    hide-details
-                    single-line
-                    density="compact"
-                    type="number"
+                    label="Intensity*"
                     style="width: 90px"
-                ></v-text-field>
-              </template>
-            </v-slider>
-          </v-col>
-        </v-row>
-        <v-row align="center" no-gutters>
-          <v-col>Expected Playtime:</v-col>
-          <v-col>
-              <v-text-field
-                v-model="playtime"
-                hide-details
-                single-line
-                density="compact"
-                type="number"
-                style="width: 90px"
-              ></v-text-field>
-          </v-col>
-        </v-row>
+                    readonly
+                  ></v-text-field>
+                </template>
+              </v-slider>
+            </v-col>
 
-        <v-row align="center" no-gutters>
-          <v-col>Type:</v-col>
-          <v-col>
-            <v-select
+            <v-col>
+              <v-select
                 v-model="categories"
                 :items="possibleCategories"
-                label="Types"
+                label="Type*"
                 chips
-            ></v-select>
-          </v-col>
-        </v-row>
+              ></v-select>
+            </v-col>
+          </v-row>
 
-        <v-row align="center" no-gutters>
-          <v-col>Introduces:</v-col>
-          <v-col>
-            <v-select
+          <v-row align="center">
+            <v-col cols="6">
+              <v-text-field
+                v-model="playtime"
+                label="Expected Playtime"
+                type="time"
+                suffix="h:min:s"
+              ></v-text-field>
+            </v-col>
+          </v-row>
+
+          <v-row align="center">
+            <v-col cols="4">
+              <v-select
                 v-model="introducedSkills"
                 :items="possibleSkills"
-                label="Skills"
+                label="Introduced Skills"
                 multiple
                 chips
-            ></v-select>
-          </v-col>
-        </v-row>
+              ></v-select>
+            </v-col>
 
-        <v-row align="center" no-gutters>
-          <v-col>Reinforces:</v-col>
-          <v-col>
-            <v-select
+            <v-col cols="4">
+              <v-select
                 v-model="reinforcedSkills"
                 :items="possibleSkills"
-                label="Skills"
+                label="Reinforced Skills"
                 multiple
                 chips
-            ></v-select>
-          </v-col>
-        </v-row>
+              ></v-select>
+            </v-col>
 
-        <v-row align="center" no-gutters>
-          <v-col>Requires:</v-col>
-          <v-col>
-            <v-select
+            <v-col>
+              <v-select
                 v-model="requiredSkills"
                 :items="possibleSkills"
-                label="Skills"
+                label="Required Skills"
                 multiple
                 chips
-            ></v-select>
-          </v-col>
-        </v-row>
-      </v-container>
+              ></v-select>
+            </v-col>
+          </v-row>
+
+        </v-container>
+      </v-card-text>
 
       <v-card-actions>
         <v-btn color="secondary" @click="dialog = false">Exit</v-btn>
