@@ -47,18 +47,19 @@ function onDelete() {
       <p v-else>{{ props.label }}</p>
     </template>
 
-    <v-card-actions v-if="props.selected && !hasContent" title="No Content">
+    <BeatContentHolder
+      v-if="hasContent"
+      :content-id="props.data"
+      type='preview'
+      :is-highlighted="true"
+    />
+
+    <v-card-actions v-else title="No Content">
       <v-card-text>No Content</v-card-text>
       <v-spacer></v-spacer>
       <v-btn icon="mdi-tag-plus" :color="'on-' + color" @click="onAddContent"></v-btn>
     </v-card-actions>
 
-    <BeatContentHolder
-        v-if="props.selected && hasContent"
-        :content-id="props.data"
-        type='preview'
-        :is-highlighted="true"
-    />
 
 
     <!--
