@@ -14,7 +14,7 @@ const emit = defineEmits(['onCreateContent'])
 const description = ref("")
 
 const slider = ref(0)
-const playtime = ref(0)
+const playtime = ref('')
 const min = ref(0)
 const max = ref(100)
 
@@ -54,7 +54,7 @@ function resetValues() {
         <v-container>
           <v-row align="center" no-gutters>
             <v-col cols="6">
-              <v-text-field v-model="description" label="Name*"></v-text-field>
+              <v-text-field v-model="description" label="Name*" autofocus></v-text-field>
             </v-col>
           </v-row>
 
@@ -93,9 +93,11 @@ function resetValues() {
             <v-col cols="6">
               <v-text-field
                 v-model="playtime"
+                min="00:30"
+                max="10:00"
                 label="Expected Playtime"
                 type="time"
-                suffix="h:min:s"
+                suffix="min:s"
               ></v-text-field>
             </v-col>
           </v-row>

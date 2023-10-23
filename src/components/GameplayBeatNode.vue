@@ -43,7 +43,7 @@ function onDelete() {
 <template>
   <v-card min-width="200px" width="auto" :color="color">
     <template v-slot:title>
-      <v-text-field v-if="props.isBeingEdited" v-model="label" @keydown.enter="onEditLabel()"></v-text-field>
+      <v-text-field v-if="props.isBeingEdited" v-model="label" @keydown.enter="onEditLabel()" autofocus></v-text-field>
       <p v-else>{{ props.label }}</p>
     </template>
 
