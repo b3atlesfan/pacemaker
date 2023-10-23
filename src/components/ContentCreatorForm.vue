@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {ref} from "vue";
 import {Categories, Category, Skills, Skill} from "@/assets/BeatContent";
+import ContentCreationForm from "@/components/ContentCreationForm.vue";
 
 const props = defineProps({
   dialog: {
@@ -47,7 +48,9 @@ function resetValues() {
 </script>
 
 <template>
-  <v-dialog v-model="props.dialog" width="1024px" persistent>
+    <v-dialog v-model="props.dialog" width="1024px" persistent>
+    <ContentCreationForm></ContentCreationForm>
+    <!--
     <v-card title="Create Content">
 
       <v-card-text>
@@ -142,6 +145,7 @@ function resetValues() {
         <v-btn color="primary" @click="onSaveClicked()">Save</v-btn>
       </v-card-actions>
     </v-card>
+    -->
   </v-dialog>
 </template>
 

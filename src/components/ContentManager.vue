@@ -4,9 +4,10 @@ import {useContentsStore} from "@/store/contents";
 import {storeToRefs} from "pinia";
 import BeatContentHolder from "@/components/BeatContentHolder.vue";
 import ContentCreatorForm from "@/components/ContentCreatorForm.vue";
-import {BeatContentManager} from "@/assets/BeatContentManager";
+import {BeatContentManager, ContentFormState} from "@/assets/BeatContentManager";
 import {Category, Skill} from "@/assets/BeatContent";
 import {ref} from "vue";
+import ContentCreationForm from "@/components/ContentCreationForm.vue";
 
 const { contents } = storeToRefs(useContentsStore())
 
@@ -18,16 +19,19 @@ function onDeleteContent(id: number) {
   contentManager.deleteContent(id)
 }
 
-function onCreateContent(description: string, categories: Category, intensity: number, expectedPlaytime: number, introducedSkills: Skill[], reinforcedSkills: Skill[], requiredSkills: Skill[]) {
-  contentManager.createContent(description, categories, intensity, expectedPlaytime, introducedSkills, reinforcedSkills, requiredSkills)
+function onCreateContent(formInput: Object) {
+  contentManager.createContent(formInput)
   dialog.value = false
 }
 
 </script>
 
 <template>
-  <ContentCreatorForm :dialog="dialog" @on-create-content="onCreateContent" />
+  <ContentCreationForm :dialog="dialog" @on-submit="onCreateContent" @on-exit="dialog = false"></ContentCreationForm>
 
+  <!--
+  <ContentCreatorForm :dialog="dialog" @on-create-content="onCreateContent"></ContentCreatorForm>
+  -->
   <v-container contained>
 
     <v-row>

@@ -11,6 +11,7 @@ import ContentCreatorForm from "@/components/ContentCreatorForm.vue";
 import {Category, Skill} from "@/assets/BeatContent";
 import {BeatContentManager} from "@/assets/BeatContentManager";
 import {useTheme} from "vuetify";
+import ContentCreationForm from "@/components/ContentCreationForm.vue";
 
 const theme = useTheme()
 
@@ -139,8 +140,8 @@ function onSave(contentId: number) {
   contentSelectorDialog.value = false
 }
 
-function onCreateContent(description: string, categories: Category, intensity: number, expectedPlaytime: number, introducedSkills: Skill[], reinforcedSkills: Skill[], requiredSkills: Skill[]) {
-  contentManager.createContent(description, categories, intensity, expectedPlaytime, introducedSkills, reinforcedSkills, requiredSkills)
+function onCreateContent(formInput: Object) {
+  contentManager.createContent(formInput)
   contentCreatorDialog.value = false
 }
 
@@ -154,7 +155,12 @@ function createNode() {
 <template>
   <BeatContentSelector :dialog="contentSelectorDialog" @on-exit="onExit" @on-create="onCreate"
                        @on-save="onSave"></BeatContentSelector>
+
+  <ContentCreationForm :dialog="contentCreatorDialog" @on-submit="onCreateContent" @on-exit="contentCreatorDialog = false"></ContentCreationForm>
+
+  <!--
   <ContentCreatorForm :dialog="contentCreatorDialog" @on-create-content="onCreateContent"></ContentCreatorForm>
+  -->
 
   <VueFlow v-model="elements" :class="{ dark }" class="basicflow" :default-viewport="{ zoom: 1.5 }" :min-zoom="0.2"
            :max-zoom="4" @paneContextMenu="onContextMenu($event)">
