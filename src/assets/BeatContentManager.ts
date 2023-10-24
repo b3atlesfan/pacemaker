@@ -41,7 +41,7 @@ export class BeatContentManager {
     const input = contentFormInput as ContentFormState
 
     const id = this.idManager.getId()
-    const content = new BeatContent(id, input.name, input.category, input.intensity, parseInt(input.playtime), input.introducedSkills, input.reinforcedSkills, input.requiredSkills)
+    const content = new BeatContent(id, input.name, input.category, input.intensity, input.playtime, input.introducedSkills, input.reinforcedSkills, input.requiredSkills)
 
     this.contentsStore.contents.value.push(content)
     /*

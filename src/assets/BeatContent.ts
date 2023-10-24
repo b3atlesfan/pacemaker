@@ -36,12 +36,12 @@ export class BeatContent {
   description: string
   category: Category
   intensity: number
-  expectedPlaytime: number
+  expectedPlaytime: string
   introducedSkills: string[]
   reinforcedSkills: string[]
   requiredSkills: string[]
 
-  constructor(id: number, description: string, category: Category, intensity: number, expectedPlaytime: number, introducedSkills: string[], reinforcedSkills: string[], requiredSkills: string[]) {
+  constructor(id: number, description: string, category: Category, intensity: number, expectedPlaytime: string, introducedSkills: string[], reinforcedSkills: string[], requiredSkills: string[]) {
     this.id = id
     this.description = description
     this.category = category
