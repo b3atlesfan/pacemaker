@@ -15,18 +15,15 @@ const props = defineProps<{
       <v-row>
         <v-col>Intensity:</v-col>
         <v-col>{{ content.intensity }}</v-col>
+        <v-col>Type:</v-col>
+        <v-col>
+          <v-chip>{{ content.category }}</v-chip>
+        </v-col>
       </v-row>
 
       <v-row v-if="content.expectedPlaytime">
         <v-col>Playtime:</v-col>
         <v-col>{{ content.expectedPlaytime }}</v-col>
-      </v-row>
-
-      <v-row v-if="content.category">
-        <v-col>Type:</v-col>
-        <v-col>
-          <v-chip>{{ content.category }}</v-chip>
-        </v-col>
       </v-row>
 
       <v-row v-if="content.introducedSkills.length > 0">

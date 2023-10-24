@@ -34,7 +34,7 @@ function onDelete() {
 
       <v-text-field
         v-model="newValue"
-        label="Add new Option"
+        label="Add new option"
         @keydown.enter="onSubmit"
       >
 

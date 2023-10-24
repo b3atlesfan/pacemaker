@@ -22,7 +22,7 @@ function onCategoryDelete(skillId: number) {
 
 <template>
   <v-container>
-    <v-card title="Content Customization">
+    <v-card title="Content Customization" subtitle="Predefined values cannot be deleted">
       <v-container>
         <v-row>
           <v-col cols="6">
