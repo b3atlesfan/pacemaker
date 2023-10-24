@@ -89,7 +89,6 @@ function computeTime(): [{name: string, data: number[][]}] | undefined {
   const data: number[][] = []
 
   let currentTime = 0
-  const increment = 30
 
   for (let i = 0; i < props.path.length; i++) {
     //console.log("index " + i + " value " + props.path[i])
@@ -99,14 +98,23 @@ function computeTime(): [{name: string, data: number[][]}] | undefined {
 
     const content = contentManager.getContent(beat.data)
 
-    let j = 0
+    const min = content.expectedPlaytime ? parseInt(content.expectedPlaytime.substring(0, 2)) : 0
+    const sec = content.expectedPlaytime ? parseInt(content.expectedPlaytime.substring(3, 5)) : 30
 
+    const upperBound = min * 2 + Math.floor(sec/30)
+
+    for (let j = 1; j <= upperBound; j++) {
+      data.push([currentTime, content.intensity])
+      currentTime += 30
+    }
+
+    /*
     do {
       data.push([currentTime, content.intensity])
       currentTime += increment
       j += increment
     } while (content.expectedPlaytime && j < content.expectedPlaytime)
-
+    */
   }
 
   return [{name: 'series-1', data: data}]
