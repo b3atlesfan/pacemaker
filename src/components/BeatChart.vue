@@ -35,7 +35,15 @@ const options = computed(() => {
       align: 'left'
     },
     xaxis: {
-      type: 'numeric'
+      type: 'numeric',
+      labels: {
+        rotate: 0,
+        rotateAlways: false,
+        formatter: function (val: any) {
+          return val.toFixed(0)
+        }
+      },
+      decimalsInFloat: 0
     },
     stroke: {
       width: 5,
@@ -64,10 +72,10 @@ const computeOptions = {
 
 const series = computed(computeOptions[props.computeOptions])
 
-function computeBeat(): [{name: string, data: number[][]}] | undefined {
+function computeBeat(): [{name: string, data: [{x: string | number, y: number | null}]}] | undefined {
   if (props.path == undefined) return
 
-  const data: number[][] = []
+  const data: [{x: string | number, y: number | null}] = []
 
   for (let i = 0; i < props.path.length; i++) {
     //console.log("index " + i + " value " + props.path[i])
@@ -76,14 +84,15 @@ function computeBeat(): [{name: string, data: number[][]}] | undefined {
     if (beat.data == -1) continue
     const content = contentManager.getContent(beat.data)
 
-    data.push([i, content.intensity])
+    //data.push([i, content.intensity ? content.intensity : null])
+    data.push({x: i*2, y: content.intensity ? content.intensity : null})
     //console.log("series.data " + data)
   }
 
   return [{name: 'series-1', data: data}]
 }
 
-function computeTime(): [{name: string, data: number[][]}] | undefined {
+function computeTime(): [{name: string, data: [{x: string | number, y: number | null}]}] | undefined {
   if (props.path == undefined) return
 
   const data: number[][] = []
