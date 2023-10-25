@@ -98,7 +98,8 @@ const xAxisTitle = {
 const options = computed(() => {
   return {
     chart: {
-      id: 'vuechart-example'
+      id: 'vuechart-example',
+      background: theme.current.value.colors['surface'],
     },
     theme: {
       mode: theme.global.current.value.dark ? 'dark' : 'light',
