@@ -162,7 +162,7 @@ function removeFromSelectedBeats(id: number) {
       </v-col>
       <v-col cols="4">
         <v-card elevation="3">
-          <BeatTimeline></BeatTimeline>
+          <BeatTimeline :path="path" compute-options="Beat"></BeatTimeline>
         </v-card>
       </v-col>
     </v-row>
