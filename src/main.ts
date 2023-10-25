@@ -5,6 +5,7 @@
  */
 import './styles/main.css'
 import './styles/vueflow.css'
+import './styles/apexcharts.css'
 
 // Components
 import App from './App.vue'

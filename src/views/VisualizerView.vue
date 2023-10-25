@@ -152,12 +152,12 @@ function removeFromSelectedBeats(id: number) {
     <v-row>
       <v-col cols="4">
         <v-card elevation="3">
-          <BeatChart :path="path" :compute-options="'beat'"></BeatChart>
+          <BeatChart :path="path" compute-options="Beat"></BeatChart>
         </v-card>
       </v-col>
       <v-col cols="4">
         <v-card elevation="3">
-          <BeatChart :path="path" :compute-options="'time'"></BeatChart>
+          <BeatChart :path="path" compute-options="Time"></BeatChart>
         </v-card>
       </v-col>
       <v-col cols="4">

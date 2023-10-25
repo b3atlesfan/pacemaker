@@ -1,0 +1,7 @@
+.apexcharts-zoom-icon.apexcharts-selected svg {
+    fill: rgb(var(--v-theme-secondary)) !important;
+}
+
+.apexcharts-pan-icon.apexcharts-selected svg {
+    stroke: rgb(var(--v-theme-secondary)) !important;
+}
