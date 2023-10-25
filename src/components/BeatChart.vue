@@ -33,10 +33,10 @@ const computeOptions = {
   Time: computeTime,
 }
 
-function computeBeat(): [{name: string, data: [{x: string | number, y: number | null}]}] | undefined {
+function computeBeat(): [{name: string, data: {x: string | number, y: number | null}[]}] | undefined {
   if (props.path == undefined) return
 
-  const data: [{x: string | number, y: number | null}] = []
+  const data: {x: string | number, y: number | null}[] = []
 
   for (let i = 0; i < props.path.length; i++) {
     //console.log("index " + i + " value " + props.path[i])
@@ -53,10 +53,10 @@ function computeBeat(): [{name: string, data: [{x: string | number, y: number | 
   return [{name: 'series-1', data: data}]
 }
 
-function computeTime(): [{name: string, data: [{x: string | number, y: number | null}]}] | undefined {
+function computeTime(): [{name: string, data: {x: string | number, y: number | null}[]}] | undefined {
   if (props.path == undefined) return
 
-  const data: number[][] = []
+  const data: {x: string | number, y: number | null}[] = []
 
   let currentTime = 0
 
@@ -74,7 +74,7 @@ function computeTime(): [{name: string, data: [{x: string | number, y: number | 
     const upperBound = min * 2 + Math.floor(sec/30)
 
     for (let j = 1; j <= upperBound; j++) {
-      data.push([currentTime, content.intensity])
+      data.push({x: currentTime, y: content.intensity})
       currentTime += 30
     }
 
