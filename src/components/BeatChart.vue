@@ -33,7 +33,7 @@ const computeOptions = {
   Time: computeTime,
 }
 
-function computeBeat(): [{name: string, data: {x: string | number, y: number | null}[]}] | undefined {
+function computeBeat(): {name: string, data: {x: string | number, y: number | null}[]}[] | undefined {
   if (props.path == undefined) return
 
   const data: {x: string | number, y: number | null}[] = []
@@ -42,18 +42,21 @@ function computeBeat(): [{name: string, data: {x: string | number, y: number | n
     //console.log("index " + i + " value " + props.path[i])
     const beat = beatManager.getNode(props.path[i].toString())
 
-    if (beat.data == -1) continue
-    const content = contentManager.getContent(beat.data)
+    let intensity = null
 
-    //data.push([i, content.intensity ? content.intensity : null])
-    data.push({x: i, y: content.intensity ? content.intensity : null})
-    //console.log("series.data " + data)
+    if (beat.data != -1) {
+      const content = contentManager.getContent(beat.data)
+
+      intensity = content.intensity
+    }
+
+    data.push({x: i, y: intensity})
   }
 
   return [{name: 'series-1', data: data}]
 }
 
-function computeTime(): [{name: string, data: {x: string | number, y: number | null}[]}] | undefined {
+function computeTime(): {name: string, data: {x: string | number, y: number | null}[]}[] | undefined {
   if (props.path == undefined) return
 
   const data: {x: string | number, y: number | null}[] = []
@@ -64,7 +67,11 @@ function computeTime(): [{name: string, data: {x: string | number, y: number | n
     //console.log("index " + i + " value " + props.path[i])
     const beat = beatManager.getNode(props.path[i].toString())
 
-    if (beat.data == -1) continue
+    if (beat.data == -1) {
+      data.push({x: currentTime, y: null})
+      currentTime += 30
+      continue
+    }
 
     const content = contentManager.getContent(beat.data)
 
@@ -77,14 +84,6 @@ function computeTime(): [{name: string, data: {x: string | number, y: number | n
       data.push({x: currentTime, y: content.intensity})
       currentTime += 30
     }
-
-    /*
-    do {
-      data.push([currentTime, content.intensity])
-      currentTime += increment
-      j += increment
-    } while (content.expectedPlaytime && j < content.expectedPlaytime)
-    */
   }
 
   return [{name: 'series-1', data: data}]
@@ -118,6 +117,7 @@ const options = computed(() => {
         fontFamily: "Roboto",
       }
     },
+    labels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
     xaxis: {
       type: 'numeric',
       title: {
@@ -134,28 +134,17 @@ const options = computed(() => {
       },
       labels: {
         rotate: 0,
-        text: 'hello',
+        text: '',
         rotateAlways: false,
         formatter: formatterFunctions[props.computeOptions],
       },
       decimalsInFloat: 0
     },
     stroke: {
-      width: 5,
-      curve: 'smooth'
+      width: [5, 5, 4], // array for subsequent data series
+      curve: 'smooth', // 'straight' enables missing data points
+      lineCap: 'round',
     },
-    fill: {
-      type: 'gradient',
-      gradient: {
-        shade: 'dark',
-        gradientToColors: [theme.current.value.colors['primary']],
-        shadeIntensity: 1,
-        type: 'horizontal',
-        opacityFrom: 1,
-        opacityTo: 1,
-        stops: [0, 100, 100, 100]
-      },
-    }
   }
 })
 
