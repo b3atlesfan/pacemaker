@@ -36,11 +36,9 @@ const computeOptions = {
 function computeBeat(): {name: string, data: {x: string, y: number[]}[]}[] | undefined {
   if (props.path == undefined) return
 
-  const data: {x: string | number, y: number[] }[] = []
   const categories: { [category: string]: {x: string, y: number[]}[]} = {}
 
   for (let i = 0; i < props.path.length; i++) {
-    //console.log("index " + i + " value " + props.path[i])
     const beat = beatManager.getNode(props.path[i].toString())
 
     if (beat.data == -1) continue
@@ -65,37 +63,44 @@ function computeBeat(): {name: string, data: {x: string, y: number[]}[]}[] | und
   return result
 }
 
-function computeTime(): {name: string, data: {x: string | number, y: number | null}[]}[] | undefined {
+function computeTime(): {name: string, data: {x: string, y: number[]}[]}[] | undefined {
   if (props.path == undefined) return
 
-  const data: {x: string | number, y: number | null}[] = []
+  const categories: { [category: string]: {x: string, y: number[]}[]} = {}
 
   let currentTime = 0
 
   for (let i = 0; i < props.path.length; i++) {
-    //console.log("index " + i + " value " + props.path[i])
     const beat = beatManager.getNode(props.path[i].toString())
 
-    if (beat.data == -1) {
-      data.push({x: currentTime, y: null})
-      currentTime += 30
-      continue
-    }
+    if (beat.data == -1) continue
 
     const content = contentManager.getContent(beat.data)
 
     const min = content.expectedPlaytime ? parseInt(content.expectedPlaytime.substring(0, 2)) : 0
     const sec = content.expectedPlaytime ? parseInt(content.expectedPlaytime.substring(3, 5)) : 30
 
-    const upperBound = min * 2 + Math.floor(sec/30)
+    let timeInMin = min + (sec/60)
 
-    for (let j = 1; j <= upperBound; j++) {
-      data.push({x: currentTime, y: content.intensity})
-      currentTime += 30
+    timeInMin = Math.round(timeInMin / 0.5) * 0.5
+
+    const category = content.category
+
+    if (categories.hasOwnProperty(category)) {
+      categories[category].push({x: 'Category', y: [currentTime, currentTime + timeInMin]})
+    } else {
+      categories[category] = [{x: 'Category', y: [currentTime, currentTime + timeInMin]}]
     }
+
+    currentTime += timeInMin
+  }
+  const result: {name: string, data: {x: string, y: number[]}[]}[] = []
+
+  for (let key in categories) {
+    result.push({name: key, data: categories[key]})
   }
 
-  return [{name: 'series-1', data: data}]
+  return result
 }
 
 const xAxisTitle = {
@@ -169,6 +174,58 @@ const options = computed(() => {
 
 const series = computed(computeOptions[props.computeOptions])
 
+const chartOptions = {
+  plotOptions: {
+    bar: {
+      horizontal: true,
+      barHeight: '50%',
+      rangeBarGroupRows: true
+    }
+  },
+  title: {
+    text: 'Beat Categories',
+    align: 'left',
+    style: {
+      fontFamily: "Roboto",
+    }
+  },
+  colors: [
+    "#008FFB", "#00E396", "#FEB019", "#FF4560", "#775DD0",
+    "#710678", "#3A780C", "#782306",  "#0C7860",
+    "#3F51B5", "#546E7A", "#D4526E", "#8D5B4C", "#F86624",
+    "#D7263D", "#1B998B", "#2E294E", "#F46036", "#E2C044"
+  ],
+  fill: {
+    type: 'solid'
+  },
+  xaxis: {
+    type: 'numeric',
+    title: {
+      text: xAxisTitle[props.computeOptions],
+      offsetX: 0,
+      offsetY: 0,
+      style: {
+        color: undefined,
+        fontSize: '12px',
+        fontFamily: 'Roboto',
+        fontWeight: 600,
+        cssClass: 'apexcharts-xaxis-title',
+      },
+    },
+  },
+  yaxis: {
+    show: true,
+    horizontal: false,
+  },
+  legend: {
+    position: 'bottom',
+    style: {
+      fontFamily: "Roboto",
+    }
+  },
+}
+
+
 const seriesAlt = [
   {
     name: 'First',
@@ -177,7 +234,7 @@ const seriesAlt = [
         x: 'Deployment',
         y: [
           0,
-          10
+          10.5
         ]
       },
       {
@@ -213,7 +270,7 @@ const seriesAlt = [
 </script>
 
 <template>
-  <apexchart type="rangeBar" width="100%" :options="options" :series="series"></apexchart>
+  <apexchart type="rangeBar" width="100%" :options="chartOptions" :series="series"></apexchart>
 </template>
 
 <style scoped>
