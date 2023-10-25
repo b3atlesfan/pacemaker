@@ -117,7 +117,6 @@ const options = computed(() => {
         fontFamily: "Roboto",
       }
     },
-    labels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
     xaxis: {
       type: 'numeric',
       title: {
@@ -145,6 +144,34 @@ const options = computed(() => {
       curve: 'smooth', // 'straight' enables missing data points
       lineCap: 'round',
     },
+    markers: {
+      showNullDataPoints: false,
+    },
+    /*
+    annotations: {
+      points: [{
+        x: 2,
+        y: 64,
+        marker: {
+          strokeColor: theme.current.value.colors['primary'],
+        },
+      }]
+    },
+    tooltip: {
+      x: {
+        show: true,
+      },
+      y: {
+        formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
+          return value
+        }
+      },
+      custom: function({series, seriesIndex, dataPointIndex, w}) {
+        return '<v-card class="arrow_box" title="help">' +
+          '<v-card-text>' + series[seriesIndex][dataPointIndex] + '</v-card-text>' +
+          '</v-card>'
+      }
+      */
   }
 })
 
