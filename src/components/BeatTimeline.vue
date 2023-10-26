@@ -73,7 +73,10 @@ function computeTime(): {name: string, data: {x: string, y: number[]}[]}[] | und
   for (let i = 0; i < props.path.length; i++) {
     const beat = beatManager.getNode(props.path[i].toString())
 
-    if (beat.data == -1) continue
+    if (beat.data == -1) {
+      currentTime += 0.5
+      continue
+    }
 
     const content = contentManager.getContent(beat.data)
 
@@ -205,6 +208,9 @@ const chartOptions = {
     }
   },
   colors: [
+    "#1538D4", "#BDD415", "#B415D4", "#15D435",
+    "#001678", "#6A7800", "#630078", "#007814",
+    "#0027D4", "#BBD400", "#B000D4", "#00D423",
     "#008FFB", "#00E396", "#FEB019", "#FF4560", "#775DD0",
     "#710678", "#3A780C", "#782306",  "#0C7860",
     "#3F51B5", "#546E7A", "#D4526E", "#8D5B4C", "#F86624",
