@@ -76,8 +76,8 @@ onConnect((params) => {
     //label: 'edge with arrowhead',
     source: params.source,
     target: params.target,
-    //sourceHandle: params.sourceHandle,
-    //targetHandle: params.targetHandle,
+    sourceHandle: params.sourceHandle,
+    targetHandle: params.targetHandle,
     animated: true,
     markerEnd: MarkerType.ArrowClosed
   }

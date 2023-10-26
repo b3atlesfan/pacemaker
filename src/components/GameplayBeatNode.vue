@@ -60,55 +60,12 @@ function onDelete() {
       <v-btn icon="mdi-tag-plus" :color="'on-' + color" @click="onAddContent"></v-btn>
     </v-card-actions>
 
-    <!--
-        <div v-if="props.selected">
-          <v-list-item v-if="!hasContent" title="No Content" no-gutters>
-            <template v-slot:append>
-              <v-icon @click="onAddContent">
-                mdi-tag-plus
-              </v-icon>
-            </template>
-          </v-list-item>
-          <BeatContentHolder
-              v-else
-              :content-id="props.data"
-              type='preview'
-          />
-        </div>
-    -->
-
-
-    <!--
-    <v-expansion-panels v-if="props.selected">
-      <v-expansion-panel title="Content" :color="color">
-        <v-expansion-panel-text>
-          <v-btn v-if="!hasContent" icon="mdi-plus" @click="onAddContent"></v-btn>
-          <BeatContentHolder v-else :content-id="props.data" :is-in-beat="true"/>
-        </v-expansion-panel-text>
-      </v-expansion-panel>
-    </v-expansion-panels>
-    -->
-    <!--
-      <v-btn icon="mdi-plus"></v-btn>
-
-      <v-row>
-        <v-col>
-          Content:
-          <v-btn v-if="props.data != -1" @click="onRemoveContent">Remove</v-btn>
-        </v-col>
-        <v-col>
-          <v-btn v-if="props.data == -1" @click="onAddContent">Add</v-btn>
-
-          <BeatContentHolder v-else :content-id="props.data" :is-in-beat="true"/>
-        </v-col>
-      </v-row>
-    </v-container>
-    -->
   </v-card>
 
-
   <Handle id="a_in" type="target" :position="Position.Left"/>
-  <Handle id="a_out" type="source" :position="Position.Right"/>
+  <Handle id="b_out" type="source" :position="Position.Top"/>
+  <Handle id="c_out" type="source" :position="Position.Right"/>
+  <Handle id="d_out" type="source" :position="Position.Bottom"/>
 
 </template>
 
