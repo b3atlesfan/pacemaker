@@ -3,14 +3,18 @@ import GameplayBeatCanvas from "@/components/GameplayBeatCanvas.vue";
 import {computed, ref, watch} from "vue";
 import {BeatManager} from "@/assets/BeatManager";
 import {GameplayBeat} from "@/assets/GameplayBeat";
-import {useVueFlow} from "@vue-flow/core";
 import BeatChart from "@/components/BeatChart.vue";
 import BeatTimeline from "@/components/BeatTimeline.vue";
-import {onBeforeRouteLeave} from "vue-router";
+import {onBeforeRouteLeave, onBeforeRouteUpdate} from "vue-router";
+import {computePath} from "@/assets/PathFinder";
+import {useVueFlow} from "@vue-flow/core";
+import {BeatContent} from "@/assets/BeatContent";
+import {BeatContentManager} from "@/assets/BeatContentManager";
 
 const vue = useVueFlow()
 
 const beatManager = BeatManager.getInstance()
+const contentManager = BeatContentManager.getInstance()
 
 const selectedBeats = computed(() => beatManager.getSelectedBeats())
 
@@ -38,7 +42,19 @@ const items = computed(() => {
   return result
 })
 
-const path = computed(computePath)
+const path = computed(() => computePath(selectedPathBeats.value, vue))
+
+const contentPath = computed(() => {
+  const result: (BeatContent | null) [] = []
+
+  path.value.forEach(beatId => {
+    const beat = beatManager.getNode(beatId)
+
+    result.push(beat.data.contentId == -1 ? null : contentManager.getContent(beat.data.contentId))
+  })
+
+  return result
+})
 
 watch(path, () => {
   if (path.value.length <= 1) {
@@ -57,92 +73,6 @@ function onAddNodes() {
 function onClear() {
   selectedPathBeats.value = []
   //clearData()
-}
-
-class DNode {
-  id: number
-  cost: number
-  prev: DNode | null
-
-  constructor(id: number, cost: number = 0, prev: DNode | null = null) {
-    this.id = id
-    this.cost = cost
-    this.prev = prev
-  }
-}
-
-function computePath() {
-  const path: number[] = []
-
-  if (selectedPathBeats.value.length == 0) {
-    //console.log("length is 0")
-    return path
-  }
-
-  if (selectedPathBeats.value.length == 1) {
-    //console.log("length is 1")
-    path.push(parseInt(selectedPathBeats.value[0].id))
-    return path
-  }
-
-  const nodesToVisit: DNode[] = []
-
-  const startNode = new DNode(parseInt(selectedPathBeats.value[0].id), 0)
-  nodesToVisit.push(startNode)
-
-  let result: DNode = startNode
-
-  let index = 1
-  let targetId = parseInt(selectedPathBeats.value[index].id)
-
-
-  let rounds = 0
-  while (nodesToVisit.length != 0 && rounds < 100) {
-
-    nodesToVisit.sort((first, second) => first.cost < second.cost ? 1 : -1)
-
-    const current = nodesToVisit.pop()
-
-    if (current == undefined) break
-
-    if (current.id == targetId) {
-      index++
-      if (index >= selectedPathBeats.value.length) {
-        result = current
-        break
-      } else {
-        nodesToVisit.splice(0, nodesToVisit.length)
-        targetId = parseInt(selectedPathBeats.value[index].id)
-      }
-    }
-
-    const currentOutGoers = vue.getOutgoers(current.id.toString())
-
-    currentOutGoers.forEach(outGoer => {
-
-      const index = nodesToVisit.findIndex(node => node.id == parseInt(outGoer.id))
-
-      if (index == -1) {
-        nodesToVisit.push(new DNode(parseInt(outGoer.id), current.cost + 1, current))
-      } else if (nodesToVisit[index].cost > current.cost + 1) {
-        nodesToVisit[index].cost = current.cost + 1
-        nodesToVisit[index].prev = current
-      }
-    })
-
-    rounds++
-  }
-
-  while (result.prev != null) {
-    path.push(result.id)
-    result = result.prev
-  }
-
-  path.push(result.id)
-
-  path.reverse()
-
-  return path
 }
 
 function switchSelectedBeats(id1: number, id2: number) {

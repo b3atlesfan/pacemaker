@@ -91,8 +91,6 @@ export class BeatManager {
     }
 
     setPath(ids: number[]) {
-      ids.forEach(id => console.log("id " + id))
-
       this.elements.elements.value.forEach(elem => {
         if (!isNode(elem as MaybeElement)) return
 
