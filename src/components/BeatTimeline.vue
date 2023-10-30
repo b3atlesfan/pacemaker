@@ -41,9 +41,9 @@ function computeBeat(): {name: string, data: {x: string, y: number[]}[]}[] | und
   for (let i = 0; i < props.path.length; i++) {
     const beat = beatManager.getNode(props.path[i].toString())
 
-    if (beat.data == -1) continue
+    if (beat.data.contentId == -1) continue
 
-    const content = contentManager.getContent(beat.data)
+    const content = contentManager.getContent(beat.data.contentId)
 
     const category = content.category
 
@@ -73,12 +73,12 @@ function computeTime(): {name: string, data: {x: string, y: number[]}[]}[] | und
   for (let i = 0; i < props.path.length; i++) {
     const beat = beatManager.getNode(props.path[i].toString())
 
-    if (beat.data == -1) {
+    if (beat.data.contentId == -1) {
       currentTime += 0.5
       continue
     }
 
-    const content = contentManager.getContent(beat.data)
+    const content = contentManager.getContent(beat.data.contentId)
 
     const min = content.expectedPlaytime ? parseInt(content.expectedPlaytime.substring(0, 2)) : 0
     const sec = content.expectedPlaytime ? parseInt(content.expectedPlaytime.substring(3, 5)) : 30

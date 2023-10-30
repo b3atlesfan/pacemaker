@@ -19,7 +19,7 @@ const formatterFunctions = {
 }
 
 function formatBeat(value: any) {
-  return value.toFixed(0)
+  return value ? value.toFixed(0) : value
 }
 
 function formatTime(value: any) {
@@ -44,8 +44,8 @@ function computeBeat(): {name: string, data: {x: string | number, y: number | nu
 
     let intensity = null
 
-    if (beat.data != -1) {
-      const content = contentManager.getContent(beat.data)
+    if (beat.data.contentId != -1) {
+      const content = contentManager.getContent(beat.data.contentId)
 
       intensity = content.intensity
     }
@@ -67,13 +67,13 @@ function computeTime(): {name: string, data: {x: string | number, y: number | nu
     //console.log("index " + i + " value " + props.path[i])
     const beat = beatManager.getNode(props.path[i].toString())
 
-    if (beat.data == -1) {
+    if (beat.data.contentId == -1) {
       data.push({x: currentTime, y: null})
       currentTime += 30
       continue
     }
 
-    const content = contentManager.getContent(beat.data)
+    const content = contentManager.getContent(beat.data.contentId)
 
     const min = content.expectedPlaytime ? parseInt(content.expectedPlaytime.substring(0, 2)) : 0
     const sec = content.expectedPlaytime ? parseInt(content.expectedPlaytime.substring(3, 5)) : 30

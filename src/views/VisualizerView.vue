@@ -6,19 +6,20 @@ import {GameplayBeat} from "@/assets/GameplayBeat";
 import {useVueFlow} from "@vue-flow/core";
 import BeatChart from "@/components/BeatChart.vue";
 import BeatTimeline from "@/components/BeatTimeline.vue";
+import {onBeforeRouteLeave} from "vue-router";
 
 const vue = useVueFlow()
 
 const beatManager = BeatManager.getInstance()
 
-const selectedBeat = computed(() => beatManager.getSelectedBeat())
+const selectedBeats = computed(() => beatManager.getSelectedBeats())
 
-const selectedBeats = ref([] as GameplayBeat[])
+const selectedPathBeats = ref([] as GameplayBeat[])
 
 const items = computed(() => {
   const result = []
 
-  for (let i = 0; i < selectedBeats.value.length; i++) {
+  for (let i = 0; i < selectedPathBeats.value.length; i++) {
     /*
     if (i > 0) {
       result.push({
@@ -26,10 +27,10 @@ const items = computed(() => {
       })
     }*/
 
-    const icon = i == selectedBeats.value.length - 1 ? 'mdi-flag-checkered' : 'mdi-circle-medium'
+    const icon = i == selectedPathBeats.value.length - 1 ? 'mdi-flag-checkered' : 'mdi-circle-medium'
 
     result.push({
-      title: selectedBeats.value[i].label,
+      title: selectedPathBeats.value[i].label,
       icon: icon,
     })
   }
@@ -39,13 +40,22 @@ const items = computed(() => {
 
 const path = computed(computePath)
 
+watch(path, () => {
+  if (path.value.length <= 1) {
+    beatManager.resetPath()
+  } else {
+    beatManager.setPath(path.value)
+  }
+})
+
 function onAddNodes() {
-  selectedBeats.value.push(selectedBeat.value)
+  selectedBeats.value.forEach(beat => selectedPathBeats.value.push(beat))
+  //selectedPathBeats.value.push(selectedBeats.value)
   //addToData(parseInt(selectedBeat.value.id))
 }
 
 function onClear() {
-  selectedBeats.value = []
+  selectedPathBeats.value = []
   //clearData()
 }
 
@@ -64,26 +74,26 @@ class DNode {
 function computePath() {
   const path: number[] = []
 
-  if (selectedBeats.value.length == 0) {
+  if (selectedPathBeats.value.length == 0) {
     //console.log("length is 0")
     return path
   }
 
-  if (selectedBeats.value.length == 1) {
+  if (selectedPathBeats.value.length == 1) {
     //console.log("length is 1")
-    path.push(parseInt(selectedBeats.value[0].id))
+    path.push(parseInt(selectedPathBeats.value[0].id))
     return path
   }
 
   const nodesToVisit: DNode[] = []
 
-  const startNode = new DNode(parseInt(selectedBeats.value[0].id), 0)
+  const startNode = new DNode(parseInt(selectedPathBeats.value[0].id), 0)
   nodesToVisit.push(startNode)
 
   let result: DNode = startNode
 
   let index = 1
-  let targetId = parseInt(selectedBeats.value[index].id)
+  let targetId = parseInt(selectedPathBeats.value[index].id)
 
 
   let rounds = 0
@@ -97,12 +107,12 @@ function computePath() {
 
     if (current.id == targetId) {
       index++
-      if (index >= selectedBeats.value.length) {
+      if (index >= selectedPathBeats.value.length) {
         result = current
         break
       } else {
         nodesToVisit.splice(0, nodesToVisit.length)
-        targetId = parseInt(selectedBeats.value[index].id)
+        targetId = parseInt(selectedPathBeats.value[index].id)
       }
     }
 
@@ -136,14 +146,18 @@ function computePath() {
 }
 
 function switchSelectedBeats(id1: number, id2: number) {
-  const temp = selectedBeats.value[id1]
-  selectedBeats.value[id1] = selectedBeats.value[id2]
-  selectedBeats.value[id2] = temp
+  const temp = selectedPathBeats.value[id1]
+  selectedPathBeats.value[id1] = selectedPathBeats.value[id2]
+  selectedPathBeats.value[id2] = temp
 }
 
 function removeFromSelectedBeats(id: number) {
-  selectedBeats.value.splice(id, 1)
+  selectedPathBeats.value.splice(id, 1)
 }
+
+onBeforeRouteLeave(() => {
+  beatManager.resetPath()
+})
 
 </script>
 

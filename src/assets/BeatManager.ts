@@ -64,7 +64,7 @@ export class BeatManager {
 
         if (currentNode == undefined) return
 
-        (currentNode as GameplayBeat).data = contentId
+        (currentNode as GameplayBeat).data.contentId = contentId
     }
 
     onDeleteContent(contentId: number) {
@@ -73,9 +73,9 @@ export class BeatManager {
 
             let currentNode = (elem as GameplayBeat)
 
-            if (currentNode.data != contentId) return
+            if (currentNode.data.contentId != contentId) return
 
-            currentNode.data = -1
+            currentNode.data.contentId = -1
         })
     }
 
@@ -83,5 +83,30 @@ export class BeatManager {
       let beat = this.elements.elements.value.find(elem => elem.selected)
 
       return beat as GameplayBeat
+    }
+
+    getSelectedBeats() : GameplayBeat[] {
+      let selectedBeats = this.elements.elements.value.filter(elem => isNode(elem as MaybeElement) && elem.selected)
+      return selectedBeats as GameplayBeat[]
+    }
+
+    setPath(ids: number[]) {
+      ids.forEach(id => console.log("id " + id))
+
+      this.elements.elements.value.forEach(elem => {
+        if (!isNode(elem as MaybeElement)) return
+
+        const currentId = parseInt(elem.id)
+
+        elem.data.isInBackground = !ids.includes(currentId)
+      })
+    }
+
+    resetPath() {
+      this.elements.elements.value.forEach(elem => {
+        if (!isNode(elem as MaybeElement)) return
+
+        elem.data.isInBackground = false
+      })
     }
 }

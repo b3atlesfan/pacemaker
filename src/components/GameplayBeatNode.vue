@@ -5,22 +5,24 @@ import BeatContentHolder from "@/components/BeatContentHolder.vue";
 
 const emit = defineEmits(['onAddContent', 'onRemoveContent', 'onEditLabel', 'onDelete'])
 
-// data has to be named data because of how the node package works, but in our case data is content
-// or better later: a pointer towards the content
 const props = defineProps<{
   id: string,
   selected: boolean,
   label?: string | Object,
-  data: number,
+  data: {contentId: number, isInBackground: boolean},
   isBeingEdited: boolean,
 }>()
 
 
-const hasContent = computed(() => props.data != -1)
+const hasContent = computed(() => props.data.contentId != -1)
 
 const label = ref(props.label)
 
-const color = computed(() => props.selected ? 'secondary' : 'primary')
+const color = computed(() => {
+  const base = props.selected ? 'secondary' : 'primary'
+  const variant = props.data.isInBackground ? '-200' : ''
+  return base + variant
+})
 
 function onEditLabel() {
   emit('onEditLabel', props.id, label.value)
@@ -28,14 +30,6 @@ function onEditLabel() {
 
 function onAddContent() {
   emit('onAddContent', props.id)
-}
-
-function onRemoveContent() {
-  emit('onRemoveContent', props.id)
-}
-
-function onDelete() {
-  emit('onDelete', props.id)
 }
 
 </script>
@@ -49,7 +43,7 @@ function onDelete() {
 
     <BeatContentHolder
       v-if="hasContent"
-      :content-id="props.data"
+      :content-id="props.data.contentId"
       type='preview'
       variant="tonal"
     />
