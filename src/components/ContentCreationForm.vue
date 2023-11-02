@@ -14,6 +14,7 @@ const props = defineProps<{
 const initialState = {
   name: '',
   intensity: null,
+  narrativeIntensity: null,
   category: null,
   playtime: '',
   introducedSkills: [],
@@ -59,6 +60,14 @@ function onClear() {
 function onExit() {
   emit('onExit')
 }
+
+function thumbLabel(value: number) {
+  if (value == min) return 'apathy'
+  if (value == max) return 'special event'
+  if (value < max* 0.33) return 'low'
+  if (value < max* 0.67) return 'medium'
+  return 'high'
+}
 </script>
 
 <template>
@@ -80,7 +89,34 @@ function onExit() {
               </v-col>
             </v-row>
 
-            <v-row align="center" no-gutters>
+            <v-row align="center">
+              <v-col cols="6">
+                <v-slider
+                  v-model="state.narrativeIntensity"
+                  class="align-center"
+                  :min="min"
+                  :max="max"
+                  :step="1"
+                  hide-details
+                  thumb-label
+                >
+                  <template #thumb-label="{ modelValue }">
+                    {{ thumbLabel(modelValue) }}
+                  </template>
+                </v-slider>
+              </v-col>
+
+              <v-col>
+                <v-text-field
+                  v-model="state.narrativeIntensity"
+                  :error-messages="v$.intensity.$errors.map(e => e.$message)"
+                  label="Narrative Intensity*"
+                ></v-text-field>
+              </v-col>
+            </v-row>
+
+
+            <v-row align="center" >
               <v-col cols="6">
                 <v-slider
                   v-model="state.intensity"
@@ -89,18 +125,21 @@ function onExit() {
                   :max="max"
                   :step="1"
                   hide-details
+                  thumb-label
                 >
-                  <template v-slot:append>
-                    <v-text-field
-                      v-model="state.intensity"
-                      :error-messages="v$.intensity.$errors.map(e => e.$message)"
-                      label="Intensity*"
-                      style="width: 90px"
-                    ></v-text-field>
+                  <template #thumb-label="{ modelValue }">
+                    {{ thumbLabel(modelValue) }}
                   </template>
                 </v-slider>
               </v-col>
 
+              <v-col cols="3">
+                <v-text-field
+                  v-model="state.intensity"
+                  :error-messages="v$.intensity.$errors.map(e => e.$message)"
+                  label="Gameplay Intensity*"
+                ></v-text-field>
+              </v-col>
               <v-col>
                 <v-select
                   v-model="state.category"

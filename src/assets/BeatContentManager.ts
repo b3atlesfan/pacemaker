@@ -7,6 +7,7 @@ import {BeatManager} from "@/assets/BeatManager";
 export type ContentFormState = {
   name: string,
   intensity: number,
+  narrativeIntensity: number,
   category: Category,
   playtime: string,
   introducedSkills: [],
@@ -41,7 +42,7 @@ export class BeatContentManager {
     const input = contentFormInput as ContentFormState
 
     const id = this.idManager.getId()
-    const content = new BeatContent(id, input.name, input.category, input.intensity, input.playtime, input.introducedSkills, input.reinforcedSkills, input.requiredSkills)
+    const content = new BeatContent(id, input.name, input.narrativeIntensity, input.category, input.intensity, input.playtime, input.introducedSkills, input.reinforcedSkills, input.requiredSkills)
 
     this.contentsStore.contents.value.push(content)
     /*
