@@ -37,29 +37,39 @@ function computeBeat(): {name: string, data: {x: string | number, y: number | nu
   if (props.path == undefined) return
 
   const data: {x: string | number, y: number | null}[] = []
+  //const data2: {x: string | number, y: number | null}[] = []
+  //const data3: {x: string | number, y: number | null}[] = []
 
   for (let i = 0; i < props.path.length; i++) {
     //console.log("index " + i + " value " + props.path[i])
     const beat = beatManager.getNode(props.path[i].toString())
 
     let intensity = null
+    //let gameplay = null
+    //let narrative = null
 
     if (beat.data.contentId != -1) {
       const content = contentManager.getContent(beat.data.contentId)
 
       intensity = (content.intensity + content.narrativeIntensity) * 0.5
+      //gameplay = content.intensity
+      //narrative = content.narrativeIntensity
     }
 
     data.push({x: i, y: intensity})
+    //data2.push({x: i, y: gameplay})
+    //data3.push({x: i, y: narrative})
   }
 
-  return [{name: 'series-1', data: data}]
+  return [{name: 'computed intensity', data: data}] //, {name: 'gameplay intensity', data: data2}, {name: 'narrative intensity', data: data3}]
 }
 
 function computeTime(): {name: string, data: {x: string | number, y: number | null}[]}[] | undefined {
   if (props.path == undefined) return
 
   const data: {x: string | number, y: number | null}[] = []
+  //const data2: {x: string | number, y: number | null}[] = []
+  //const data3: {x: string | number, y: number | null}[] = []
 
   let currentTime = 0
 
@@ -82,11 +92,13 @@ function computeTime(): {name: string, data: {x: string | number, y: number | nu
     const intensity = (content.intensity + content.narrativeIntensity) * 0.5
     for (let j = 1; j <= upperBound; j++) {
       data.push({x: currentTime, y: intensity})
+      //data2.push({x: currentTime, y: content.intensity})
+      //data3.push({x: currentTime, y: content.narrativeIntensity})
       currentTime += 30
     }
   }
 
-  return [{name: 'series-1', data: data}]
+  return [{name: 'computed intensity', data: data}] // {name: 'gameplay intensity', data: data2}, {name: 'narrative intensity', data: data3}]
 }
 
 const xAxisTitle = {
