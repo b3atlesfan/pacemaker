@@ -48,7 +48,7 @@ const contentPath = computed(() => {
   const result: (BeatContent | null) [] = []
 
   path.value.forEach(beatId => {
-    const beat = beatManager.getNode(beatId)
+    const beat = beatManager.getNode(beatId.toString())
 
     result.push(beat.data.contentId == -1 ? null : contentManager.getContent(beat.data.contentId))
   })

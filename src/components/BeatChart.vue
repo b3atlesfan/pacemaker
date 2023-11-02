@@ -47,7 +47,7 @@ function computeBeat(): {name: string, data: {x: string | number, y: number | nu
     if (beat.data.contentId != -1) {
       const content = contentManager.getContent(beat.data.contentId)
 
-      intensity = content.intensity
+      intensity = (content.intensity + content.narrativeIntensity) * 0.5
     }
 
     data.push({x: i, y: intensity})
@@ -79,9 +79,9 @@ function computeTime(): {name: string, data: {x: string | number, y: number | nu
     const sec = content.expectedPlaytime ? parseInt(content.expectedPlaytime.substring(3, 5)) : 30
 
     const upperBound = min * 2 + Math.floor(sec/30)
-
+    const intensity = (content.intensity + content.narrativeIntensity) * 0.5
     for (let j = 1; j <= upperBound; j++) {
-      data.push({x: currentTime, y: content.intensity})
+      data.push({x: currentTime, y: intensity})
       currentTime += 30
     }
   }
@@ -105,7 +105,7 @@ const options = computed(() => {
       palette: 'palette1',
       monochrome: {
         enabled: true,
-        color: theme.current.value.colors['secondary'],
+        color: "#001678",
         shadeTo: 'light',
         shadeIntensity: 0.65
       },

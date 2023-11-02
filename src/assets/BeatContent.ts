@@ -3,7 +3,7 @@ import {useSkillStore} from "@/store/skills";
 import {useCategoryStore} from "@/store/categories";
 
 const categoryStore = useCategoryStore()
-const predefinedCategories = ["Puzzle", "Narrative", "Execution", "Action"] as const;
+const predefinedCategories = ["Platforming", "Puzzle", "Execution", "Action", "Dialogue", "Cinematic"] as const;
 export const Categories = computed(() => categoryStore.categories.concat(predefinedCategories))
 export type Category = typeof Categories[number];
 export function deleteCategory(index: number) {
@@ -18,7 +18,7 @@ export function addCategory(category: string) {
 
 
 const skillStore = useSkillStore()
-const predefinedSkills = ["Jump", "Dash", "Platform", "Enqueue"] as const;
+const predefinedSkills = ["Jump", "Shoot", "Run", "Changing Gear"] as const;
 export const Skills = computed(() => skillStore.skills.concat(predefinedSkills))
 export type Skill = typeof Skills[number];
 export function deleteSkill(index: number) {
