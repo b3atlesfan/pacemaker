@@ -10,6 +10,7 @@ import {computePath} from "@/assets/PathFinder";
 import {useVueFlow} from "@vue-flow/core";
 import {BeatContent} from "@/assets/BeatContent";
 import {BeatContentManager} from "@/assets/BeatContentManager";
+import ContentGraph from "@/components/ContentGraph.vue";
 
 const vue = useVueFlow()
 
@@ -44,7 +45,7 @@ const items = computed(() => {
 
 const path = computed(() => computePath(selectedPathBeats.value, vue))
 
-const contentPath = computed(() => {
+const currentContentPath = computed(() => {
   const result: (BeatContent | null) [] = []
 
   path.value.forEach(beatId => {
@@ -56,6 +57,19 @@ const contentPath = computed(() => {
   return result
 })
 
+let snapShots: {name: string, path: (BeatContent | null) []}[] = []
+let id = 1
+
+const allContentPaths = computed(() => {
+  const result: {name: string, path: (BeatContent | null) []}[] = snapShots.concat({name: "Path " + id.toString(), path: currentContentPath.value})
+
+  return result
+})
+
+watch(allContentPaths, () => {
+  console.log(allContentPaths.value)
+})
+
 watch(path, () => {
   if (path.value.length <= 1) {
     beatManager.resetPath()
@@ -63,6 +77,12 @@ watch(path, () => {
     beatManager.setPath(path.value)
   }
 })
+
+function onSnapshot() {
+  snapShots.push({name: "Path " + id.toString(), path: currentContentPath.value})
+  id++
+  selectedPathBeats.value = []
+}
 
 function onAddNodes() {
   selectedBeats.value.forEach(beat => selectedPathBeats.value.push(beat))
@@ -72,6 +92,8 @@ function onAddNodes() {
 
 function onClear() {
   selectedPathBeats.value = []
+  snapShots = []
+  id = 1
   //clearData()
 }
 
@@ -96,12 +118,12 @@ onBeforeRouteLeave(() => {
     <v-row>
       <v-col cols="4">
         <v-card elevation="3">
-          <BeatChart :path="path" compute-options="Beat"></BeatChart>
+          <ContentGraph :paths="allContentPaths" :path="path" compute-options="Beat"></ContentGraph>
         </v-card>
       </v-col>
       <v-col cols="4">
         <v-card elevation="3">
-          <BeatChart :path="path" compute-options="Time"></BeatChart>
+          <ContentGraph :paths="allContentPaths" :path="path" compute-options="Time"></ContentGraph>
         </v-card>
       </v-col>
       <v-col cols="4">
@@ -124,6 +146,7 @@ onBeforeRouteLeave(() => {
                   <v-btn-group>
                     <v-btn @click="onClear">Clear</v-btn>
                     <v-btn @click="onAddNodes">Add Node</v-btn>
+                    <v-btn @click="onSnapshot">Snapshot</v-btn>
                     <!--
                     <v-btn @click="onShow">Show</v-btn>
                     -->
