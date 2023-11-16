@@ -11,6 +11,7 @@ import {useVueFlow} from "@vue-flow/core";
 import {BeatContent} from "@/assets/BeatContent";
 import {BeatContentManager} from "@/assets/BeatContentManager";
 import ContentGraph from "@/components/ContentGraph.vue";
+import ContentChart from "@/components/ContentChart.vue";
 
 const vue = useVueFlow()
 
@@ -128,7 +129,7 @@ onBeforeRouteLeave(() => {
       </v-col>
       <v-col cols="4">
         <v-card elevation="3">
-          <BeatTimeline :path="path" compute-options="Time"></BeatTimeline>
+          <ContentChart :paths="allContentPaths" :path="path" compute-options="Time"></ContentChart>
         </v-card>
       </v-col>
     </v-row>
