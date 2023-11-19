@@ -37,6 +37,7 @@ export class BeatContent {
   category: Category
   intensity: number
   narrativeIntensity: number
+  computedIntensity: number
   expectedPlaytime: string
   introducedSkills: string[]
   reinforcedSkills: string[]
@@ -48,6 +49,7 @@ export class BeatContent {
     this.narrativeIntensity = narrativeIntensity
     this.category = category
     this.intensity = intensity
+    this.computedIntensity = (intensity + narrativeIntensity) / 2
     this.expectedPlaytime = expectedPlaytime
     this.introducedSkills = introducedSkills
     this.reinforcedSkills = reinforcedSkills

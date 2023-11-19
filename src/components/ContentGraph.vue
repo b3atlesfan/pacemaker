@@ -34,7 +34,7 @@ function computeBeat(): {name: string, data: {x: string | number, y: number | nu
   return props.paths.map(path => {
     return { name: path.name, data: path.path.map((content, id) => {
       //const sum = content ? (parseInt(content.intensity) + parseInt(content.narrativeIntensity)) : 0
-      const intensity = content ? (parseInt(content.intensity) + parseInt(content.narrativeIntensity)) / 2 : null
+      const intensity = content ? content.computedIntensity / 2 : null
       //console.log("gameplay " + content?.intensity)
       //console.log("narrative " + content?.narrativeIntensity)
       //console.log("sum " + sum)
