@@ -33,12 +33,7 @@ const computeOptions = {
 function computeBeat(): {name: string, data: {x: string | number, y: number | null}[]}[] | undefined {
   return props.paths.map(path => {
     return { name: path.name, data: path.path.map((content, id) => {
-      //const sum = content ? (parseInt(content.intensity) + parseInt(content.narrativeIntensity)) : 0
-      const intensity = content ? content.computedIntensity / 2 : null
-      //console.log("gameplay " + content?.intensity)
-      //console.log("narrative " + content?.narrativeIntensity)
-      //console.log("sum " + sum)
-      //console.log("intensity " + intensity)
+      const intensity = content ? content.computedIntensity : null
       return {x: id, y: intensity}
     })
     }
@@ -61,7 +56,7 @@ function computeTime(): {name: string, data: {x: string | number, y: number | nu
       const sec = content.expectedPlaytime ? parseInt(content.expectedPlaytime.substring(3, 5)) : 30
 
       const upperBound = min * 2 + Math.floor(sec/30)
-      const intensity = (parseInt(content.intensity) + parseInt(content.narrativeIntensity)) / 2
+      const intensity = content.computedIntensity
       for (let j = 1; j <= upperBound; j++) {
         data.push({x: tick * currentTime++, y: intensity})
         //data2.push({x: currentTime, y: content.intensity})
