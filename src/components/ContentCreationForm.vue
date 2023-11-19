@@ -27,7 +27,7 @@ const state = reactive({
 })
 
 const computedIntensity = computed(() => {
-  return state.intensity != null && state.narrativeIntensity != null ? (state.intensity + state.narrativeIntensity) / 2 : null
+  return state.intensity != null && state.narrativeIntensity != null ? (+state.intensity + +state.narrativeIntensity) / 2 : null
 })
 
 const rules = {
