@@ -18,7 +18,7 @@ export function addCategory(category: string) {
 
 
 const skillStore = useSkillStore()
-const predefinedSkills = ["Jump", "Shoot", "Run", "Changing Gear"] as const;
+const predefinedSkills = ["Jump", "Shoot", "Run", "Power Up"] as const;
 export const Skills = computed(() => skillStore.skills.concat(predefinedSkills))
 export type Skill = typeof Skills[number];
 export function deleteSkill(index: number) {
