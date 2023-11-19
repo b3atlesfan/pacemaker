@@ -22,13 +22,13 @@ function onCategoryDelete(skillId: number) {
 
 <template>
   <v-container>
-    <v-card title="Content Customization" subtitle="Predefined values cannot be deleted">
+    <v-card title="Blueprint Customization" subtitle="Predefined values cannot be deleted">
       <v-container>
         <v-row>
           <v-col cols="6">
             <ChipManager
               :values="Categories"
-              header="Available Categories"
+              header="Available Gameplay Categories"
               @on-submit="onCategorySubmit"
               @on-delete="onCategoryDelete"
             ></ChipManager>
@@ -36,7 +36,7 @@ function onCategoryDelete(skillId: number) {
           <v-col>
             <ChipManager
               :values="Skills"
-              header="Available Skills"
+              header="Available Mechanics"
               @on-submit="onSkillSubmit"
               @on-delete="onSkillDelete"
             ></ChipManager>

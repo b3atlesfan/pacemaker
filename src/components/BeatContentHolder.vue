@@ -22,7 +22,7 @@ const content = computed(() => contentManager.getContent(props.contentId))
   <ContentPreview
       v-if="props.type == 'preview'"
       :title="content.description"
-      :intensity="content.intensity"
+      :intensity="content.computedIntensity"
       :category="content.category"
       :is-highlighted="props.isHighlighted"
   ></ContentPreview>

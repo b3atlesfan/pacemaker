@@ -14,11 +14,17 @@ const props = defineProps<{
     <v-container>
       <v-row>
         <v-col>Intensity:</v-col>
-        <v-col>{{ props.content.intensity }}</v-col>
+        <v-col>{{ props.content.computedIntensity }}</v-col>
         <v-col>Type:</v-col>
         <v-col>
           <v-chip>{{ props.content.category }}</v-chip>
         </v-col>
+      </v-row>
+      <v-row>
+        <v-col>Narrative Intensity:</v-col>
+        <v-col>{{ props.content.narrativeIntensity }}</v-col>
+        <v-col>Gameplay Intensity:</v-col>
+        <v-col>{{ props.content.intensity }}</v-col>
       </v-row>
 
       <v-row v-if="props.content.expectedPlaytime">

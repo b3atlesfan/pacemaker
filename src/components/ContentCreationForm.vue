@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {reactive, ref} from 'vue'
+import {computed, reactive, ref} from 'vue'
 import { useVuelidate } from '@vuelidate/core'
 import { required, integer } from '@vuelidate/validators'
 import {Categories, Skills} from "@/assets/BeatContent";
@@ -24,6 +24,10 @@ const initialState = {
 
 const state = reactive({
   ...initialState
+})
+
+const computedIntensity = computed(() => {
+  return state.intensity != null && state.narrativeIntensity != null ? (state.intensity + state.narrativeIntensity) / 2 : null
 })
 
 const rules = {
@@ -74,17 +78,42 @@ function thumbLabel(value: number) {
 
   <v-dialog v-model="props.dialog" width="1024px" persistent>
     <v-form>
-      <v-card title="Create Content">
+      <v-card title="Create Blueprint">
 
         <v-card-text>
           <v-container>
-            <v-row align="center" no-gutters>
+            <v-row align="center" >
               <v-col cols="6">
                 <v-text-field
                   :error-messages="v$.name.$errors.map(e => e.$message)"
                   v-model="state.name"
                   label="Name*"
                   autofocus
+                ></v-text-field>
+              </v-col>
+              <v-col cols="3">
+                <v-slider
+                  v-model="computedIntensity"
+                  class="align-center"
+                  :min="min"
+                  :max="max"
+                  :step="1"
+                  hide-details
+                  thumb-label
+                  disabled
+                >
+                  <template #thumb-label="{ modelValue }">
+                    {{ thumbLabel(modelValue) }}
+                  </template>
+                </v-slider>
+              </v-col>
+
+              <v-col>
+                <v-text-field
+                  v-model="computedIntensity"
+                  :error-messages="v$.intensity.$errors.map(e => e.$message)"
+                  label="Computed Intensity"
+                  disabled
                 ></v-text-field>
               </v-col>
             </v-row>
@@ -169,7 +198,7 @@ function thumbLabel(value: number) {
                 <v-select
                   v-model="state.introducedSkills"
                   :items="possibleSkills"
-                  label="Introduced Skills"
+                  label="Introduced Mechanics"
                   multiple
                   chips
                 ></v-select>
@@ -179,7 +208,7 @@ function thumbLabel(value: number) {
                 <v-select
                   v-model="state.reinforcedSkills"
                   :items="possibleSkills"
-                  label="Reinforced Skills"
+                  label="Reinforced Mechanics"
                   multiple
                   chips
                 ></v-select>
@@ -189,7 +218,7 @@ function thumbLabel(value: number) {
                 <v-select
                   v-model="state.requiredSkills"
                   :items="possibleSkills"
-                  label="Required Skills"
+                  label="Required Mechanics"
                   multiple
                   chips
                 ></v-select>
