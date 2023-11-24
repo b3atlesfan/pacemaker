@@ -8,12 +8,14 @@ import {BeatContent} from "@/assets/BeatContent";
 const props = defineProps<{
   paths: {name: string, path: (BeatContent | null) []}[],
   path: number[] | undefined,
-  computeOptions: "Beat" | "Time",
+  //computeOptions: "Beat" | "Time",
 }>()
 
 const beatManager = BeatManager.getInstance()
 const contentManager = BeatContentManager.getInstance()
 const theme = useTheme()
+
+const computeOptionsName = ref<"Beat" | "Time">("Time")
 
 const formatterFunctions = {
   Beat: formatBeat,
@@ -27,7 +29,7 @@ function formatBeat(value: any) {
 function formatTime(value: any) {
   const timeInMin = value / 60
 
-  return Math.round(timeInMin / 0.5) * 0.5
+  return timeInMin.toFixed(2)
 }
 
 const computeOptions = {
@@ -82,7 +84,7 @@ function computeTime(): { name: string, data: { x: string, y: number[] }[] }[] |
 
       let timeInMin = min + (sec / 60)
 
-      timeInMin = Math.round(timeInMin / 0.5) * 0.5
+      //timeInMin = Math.round(timeInMin / 0.5) * 0.5
 
       const category = content.category
 
@@ -104,44 +106,6 @@ function computeTime(): { name: string, data: { x: string, y: number[] }[] }[] |
   }
 
   return result
-  /*
-  let currentTime = 0
-
-  for (let i = 0; i < props.path.length; i++) {
-    const beat = beatManager.getNode(props.path[i].toString())
-
-    if (beat.data.contentId == -1) {
-      currentTime += 0.5
-      continue
-    }
-
-    const content = contentManager.getContent(beat.data.contentId)
-
-    const min = content.expectedPlaytime ? parseInt(content.expectedPlaytime.substring(0, 2)) : 0
-    const sec = content.expectedPlaytime ? parseInt(content.expectedPlaytime.substring(3, 5)) : 30
-
-    let timeInMin = min + (sec / 60)
-
-    timeInMin = Math.round(timeInMin / 0.5) * 0.5
-
-    const category = content.category
-
-    if (categories.hasOwnProperty(category)) {
-      categories[category].push({x: 'Category', y: [currentTime, currentTime + timeInMin]})
-    } else {
-      categories[category] = [{x: 'Category', y: [currentTime, currentTime + timeInMin]}]
-    }
-
-    currentTime += timeInMin
-  }
-  const result: { name: string, data: { x: string, y: number[] }[] }[] = []
-
-  for (let key in categories) {
-    result.push({name: key, data: categories[key]})
-  }
-
-  return result
-   */
 }
 
 const xAxisTitle = {
@@ -156,6 +120,17 @@ const options = computed(() => {
       background: theme.current.value.colors['surface'],
       type: 'rangeBar',
       width: '100%',
+      toolbar: {
+        tools: {
+          customIcons: [{
+            icon: '<img src="/swap-horizontal.png" width="22" />',
+            index: 0,
+            title: 'Switch intensity settings: Computed->Gameplay->Narrative->All',
+            class: 'custom-icon',
+            click: changeMode
+          } ]
+        }
+      },
     },
     theme: {
       mode: theme.global.current.value.dark ? 'dark' : 'light',
@@ -177,7 +152,7 @@ const options = computed(() => {
     xaxis: {
       type: 'numeric',
       title: {
-        text: xAxisTitle[props.computeOptions],
+        text: xAxisTitle[computeOptionsName.value],
         offsetX: 0,
         offsetY: 0,
         style: {
@@ -192,7 +167,7 @@ const options = computed(() => {
         rotate: 0,
         text: '',
         rotateAlways: false,
-        formatter: formatterFunctions[props.computeOptions],
+        formatter: formatterFunctions[computeOptionsName.value],
       },
       decimalsInFloat: 0
     },
@@ -213,9 +188,22 @@ const options = computed(() => {
   }
 })
 
-const series = computed(computeOptions[props.computeOptions])
+const series = computed(computeOptions[computeOptionsName.value])
 
 const chartOptions = {
+  chart: {
+    toolbar: {
+      tools: {
+        customIcons: [{
+          icon: '<img src="/swap-horizontal.png" width="22" />',
+          index: 0,
+          title: 'Switch intensity settings: Computed->Gameplay->Narrative->All',
+          class: 'custom-icon',
+          click: changeMode
+        } ]
+      }
+    },
+  },
   plotOptions: {
     bar: {
       horizontal: true,
@@ -231,7 +219,7 @@ const chartOptions = {
     }
   },
   colors: [
-    "#D4526E", "#3F51B5", "#1B998B", "#E2C044",
+    "#3F51B5", "#D4526E", "#1B998B", "#E2C044",
     "#B415D4", "#F86624", "#1538D4", "#15D435",
     "#710678", "#0C7860", "#782306", "#546E7A",
     "#008FFB", "#00E396", "#FEB019", "#FF4560",
@@ -243,7 +231,7 @@ const chartOptions = {
   xaxis: {
     type: 'numeric',
     title: {
-      text: xAxisTitle[props.computeOptions],
+      text: xAxisTitle[computeOptionsName.value],
       offsetX: 0,
       offsetY: 0,
       style: {
@@ -267,47 +255,11 @@ const chartOptions = {
   },
 }
 
-
-const seriesAlt = [
-  {
-    name: 'First',
-    data: [
-      {
-        x: 'Deployment',
-        y: [
-          0,
-          10.5
-        ]
-      },
-      {
-        x: 'Deployment',
-        y: [
-          20,
-          30
-        ]
-      }
-    ]
-  },
-  {
-    name: 'Second',
-    data: [
-      {
-        x: 'Deployment',
-        y: [
-          10,
-          20
-        ]
-      },
-      {
-        x: 'Deployment',
-        y: [
-          30,
-          40
-        ]
-      },
-    ]
-  },
-]
+function changeMode() {
+  console.log("change")
+  computeOptionsName.value = computeOptionsName.value == "Time" ? "Beat" : "Time"
+  console.log(computeOptionsName.value)
+}
 
 </script>
 
