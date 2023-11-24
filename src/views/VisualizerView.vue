@@ -112,6 +112,7 @@ onBeforeRouteLeave(() => {
   beatManager.resetPath()
 })
 
+
 </script>
 
 <template>
@@ -119,12 +120,12 @@ onBeforeRouteLeave(() => {
     <v-row>
       <v-col cols="4">
         <v-card elevation="3">
-          <ContentGraph :paths="allContentPaths" :path="path" compute-options="Beat"></ContentGraph>
+          <ContentGraph :paths="allContentPaths" compute-options="Beat" ></ContentGraph>
         </v-card>
       </v-col>
       <v-col cols="4">
         <v-card elevation="3">
-          <ContentGraph :paths="allContentPaths" :path="path" compute-options="Time"></ContentGraph>
+          <ContentGraph :paths="allContentPaths" compute-options="Time" ></ContentGraph>
         </v-card>
       </v-col>
       <v-col cols="4">

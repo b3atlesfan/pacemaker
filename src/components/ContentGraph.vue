@@ -1,14 +1,22 @@
 <script setup lang="ts">
-import {computed} from "vue";
+import {computed, ref} from "vue";
 import {useTheme} from "vuetify";
 import {BeatContent} from "@/assets/BeatContent";
 
 const props = defineProps<{
-  paths: {name: string, path: (BeatContent | null) []}[]
+  paths: { name: string, path: (BeatContent | null) [] }[]
   computeOptions: "Beat" | "Time",
 }>()
 
 const theme = useTheme()
+
+let currentTick = 0
+const tick = ref(1)
+const possibleTicks = [1, 2, 5, 10, 30, 60, 120, 300]
+
+let currentOption = 0
+const possibleIntensityOptions = ["Computed", "Gameplay", "Narrative", "All"]
+const intensityOptions = ref<typeof possibleIntensityOptions[number]>("Computed")
 
 const formatterFunctions = {
   Beat: formatBeat,
@@ -22,7 +30,7 @@ function formatBeat(value: any) {
 function formatTime(value: any) {
   const timeInMin = value / 60
 
-  return Math.round(timeInMin / 0.5) * 0.5
+  return timeInMin.toFixed(2)
 }
 
 const computeOptions = {
@@ -30,42 +38,149 @@ const computeOptions = {
   Time: computeTime,
 }
 
-function computeBeat(): {name: string, data: {x: string | number, y: number | null}[]}[] | undefined {
-  return props.paths.map(path => {
-    return { name: path.name, data: path.path.map((content, id) => {
-      const intensity = content ? content.computedIntensity : null
-      return {x: id, y: intensity}
-    })
+function computeBeat(): { name: string, data: { x: string | number, y: number | null }[] }[] | undefined {
+  return props.paths.flatMap(path => {
+    if (intensityOptions.value == "Computed") return {
+      name: path.name, data: path.path.map((content, id) => {
+        const intensity = content ? content.computedIntensity : null
+        return {x: id, y: intensity}
+      })
+    }
+    else if (intensityOptions.value == "Gameplay") return {
+      name: path.name + " Gameplay", data: path.path.map((content, id) => {
+        const intensity = content ? content.intensity : null
+        return {x: id, y: intensity}
+      })
+    }
+    else if (intensityOptions.value == "Narrative") return {
+      name: path.name + " Narrative", data: path.path.map((content, id) => {
+        const intensity = content ? content.narrativeIntensity : null
+        return {x: id, y: intensity}
+      })
+    }
+    else if (intensityOptions.value == "All") return [{
+      name: path.name, data: path.path.map((content, id) => {
+        const intensity = content ? content.computedIntensity : null
+        return {x: id, y: intensity}
+      })
+    }, {
+      name: path.name + " Gameplay", data: path.path.map((content, id) => {
+        const intensity = content ? content.intensity : null
+        return {x: id, y: intensity}
+      })
+    },{
+      name: path.name + " Narrative", data: path.path.map((content, id) => {
+        const intensity = content ? content.narrativeIntensity : null
+        return {x: id, y: intensity}
+      })
+    }, ]
+    else {
+      // "Computed" and else
+      return {
+        name: path.name, data: path.path.map((content, id) => {
+          const intensity = content ? content.computedIntensity : null
+          return {x: id, y: intensity}
+        })
+      }
     }
   })
 }
 
-function computeTime(): {name: string, data: {x: string | number, y: number | null}[]}[] | undefined {
-  return props.paths.map(path => {
+function computeTime(): { name: string, data: { x: string | number, y: number | null }[] }[] | undefined {
+  return props.paths.flatMap(path => {
     let currentTime = 0
-    const tick = 30
+    const result = []
 
-    return { name: path.name, data: path.path.flatMap((content, id) => {
-      if (content == null) {
-        return {x: tick * currentTime++, y: null}
-      }
+    if (intensityOptions.value == "Computed" || intensityOptions.value == "All") {
+      result.push({
+        name: path.name, data: path.path.flatMap((content, id) => {
+          if (content == null) {
+            return {x: tick.value * currentTime++, y: null}
+          }
 
-      const data = []
+          const data = []
 
-      const min = content.expectedPlaytime ? parseInt(content.expectedPlaytime.substring(0, 2)) : 0
-      const sec = content.expectedPlaytime ? parseInt(content.expectedPlaytime.substring(3, 5)) : 30
+          const min = content.expectedPlaytime ? parseInt(content.expectedPlaytime.substring(0, 2)) : 0
+          const sec = content.expectedPlaytime ? parseInt(content.expectedPlaytime.substring(3, 5)) : 30
 
-      const upperBound = min * 2 + Math.floor(sec/30)
-      const intensity = content.computedIntensity
-      for (let j = 1; j <= upperBound; j++) {
-        data.push({x: tick * currentTime++, y: intensity})
-        //data2.push({x: currentTime, y: content.intensity})
-        //data3.push({x: currentTime, y: content.narrativeIntensity})
-      }
+          const upperBound = Math.floor((min * 60 + sec) / tick.value) //min * (60 / tick) + Math.floor(sec / tick) //min * 2 + Math.floor(sec / 30)
+          const intensity = content.computedIntensity
+          for (let j = 1; j <= upperBound; j++) {
+            data.push({x: tick.value * currentTime++, y: intensity})
+            //data2.push({x: currentTime, y: content.intensity})
+            //data3.push({x: currentTime, y: content.narrativeIntensity})
+          }
 
-      return data
+          if (data.length == 0) {
+            data.push({x: tick.value * currentTime++, y: intensity})
+          }
+
+          return data
+        })
       })
     }
+
+    currentTime = 0
+    if (intensityOptions.value == "Gameplay" || intensityOptions.value == "All") {
+      result.push({
+        name: path.name + " Gameplay", data: path.path.flatMap((content, id) => {
+          if (content == null) {
+            return {x: tick.value * currentTime++, y: null}
+          }
+
+          const data = []
+
+          const min = content.expectedPlaytime ? parseInt(content.expectedPlaytime.substring(0, 2)) : 0
+          const sec = content.expectedPlaytime ? parseInt(content.expectedPlaytime.substring(3, 5)) : 30
+
+          const upperBound = Math.floor((min * 60 + sec) / tick.value) //min * (60 / tick) + Math.floor(sec / tick) //min * 2 + Math.floor(sec / 30)
+          const intensity = content.intensity
+          for (let j = 1; j <= upperBound; j++) {
+            data.push({x: tick.value * currentTime++, y: intensity})
+            //data2.push({x: currentTime, y: content.intensity})
+            //data3.push({x: currentTime, y: content.narrativeIntensity})
+          }
+
+          if (data.length == 0) {
+            data.push({x: tick.value * currentTime++, y: intensity})
+          }
+
+          return data
+        })
+      })
+    }
+
+    currentTime = 0
+    if (intensityOptions.value == "Narrative" || intensityOptions.value == "All") {
+      result.push({
+        name: path.name + " Narrative", data: path.path.flatMap((content, id) => {
+          if (content == null) {
+            return {x: tick.value * currentTime++, y: null}
+          }
+
+          const data = []
+
+          const min = content.expectedPlaytime ? parseInt(content.expectedPlaytime.substring(0, 2)) : 0
+          const sec = content.expectedPlaytime ? parseInt(content.expectedPlaytime.substring(3, 5)) : 30
+
+          const upperBound = Math.floor((min * 60 + sec) / tick.value) //min * (60 / tick) + Math.floor(sec / tick) //min * 2 + Math.floor(sec / 30)
+          const intensity = content.narrativeIntensity
+          for (let j = 1; j <= upperBound; j++) {
+            data.push({x: tick.value * currentTime++, y: intensity})
+            //data2.push({x: currentTime, y: content.intensity})
+            //data3.push({x: currentTime, y: content.narrativeIntensity})
+          }
+
+          if (data.length == 0) {
+            data.push({x: tick.value * currentTime++, y: intensity})
+          }
+
+          return data
+        })
+      })
+    }
+
+    return result
   })
 }
 
@@ -79,6 +194,23 @@ const options = computed(() => {
     chart: {
       id: 'vuechart-example',
       background: theme.current.value.colors['surface'],
+      toolbar: {
+        tools: {
+          customIcons: [{
+            icon: '<img src="/swap-horizontal.png" width="22" />',
+            index: 0,
+            title: 'Switch intensity settings: Computed->Gameplay->Narrative->All',
+            class: 'custom-icon',
+            click: onIntensityOptions
+          }, {
+            icon: '<img src="/timer-cog-outline.png" width="22" />',
+            index: 0,
+            title: 'Switch time scale settings: 1s->2s->5s->10s->30s->60s->120s->300s',
+            class: 'custom-icon',
+            click: onTickRate
+          },]
+        }
+      },
     },
     theme: {
       mode: theme.global.current.value.dark ? 'dark' : 'light',
@@ -154,6 +286,17 @@ const options = computed(() => {
       */
   }
 })
+
+function onIntensityOptions() {
+    currentOption = (currentOption + 1) % possibleIntensityOptions.length
+    intensityOptions.value = possibleIntensityOptions[currentOption]
+}
+
+function onTickRate() {
+    currentTick = (currentTick + 1) % possibleTicks.length
+    tick.value = possibleTicks[currentTick]
+}
+
 
 const series = computed(computeOptions[props.computeOptions])
 

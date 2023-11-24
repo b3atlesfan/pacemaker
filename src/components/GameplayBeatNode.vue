@@ -48,7 +48,7 @@ function onAddContent() {
       variant="tonal"
     />
 
-    <v-card-actions v-else title="No Content">
+    <v-card-actions v-else title="No Blueprint">
       <v-card-text>No Content</v-card-text>
       <v-spacer></v-spacer>
       <v-btn icon="mdi-tag-plus" :color="'on-' + color" @click="onAddContent"></v-btn>

@@ -216,21 +216,6 @@ const options = computed(() => {
 const series = computed(computeOptions[props.computeOptions])
 
 const chartOptions = {
-  chart: {
-    toolbar: {
-      tools: {
-        customIcons: [{
-          icon: '<img src="/heart-pulse(1).png" width="20">',
-          index: 0,
-          title: 'tooltip of the icon',
-          class: 'custom-icon',
-          click: function (chart, options, e) {
-            console.log("clicked custom-icon")
-          }
-        }]
-      }
-    }
-  },
   plotOptions: {
     bar: {
       horizontal: true,
