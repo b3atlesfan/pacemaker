@@ -27,9 +27,9 @@ function formatBeat(value: any) {
 }
 
 function formatTime(value: any) {
-  const timeInMin = value / 60
+  //const timeInMin = value / 60
 
-  return timeInMin.toFixed(2)
+  return value.toFixed(2)
 }
 
 const computeOptions = {
