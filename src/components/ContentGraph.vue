@@ -216,7 +216,7 @@ const options = computed(() => {
       mode: theme.global.current.value.dark ? 'dark' : 'light',
       palette: 'palette1',
       monochrome: {
-        enabled: true,
+        enabled: false,
         color: "#001678",
         shadeTo: 'light',
         shadeIntensity: 0.65
@@ -259,6 +259,16 @@ const options = computed(() => {
     markers: {
       showNullDataPoints: false,
     },
+    colors: [
+      "#D4526E", "#3F51B5", "#1B998B", "#E2C044",
+      "#B415D4", "#F86624", "#1538D4", "#15D435",
+      "#710678", "#0C7860", "#782306", "#546E7A",
+      "#008FFB", "#00E396", "#FEB019", "#FF4560",
+      "#775DD0", "#D7263D", "#E2C044", "#8D5B4C",
+      //"#BDD415",
+      //"#001678", "#6A7800", "#630078", "#007814",
+      //"#0027D4", "#BBD400", "#B000D4", "#00D423",
+    ],
     /*
     annotations: {
       points: [{
