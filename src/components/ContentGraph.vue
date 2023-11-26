@@ -339,26 +339,24 @@ function onTickRate() {
 
 function onShowPoints() {
   pointsIsTurnedOn.value = !pointsIsTurnedOn.value
+  console.log("Points is turned on: " + pointsIsTurnedOn.value)
+
   if (!pointsIsTurnedOn.value) {
     points.value.splice(0, points.value.length)
-    console.log(points.value.length)
   } else if (intensityOptions.value == "Computed") {
     props.paths.forEach(path => {
       path.path.forEach((content, id) => {
         if (content != null && pointsIsTurnedOn.value) {
           if (content.introducedSkills.length > 0) {
             points.value.push(createPoint(id, content.computedIntensity, "Introduces: " + content.introducedSkills.join()))
-            console.log(points.value[0])
           }
 
           if (content.reinforcedSkills.length > 0) {
             points.value.push(createPoint(id, content.computedIntensity, "Reinforces: " + content.reinforcedSkills.join()))
-            console.log(points.value[0])
           }
 
           if (content.requiredSkills.length > 0) {
             points.value.push(createPoint(id, content.computedIntensity, "Requires: " + content.requiredSkills.join()))
-            console.log(points.value[0])
           }
         }
       })
