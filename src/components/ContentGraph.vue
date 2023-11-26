@@ -14,6 +14,9 @@ let currentTick = 0
 const tick = ref(1)
 const possibleTicks = [1, 2, 5, 10, 30, 60, 120, 300]
 
+const points = ref([])
+const pointsIsTurnedOn = ref(false)
+
 let currentOption = 0
 const possibleIntensityOptions = ["Computed", "Gameplay", "Narrative", "All"]
 const intensityOptions = ref<typeof possibleIntensityOptions[number]>("Computed")
@@ -68,12 +71,12 @@ function computeBeat(): { name: string, data: { x: string | number, y: number | 
         const intensity = content ? content.intensity : null
         return {x: id, y: intensity}
       })
-    },{
+    }, {
       name: path.name + " Narrative", data: path.path.map((content, id) => {
         const intensity = content ? content.narrativeIntensity : null
         return {x: id, y: intensity}
       })
-    }, ]
+    },]
     else {
       // "Computed" and else
       return {
@@ -189,6 +192,30 @@ const xAxisTitle = {
   Time: "Time in minutes"
 }
 
+function createPoint(x: number, y: number, text: string) {
+  return {
+    x: x,
+    y: y,
+    marker: {
+      size: 4,
+      fillColor: '#fff',
+      strokeColor: 'red',
+      radius: 2,
+      //cssClass: 'apexcharts-custom-class'
+    },
+    label: {
+      borderColor: '#FF4560',
+      offsetY: 0,
+      style: {
+        color: '#fff',
+        background: '#FF4560',
+      },
+
+      text: text,
+    }
+  }
+}
+
 const options = computed(() => {
   return {
     chart: {
@@ -207,7 +234,7 @@ const options = computed(() => {
             index: 0,
             title: 'Switch time scale settings: 1s->2s->5s->10s->30s->60s->120s->300s',
             class: 'custom-icon',
-            click: onTickRate
+            click: props.computeOptions == "Time" ? onTickRate : onShowPoints
           },]
         }
       },
@@ -269,6 +296,9 @@ const options = computed(() => {
       //"#001678", "#6A7800", "#630078", "#007814",
       //"#0027D4", "#BBD400", "#B000D4", "#00D423",
     ],
+    annotations: {
+      points: points.value
+    }
     /*
     annotations: {
       points: [{
@@ -298,13 +328,42 @@ const options = computed(() => {
 })
 
 function onIntensityOptions() {
-    currentOption = (currentOption + 1) % possibleIntensityOptions.length
-    intensityOptions.value = possibleIntensityOptions[currentOption]
+  currentOption = (currentOption + 1) % possibleIntensityOptions.length
+  intensityOptions.value = possibleIntensityOptions[currentOption]
 }
 
 function onTickRate() {
-    currentTick = (currentTick + 1) % possibleTicks.length
-    tick.value = possibleTicks[currentTick]
+  currentTick = (currentTick + 1) % possibleTicks.length
+  tick.value = possibleTicks[currentTick]
+}
+
+function onShowPoints() {
+  pointsIsTurnedOn.value = !pointsIsTurnedOn.value
+  if (!pointsIsTurnedOn.value) {
+    points.value.splice(0, points.value.length)
+    console.log(points.value.length)
+  } else if (intensityOptions.value == "Computed") {
+    props.paths.forEach(path => {
+      path.path.forEach((content, id) => {
+        if (content != null && pointsIsTurnedOn.value) {
+          if (content.introducedSkills.length > 0) {
+            points.value.push(createPoint(id, content.computedIntensity, "Introduces: " + content.introducedSkills.join()))
+            console.log(points.value[0])
+          }
+
+          if (content.reinforcedSkills.length > 0) {
+            points.value.push(createPoint(id, content.computedIntensity, "Reinforces: " + content.reinforcedSkills.join()))
+            console.log(points.value[0])
+          }
+
+          if (content.requiredSkills.length > 0) {
+            points.value.push(createPoint(id, content.computedIntensity, "Requires: " + content.requiredSkills.join()))
+            console.log(points.value[0])
+          }
+        }
+      })
+    })
+  }
 }
 
 

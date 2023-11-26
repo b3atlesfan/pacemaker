@@ -130,7 +130,7 @@ onBeforeRouteLeave(() => {
       </v-col>
       <v-col cols="4">
         <v-card elevation="3">
-          <ContentChart :paths="allContentPaths" :path="path" compute-options="Time"></ContentChart>
+          <ContentChart :paths="allContentPaths" :path="path" ></ContentChart>
         </v-card>
       </v-col>
     </v-row>
