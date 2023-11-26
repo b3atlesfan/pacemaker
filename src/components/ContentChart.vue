@@ -190,70 +190,72 @@ const options = computed(() => {
 
 const series = computed(computeOptions[computeOptionsName.value])
 
-const chartOptions = {
-  chart: {
-    toolbar: {
-      tools: {
-        customIcons: [{
-          icon: '<img src="/swap-horizontal.png" width="22" />',
-          index: 0,
-          title: 'Switch between beat and time view',
-          class: 'custom-icon',
-          click: changeMode
-        } ]
-      }
-    },
-  },
-  plotOptions: {
-    bar: {
-      horizontal: true,
-      barHeight: '50%',
-      rangeBarGroupRows: true
-    }
-  },
-  title: {
-    text: 'Beat Categories',
-    align: 'left',
-    style: {
-      fontFamily: "Roboto",
-    }
-  },
-  colors: [
-    "#3F51B5", "#D4526E", "#1B998B", "#E2C044",
-    "#B415D4", "#F86624", "#1538D4", "#15D435",
-    "#710678", "#0C7860", "#782306", "#546E7A",
-    "#008FFB", "#00E396", "#FEB019", "#FF4560",
-    "#775DD0", "#D7263D", "#E2C044", "#8D5B4C",
-  ],
-  fill: {
-    type: 'solid'
-  },
-  xaxis: {
-    type: 'numeric',
-    title: {
-      text: xAxisTitle[computeOptionsName.value],
-      offsetX: 0,
-      offsetY: 0,
-      style: {
-        color: undefined,
-        fontSize: '12px',
-        fontFamily: 'Roboto',
-        fontWeight: 600,
-        cssClass: 'apexcharts-xaxis-title',
+const chartOptions = computed(() => {
+  return {
+    chart: {
+      toolbar: {
+        tools: {
+          customIcons: [{
+            icon: '<img src="/swap-horizontal.png" width="22" />',
+            index: 0,
+            title: 'Switch between beat and time view',
+            class: 'custom-icon',
+            click: changeMode
+          } ]
+        }
       },
     },
-  },
-  yaxis: {
-    show: true,
-    horizontal: false,
-  },
-  legend: {
-    position: 'bottom',
-    style: {
-      fontFamily: "Roboto",
-    }
-  },
-}
+    plotOptions: {
+      bar: {
+        horizontal: true,
+        barHeight: '50%',
+        rangeBarGroupRows: true
+      }
+    },
+    title: {
+      text: 'Beat Categories',
+      align: 'left',
+      style: {
+        fontFamily: "Roboto",
+      }
+    },
+    colors: [
+      "#3F51B5", "#D4526E", "#1B998B", "#E2C044",
+      "#B415D4", "#F86624", "#1538D4", "#15D435",
+      "#710678", "#0C7860", "#782306", "#546E7A",
+      "#008FFB", "#00E396", "#FEB019", "#FF4560",
+      "#775DD0", "#D7263D", "#E2C044", "#8D5B4C",
+    ],
+    fill: {
+      type: 'solid'
+    },
+    xaxis: {
+      type: 'numeric',
+      title: {
+        text: xAxisTitle[computeOptionsName.value],
+        offsetX: 0,
+        offsetY: 0,
+        style: {
+          color: undefined,
+          fontSize: '12px',
+          fontFamily: 'Roboto',
+          fontWeight: 600,
+          cssClass: 'apexcharts-xaxis-title',
+        },
+      },
+    },
+    yaxis: {
+      show: true,
+      horizontal: false,
+    },
+    legend: {
+      position: 'bottom',
+      style: {
+        fontFamily: "Roboto",
+      }
+    },
+  }
+})
 
 function changeMode() {
   console.log("change")
