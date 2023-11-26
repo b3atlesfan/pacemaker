@@ -82,7 +82,7 @@ function computeTime(): { name: string, data: { x: string, y: number[] }[] }[] |
       const min = content.expectedPlaytime ? parseInt(content.expectedPlaytime.substring(0, 2)) : 0
       const sec = content.expectedPlaytime ? parseInt(content.expectedPlaytime.substring(3, 5)) : 30
 
-      let timeInMin = min + (sec / 60)
+      let timeInMin = computeOptionsName.value == "Time" ? min + (sec / 60) : 1
 
       //timeInMin = Math.round(timeInMin / 0.5) * 0.5
 
@@ -197,7 +197,7 @@ const chartOptions = {
         customIcons: [{
           icon: '<img src="/swap-horizontal.png" width="22" />',
           index: 0,
-          title: 'Switch intensity settings: Computed->Gameplay->Narrative->All',
+          title: 'Switch between beat and time view',
           class: 'custom-icon',
           click: changeMode
         } ]
