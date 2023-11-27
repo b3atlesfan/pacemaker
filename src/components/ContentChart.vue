@@ -213,7 +213,7 @@ const chartOptions = computed(() => {
       }
     },
     title: {
-      text: 'Beat Categories',
+      text: 'Gameplay Categories',
       align: 'left',
       style: {
         fontFamily: "Roboto",
