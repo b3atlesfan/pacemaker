@@ -78,8 +78,17 @@ onConnect((params) => {
     target: params.target,
     sourceHandle: params.sourceHandle,
     targetHandle: params.targetHandle,
-    animated: true,
-    markerEnd: MarkerType.ArrowClosed
+    animated: false,
+    markerEnd: {
+      type: MarkerType.ArrowClosed,
+      width: 20,
+      height: 20,
+      color: '#000000',
+    },
+    style: {
+      strokeWidth: 2,
+      stroke: '#000000',
+    },
   }
 
   addEdges(edge)
