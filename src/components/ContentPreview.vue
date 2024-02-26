@@ -20,10 +20,10 @@ const props = defineProps<{
   >
     <v-container>
       <v-row>
-        <v-col cols="2">
+        <v-col cols="1">
           <v-icon>mdi-lightning-bolt</v-icon>
         </v-col>
-        <v-col cols="3">{{ intensity }}</v-col>
+        <v-col>{{ intensity }}</v-col>
         <v-col v-if="category">
           <v-chip>{{ category }}</v-chip>
         </v-col>
