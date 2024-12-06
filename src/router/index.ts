@@ -17,6 +17,11 @@ const routes = [
     name: 'visualizer',
     component: () => import('@/views/VisualizerView.vue')
   },
+  {
+    path: '/designer',
+    name: 'designer',
+    component: () => import('@/views/DesignerView.vue')
+  }
 ]
 
 const router = createRouter({
