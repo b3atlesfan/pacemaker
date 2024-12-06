@@ -24,7 +24,7 @@
     "vue": "^3.2.0",
     "vue-router": "^4.0.0",
     "vue3-apexcharts": "^1.4.4",
-    "vuetify": "^3.0.0"
+    "vuetify": "^3.6.0"
   },
   "devDependencies": {
     "@babel/types": "^7.21.4",
