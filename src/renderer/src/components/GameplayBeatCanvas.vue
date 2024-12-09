@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import {MarkerType, Panel, PanelPosition, useVueFlow, VueFlow, isNode, isEdge} from '@vue-flow/core'
-import {Background} from '@vue-flow/background'
+import {MarkerType, Panel, PanelPosition, useVueFlow, VueFlow, isNode, isEdge} from '..vue-flow/core'
+import {Background} from '..vue-flow/background'
 import {computed, ref} from 'vue'
-import GameplayBeatNode from "@/components/GameplayBeatNode.vue";
-import {useElementsStore} from "@/store/elements";
+import GameplayBeatNode from "../components/GameplayBeatNode.vue";
+import {useElementsStore} from "../store/elements";
 import {storeToRefs} from "pinia";
-import {BeatManager} from "@/assets/BeatManager";
-import BeatContentSelector from "@/components/BeatContentSelector.vue";
-import ContentCreatorForm from "@/components/ContentCreatorForm.vue";
-import {Category, Skill} from "@/assets/BeatContent";
-import {BeatContentManager} from "@/assets/BeatContentManager";
+import {BeatManager} from "../assets/BeatManager";
+import BeatContentSelector from "../components/BeatContentSelector.vue";
+import ContentCreatorForm from "../components/ContentCreatorForm.vue";
+import {Category, Skill} from "../assets/BeatContent";
+import {BeatContentManager} from "../assets/BeatContentManager";
 import {useTheme} from "vuetify";
-import ContentCreationForm from "@/components/ContentCreationForm.vue";
+import ContentCreationForm from "../components/ContentCreationForm.vue";
 
 const theme = useTheme()
 

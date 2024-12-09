@@ -1,6 +1,6 @@
 import {computed} from "vue";
-import {useSkillStore} from "@/store/skills";
-import {useCategoryStore} from "@/store/categories";
+import {useSkillStore} from "../store/skills";
+import {useCategoryStore} from "../store/categories";
 
 const categoryStore = useCategoryStore()
 const predefinedCategories = ["Platforming", "Puzzle", "Execution", "Action", "Dialogue", "Cinematic"] as const;

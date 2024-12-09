@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import GameplayBeatCanvas from "@/components/GameplayBeatCanvas.vue";
+import GameplayBeatCanvas from "../components/GameplayBeatCanvas.vue";
 </script>
 
 <template>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {computed, ref} from "vue";
 import {useTheme} from "vuetify";
-import {BeatContent} from "@/assets/BeatContent";
+import {BeatContent} from "../assets/BeatContent";
 
 const props = defineProps<{
   paths: { name: string, path: (BeatContent | null) [] }[]

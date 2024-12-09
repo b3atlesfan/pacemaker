@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import {BeatContent} from "@/assets/BeatContent";
+import {BeatContent} from "../assets/BeatContent";
 
 const props = defineProps<{
   content: BeatContent

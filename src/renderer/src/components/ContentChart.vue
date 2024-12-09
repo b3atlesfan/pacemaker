@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import {BeatManager} from "@/assets/BeatManager";
+import {BeatManager} from "../assets/BeatManager";
 import {computed, ref} from "vue";
-import {BeatContentManager} from "@/assets/BeatContentManager";
+import {BeatContentManager} from "../assets/BeatContentManager";
 import {useTheme} from "vuetify";
-import {BeatContent} from "@/assets/BeatContent";
+import {BeatContent} from "../assets/BeatContent";
 
 const props = defineProps<{
   paths: {name: string, path: (BeatContent | null) []}[],

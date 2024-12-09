@@ -2,9 +2,10 @@
   "name": "vuetify-project",
   "version": "0.0.0",
   "private": true,
-  "main": "index.js",
+  "main": "./out/main/main.js",
   "scripts": {
     "dev": "electron-vite dev -w",
+    "inspect": "electron-vite --inspect=9229",
     "build": "electron-vite build",
     "preview": "electron-vite preview",
     "lint": "eslint . --fix --ignore-path .gitignore"
@@ -39,7 +40,8 @@
     "@electron/fuses": "^1.8.0",
     "@types/d3": "^7.4.2",
     "@types/node": "^18.15.0",
-    "@vitejs/plugin-vue": "^4.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "@vitejs/plugin-vue": "^4.6.2",
     "@vue/eslint-config-typescript": "^11.0.0",
     "electron": "^33.2.1",
     "electron-vite": "^2.3.0",

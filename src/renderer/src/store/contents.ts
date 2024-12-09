@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { BeatContent } from "@/assets/BeatContent";
+import { BeatContent } from "../assets/BeatContent";
 
 export const useContentsStore = defineStore("contents", {
     state: () => {

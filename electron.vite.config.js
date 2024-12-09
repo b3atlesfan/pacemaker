@@ -1,27 +1,12 @@
-import { defineConfig } from 'electron-vite'
+import { defineConfig } from "electron-vite";
+import react from '@vitejs/plugin-react';
+import vue from '@vitejs/plugin-vue';
 
-export default defineConfig(({ command, mode }) => {
-  if (command === 'serve') {
-    return {
-      // dev specific config
-      main: {
-        build: {
-          lib : {
-            entry : "src/App.vue",
-          }
-        }
-      },
-      preload: {
-        // ...
-      },
-      renderer: {
-        // ...
-      }
-    }
-  } else {
-    // command === 'build'
-    return {
-      // build specific config
-    }
-  }
-})
+export default defineConfig({
+  publicDir: false,
+  main: {},
+  preload: {},
+  renderer: {
+    plugins: [vue()]
+  },
+});

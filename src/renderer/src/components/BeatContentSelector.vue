@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import {ref} from "vue";
-import {useContentsStore} from "@/store/contents";
+import {useContentsStore} from "../store/contents";
 import {storeToRefs} from "pinia";
-import BeatContentHolder from "@/components/BeatContentHolder.vue";
-import {BeatContentManager} from "@/assets/BeatContentManager";
+import BeatContentHolder from "../components/BeatContentHolder.vue";
+import {BeatContentManager} from "../assets/BeatContentManager";
 
 const props = defineProps<{
   dialog: boolean

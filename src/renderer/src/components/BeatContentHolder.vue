@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import {BeatContentManager} from "@/assets/BeatContentManager";
+import {BeatContentManager} from "../assets/BeatContentManager";
 import {computed} from "vue";
-import ContentPreview from "@/components/ContentPreview.vue";
-import ContentDetailedView from "@/components/ContentDetailedView.vue";
+import ContentPreview from "../components/ContentPreview.vue";
+import ContentDetailedView from "../components/ContentDetailedView.vue";
 
 const props = defineProps<{
   contentId: number,
