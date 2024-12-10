@@ -1,10 +1,16 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain  } from 'electron';
 import * as path from 'path';
 
 let mainWindow;
 
 function createWindow() {
-  mainWindow = new BrowserWindow({});
+  mainWindow = new BrowserWindow({
+    width: 800,
+    height: 600,
+    webPreferences: {
+      preload: path.join(__dirname, '../preload/preload.js'),
+    },
+  });
 
   // Vite dev server URL
   mainWindow.loadURL('http://localhost:5173');
@@ -12,6 +18,7 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  ipcMain.handle('ping', () => 'pong')
   createWindow();
 });
 

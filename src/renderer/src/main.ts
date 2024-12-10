@@ -21,6 +21,3 @@ const app = createApp(App)
 registerPlugins(app)
 
 app.mount('#app')
-
-const information = document.getElementById('info')
-information.innerText = ``
