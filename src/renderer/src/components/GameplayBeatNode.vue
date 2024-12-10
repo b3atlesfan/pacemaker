@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {Handle, Position} from "@vue-flow/core";
 import {computed, ref} from "vue";
-import BeatContentHolder from "../components/BeatContentHolder.vue";
+import BeatContentHolder from "@/components/BeatContentHolder.vue";
 
 const emit = defineEmits(['onAddContent', 'onRemoveContent', 'onEditLabel', 'onDelete'])
 

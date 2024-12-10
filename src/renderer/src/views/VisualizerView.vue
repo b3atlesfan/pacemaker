@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import GameplayBeatCanvas from "../components/GameplayBeatCanvas.vue";
+import GameplayBeatCanvas from "@/components/GameplayBeatCanvas.vue";
 import {computed, ref, watch} from "vue";
-import {BeatManager} from "../assets/BeatManager";
-import {GameplayBeat} from "../assets/GameplayBeat";
-import BeatChart from "../components/BeatChart.vue";
-import BeatTimeline from "../components/BeatTimeline.vue";
+import {BeatManager} from "@/assets/BeatManager";
+import {GameplayBeat} from "@/assets/GameplayBeat";
+import BeatChart from "@/components/BeatChart.vue";
+import BeatTimeline from "@/components/BeatTimeline.vue";
 import {onBeforeRouteLeave, onBeforeRouteUpdate} from "vue-router";
-import {computePath} from "../assets/PathFinder";
-import {useVueFlow} from "..vue-flow/core";
-import {BeatContent} from "../assets/BeatContent";
-import {BeatContentManager} from "../assets/BeatContentManager";
-import ContentGraph from "../components/ContentGraph.vue";
-import ContentChart from "../components/ContentChart.vue";
+import {computePath} from "@/assets/PathFinder";
+import {useVueFlow} from "@vue-flow/core";
+import {BeatContent} from "@/assets/BeatContent";
+import {BeatContentManager} from "@/assets/BeatContentManager";
+import ContentGraph from "@/components/ContentGraph.vue";
+import ContentChart from "@/components/ContentChart.vue";
 
 const vue = useVueFlow()
 

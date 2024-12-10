@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import {Category} from "../assets/BeatContent";
+import {Category} from "@/assets/BeatContent";
 
 const props = defineProps<{
   title: string,

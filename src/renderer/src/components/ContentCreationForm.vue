@@ -2,8 +2,8 @@
 import {computed, reactive, ref} from 'vue'
 import { useVuelidate } from '@vuelidate/core'
 import { required, integer } from '@vuelidate/validators'
-import {Categories, Skills} from "../assets/BeatContent";
-import {ContentFormState} from "../assets/BeatContentManager";
+import {Categories, Skills} from "@/assets/BeatContent";
+import {ContentFormState} from "@/assets/BeatContentManager";
 
 const emit = defineEmits(['onSubmit', 'onExit'])
 

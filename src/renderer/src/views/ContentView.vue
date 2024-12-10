@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import ContentManager from "../components/ContentManager.vue";
-import ContentCustomizer from "../components/ContentCustomizer.vue";
+import ContentManager from "@/components/ContentManager.vue";
+import ContentCustomizer from "@/components/ContentCustomizer.vue";
 
 </script>
 

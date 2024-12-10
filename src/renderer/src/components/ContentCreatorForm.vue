@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {ref} from "vue";
-import {Categories, Category, Skills, Skill} from "../assets/BeatContent";
-import ContentCreationForm from "../components/ContentCreationForm.vue";
+import {Categories, Category, Skills, Skill} from "@/assets/BeatContent";
+import ContentCreationForm from "@/components/ContentCreationForm.vue";
 
 const props = defineProps({
   dialog: {

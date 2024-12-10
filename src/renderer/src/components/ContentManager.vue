@@ -1,13 +1,13 @@
 <script setup lang="ts">
 
-import {useContentsStore} from "../store/contents";
+import {useContentsStore} from "@/store/contents";
 import {storeToRefs} from "pinia";
-import BeatContentHolder from "../components/BeatContentHolder.vue";
-import ContentCreatorForm from "../components/ContentCreatorForm.vue";
-import {BeatContentManager, ContentFormState} from "../assets/BeatContentManager";
-import {Category, Skill} from "../assets/BeatContent";
+import BeatContentHolder from "@/components/BeatContentHolder.vue";
+import ContentCreatorForm from "@/components/ContentCreatorForm.vue";
+import {BeatContentManager, ContentFormState} from "@/assets/BeatContentManager";
+import {Category, Skill} from "@/assets/BeatContent";
 import {ref} from "vue";
-import ContentCreationForm from "../components/ContentCreationForm.vue";
+import ContentCreationForm from "@/components/ContentCreationForm.vue";
 
 const { contents } = storeToRefs(useContentsStore())
 

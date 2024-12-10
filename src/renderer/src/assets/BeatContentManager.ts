@@ -1,8 +1,8 @@
 import {storeToRefs} from "pinia";
-import {IdManager} from "../assets/IdManager";
-import {useContentsStore} from "../store/contents";
-import {BeatContent, Category, Skill} from "../assets/BeatContent";
-import {BeatManager} from "../assets/BeatManager";
+import {IdManager} from "@/assets/IdManager";
+import {useContentsStore} from "@/store/contents";
+import {BeatContent, Category, Skill} from "@/assets/BeatContent";
+import {BeatManager} from "@/assets/BeatManager";
 
 export type ContentFormState = {
   name: string,

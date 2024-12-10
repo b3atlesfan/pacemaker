@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import {addCategory, addSkill, Categories, deleteCategory, deleteSkill, Skills} from "../assets/BeatContent";
-import ChipManager from "../components/ChipManager.vue";
+import {addCategory, addSkill, Categories, deleteCategory, deleteSkill, Skills} from "@/assets/BeatContent";
+import ChipManager from "@/components/ChipManager.vue";
 
 function onSkillSubmit(skill: string) {
   addSkill(skill)
