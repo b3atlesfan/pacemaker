@@ -7,8 +7,8 @@
 // Plugins
 import vuetify from './vuetify'
 import VueApexCharts from "vue3-apexcharts";
-import pinia from '../store'
-import router from '../router'
+import pinia from '@/store'
+import router from '@/router'
 
 // Types
 import type { App } from 'vue'

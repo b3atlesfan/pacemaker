@@ -5,22 +5,22 @@ const routes = [
   {
     path: '/',
     name: 'main',
-    component: () => import('../views/Main.vue'),
+    component: () => import('@/views/Main.vue'),
   },
   {
     path: '/blueprints',
     name: 'blueprints',
-    component: () => import('../views/ContentView.vue')
+    component: () => import('@/views/ContentView.vue')
   },
   {
     path: '/visualizer',
     name: 'visualizer',
-    component: () => import('../views/VisualizerView.vue')
+    component: () => import('@/views/VisualizerView.vue')
   },
   {
     path: '/designer',
     name: 'designer',
-    component: () => import('../views/DesignerView.vue')
+    component: () => import('@/views/DesignerView.vue')
   }
 ]
 
