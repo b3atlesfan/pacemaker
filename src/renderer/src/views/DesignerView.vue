@@ -19,18 +19,21 @@ function addRow(){
 
 function send(index: number){
   console.log("Sending... " + index);
+  sendString("Sending... " + index);
+}
+
+const sendString = async (message: string) => {
+  const response = await window.versions.sendString(message)
+  console.log(response) 
 }
 
 </script>
 <template>
   <h1>Designer View</h1>
+  <v-spacer></v-spacer>
   <v-btn> Save All </v-btn>
   <v-btn> Fetch Changes </v-btn>
-  <p>This is the designer view...</p>
-
-  <p class="tip">
-    Tip...
-  </p>
+  <p>This is the designer view, here you can sync design variables with the game engine.</p>
 
   <v-btn @click="addRow">Create Variable</v-btn>
 

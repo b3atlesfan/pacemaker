@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain  } from 'electron';
 import * as path from 'path';
+import * as fs from 'fs';
 
 let mainWindow;
 
@@ -11,6 +12,7 @@ function createWindow() {
       preload: path.join(__dirname, '../preload/preload.js'),
     },
   });
+  mainWindow.maximize();
 
   // Vite dev server URL
   mainWindow.loadURL('http://localhost:5173');
@@ -18,7 +20,18 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
-  ipcMain.handle('ping', () => 'pong')
+  ipcMain.handle('ping', () => 'pong');
+  ipcMain.handle('sendString', (event, arg) => {
+    console.log("Received " + arg); // prints "Hello, World!"
+    fs.writeFile('receivedString.txt', arg, (err) => {
+      if (err) {
+        console.error('Error writing to file', err);
+      } else {
+        console.log('String written to file');
+      }
+    });
+    return "pong";
+  });
   createWindow();
 });
 
