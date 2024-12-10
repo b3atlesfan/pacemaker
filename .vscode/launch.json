@@ -1,0 +1,54 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch via NPM",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/public",
+            "runtimeArgs": [
+                "run",
+                "dev",
+                "--remote-debugging-port=5173",
+                "--inspect=9229"
+            ],
+            "runtimeExecutable": "pnpm",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "sourceMaps": true,
+            "type": "node"
+        },
+        {
+            "name": "Debug Main Process",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceRoot}",
+            "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron-vite",
+            "windows": {
+                "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron-vite.cmd"
+            },
+            "runtimeArgs": ["--sourcemap"],
+            "env": {
+                "REMOTE_DEBUGGING_PORT": "5173"
+            }
+        },
+        {
+            "name": "Electron: Renderer",
+            "type": "chrome",
+            "request": "attach",
+            "port": 5173,
+            "webRoot": "${workspaceFolder}/src/renderer",
+            "timeout": 10000,
+            "sourceMaps": true
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Electron: All",
+            "configurations": [
+                "Debug Main Process",
+                "Electron: Renderer"
+            ]
+        }
+    ]
+}
