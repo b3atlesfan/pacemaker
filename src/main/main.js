@@ -32,6 +32,17 @@ app.whenReady().then(() => {
     });
     return "pong";
   });
+  ipcMain.handle('sendFile', (event, arg) => {
+    console.log("Received file " + arg);
+    fs.writeFile('receivedFile.json', arg, (err) => {
+      if (err) {
+        console.error('Error writing file', err);
+      } else {
+        console.log('File written');
+      }
+    });
+    return "pong";
+  });
   createWindow();
 });
 

@@ -27,11 +27,17 @@ const sendString = async (message: string) => {
   console.log(response) 
 }
 
+const sendAllVars = async () => {
+  const allVarsJsonFile = JSON.stringify(currentState.allVariables);
+  const response = await window.versions.sendFile(allVarsJsonFile)
+  console.log(response) 
+}
+
 </script>
 <template>
   <h1>Designer View</h1>
   <v-spacer></v-spacer>
-  <v-btn> Save All </v-btn>
+  <v-btn @click="sendAllVars"> Send All </v-btn>
   <v-btn> Fetch Changes </v-btn>
   <p>This is the designer view, here you can sync design variables with the game engine.</p>
 
