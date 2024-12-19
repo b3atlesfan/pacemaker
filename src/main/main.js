@@ -43,6 +43,12 @@ app.whenReady().then(() => {
     });
     return "pong";
   });
+  ipcMain.handle('fetchFile', (event, arg) => {
+    console.log("Fetching file from " + arg);
+    let fileContent = fs.readFileSync(arg, 'utf8');
+    console.log("File content: " + fileContent);
+    return fileContent;
+  });
   createWindow();
 });
 
