@@ -32,9 +32,9 @@ app.whenReady().then(() => {
     });
     return "pong";
   });
-  ipcMain.handle('sendFile', (event, arg) => {
+  ipcMain.handle('sendFile', (event, arg, arg2) => {
     console.log("Received file " + arg);
-    fs.writeFile('receivedFile.json', arg, (err) => {
+    fs.writeFile(arg2, arg, (err) => {
       if (err) {
         console.error('Error writing file', err);
       } else {

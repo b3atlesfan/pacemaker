@@ -6,7 +6,7 @@ const  model_localValue = reactive({id: 0, name: 'VariableName1', remoteValue: '
 const  model2 = reactive({id: 1, name: 'VariableName2', remoteValue: 'None Fetched', localValue: 'Default Value'});
 
 const currentState = reactive({
-  random: "hi1",
+  outputPath: "C:/git-projects/Unity/KartTemplate_MasterThesis/Assets/Plugins/pacemaker-for-unity/Temporary/designerVarsFromPacemaker.json",
   allVariables: [model_localValue, model2, reactive({id: 2, name: 'VariableName', remoteValue: 'None Fetched', localValue: 'Default Value'})],
   random2: "hi"
 });
@@ -28,8 +28,21 @@ const sendString = async (message: string) => {
 }
 
 const sendAllVars = async () => {
-  const allVarsJsonFile = JSON.stringify(currentState.allVariables);
-  const response = await window.versions.sendFile(allVarsJsonFile)
+  const result: Record<string, string> = {};
+
+  currentState.allVariables.forEach(element => {
+      if (typeof element === 'object' && element !== null) {
+          // Check if element has 'name' and 'localValue' properties
+          const { name, localValue } = element;
+          if (name && localValue) {
+              result[name] = localValue;
+          }
+      }
+  });
+
+
+  const allVarsJsonFile = JSON.stringify(result, null, 2);
+  const response = await window.versions.sendFile(allVarsJsonFile, currentState.outputPath)
   console.log(response) 
 }
 
@@ -42,6 +55,12 @@ const sendAllVars = async () => {
   <p>This is the designer view, here you can sync design variables with the game engine.</p>
 
   <v-btn @click="addRow">Create Variable</v-btn>
+
+  <v-text-field
+    v-model="currentState.outputPath"
+    label="Output Path"
+    placeholder="Enter the output path for all variables"
+  ></v-text-field>
 
   <v-app>
     <v-container>
