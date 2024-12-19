@@ -19,6 +19,10 @@ function addRow(){
   currentState.allVariables.push(temp_model);
 }
 
+function OnDelete(index: number){
+  currentState.allVariables.splice(index, 1);
+}
+
 function send(index: number){
   console.log("Sending... " + index);
   sendString("Sending... " + index);
@@ -42,9 +46,7 @@ const sendAllVars = async () => {
       }
   });
 
-
   const allVarsJsonFile = JSON.stringify(result, null, 2);
-  const response = await window.versions.sendFile(allVarsJsonFile, currentState.outputPath)
   const response = await window.versions.sendFile(allVarsJsonFile, currentState.unityPath + currentState.outFile)
   console.log(response) 
 
@@ -133,16 +135,20 @@ function onReloadPage(){
                 <template v-slot:text>
                   <v-text-field
                     v-model="currentState.allVariables[index].name"
-                    :messages="`${currentState.allVariables[index].name}`"
                   ></v-text-field>
                   <v-text-field
                     v-model="theModel.value"
-                    :messages="`${currentState.allVariables[index].remoteValue}`"
-                  ></v-text-field>
+                    :messages="currentState.allVariables[index].remoteValue !== currentState.allVariables[index].localValue ? `${currentState.allVariables[index].remoteValue}` : ''"
+                    :error="currentState.allVariables[index].remoteValue !== currentState.allVariables[index].localValue"
+                    :outlined="currentState.allVariables[index].remoteValue === currentState.allVariables[index].localValue"
+                    :bg-color="currentState.allVariables[index].remoteValue !== currentState.allVariables[index].localValue ? 'red-lighten-4' : ''"
+                    color="currentState.allVariables[index].remoteValue !== currentState.allVariables[index].localValue ? 'red' : ''"
+                    ></v-text-field>
                 </template>
 
                 <template v-slot:actions>
                   <v-spacer></v-spacer>
+                  <v-btn color="red" @click="OnDelete(index)">Delete</v-btn>
 
                   <component :is="actions"></component>
                 </template>
