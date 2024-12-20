@@ -15,8 +15,6 @@ function createWindow() {
   });
   mainWindow.maximize();
 
-  // Vite dev server URL
-  mainWindow.loadURL('http://localhost:5173');
   if(isDev) {
     mainWindow.loadURL('http://localhost:5173');
   }
@@ -52,9 +50,14 @@ app.whenReady().then(() => {
   });
   ipcMain.handle('fetchFile', (event, arg) => {
     console.log("Fetching file from " + arg);
-    let fileContent = fs.readFileSync(arg, 'utf8');
-    console.log("File content: " + fileContent);
-    return fileContent;
+    try {
+      let fileContent = fs.readFileSync(arg, 'utf8');
+      console.log("File content: " + fileContent);
+      return fileContent;
+    } catch (err) {
+      console.error('Error reading file', err);
+      return "{}";
+    }
   });
   createWindow();
 });
