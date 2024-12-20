@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import { color } from "d3";
 import {reactive, ref, shallowRef, watchEffect} from "vue";
 
 
 const  model_localValue = reactive({id: 0, name: 'ERROR VIEW NOT LOADED', remoteValue: 'undefined', localValue: 'Default Value'});
 
 const currentState = reactive({
-  unityPath: "C:/git-projects/Unity/KartTemplate_MasterThesis/Assets/Plugins/pacemaker-for-unity/Temporary/",
+  unityPath: "C:/git-projects/Unity/KartTemplate_MasterThesis/Packages/com.unity.pacemaker-for-unity/Editor/Temporary",
   outFile: "designerVarsFromPacemaker.json",
   inFile: "designerVarsFromUnity.json",
   allVariables: [model_localValue,model_localValue,model_localValue],
@@ -15,7 +16,7 @@ const currentState = reactive({
 
 function addRow(){
   const next_id : number = currentState.allVariables.length;
-  const  temp_model = reactive({id: next_id, name: 'VariableName', remoteValue: 'undefined', localValue: 'Default Value'});
+  const  temp_model = reactive({id: next_id, name: '', remoteValue: 'undefined', localValue: 'Default Value'});
   currentState.allVariables.push(temp_model);
 }
 
@@ -24,13 +25,11 @@ function OnDelete(index: number){
 }
 
 function send(index: number){
-  console.log("Sending... " + index);
   sendString("Sending... " + index);
 }
 
 const sendString = async (message: string) => {
   const response = await window.versions.sendString(message)
-  console.log(response) 
 }
 
 const sendAllVars = async () => {
@@ -47,17 +46,14 @@ const sendAllVars = async () => {
   });
 
   const allVarsJsonFile = JSON.stringify(result, null, 2);
-  const response = await window.versions.sendFile(allVarsJsonFile, currentState.unityPath + currentState.outFile)
-  console.log(response) 
+  const response = await window.versions.sendFile(allVarsJsonFile, currentState.unityPath + "/" + currentState.outFile)
 
   fetchAllVars();
 }
 
 const loadCurrentState = async () => {
-  const response = await window.versions.fetchFile(currentState.unityPath + currentState.outFile)
-  console.log(response) 
+  const response = await window.versions.fetchFile(currentState.unityPath + "/" + currentState.outFile)
   const allVars = JSON.parse(response);
-  console.log(allVars);
 
   currentState.allVariables = [];
   Object.keys(allVars).forEach((key, index) => {
@@ -67,10 +63,8 @@ const loadCurrentState = async () => {
 }
 
 const fetchAllVars = async () => {
-  const response = await window.versions.fetchFile(currentState.unityPath + currentState.inFile)
-  console.log(response) 
+  const response = await window.versions.fetchFile(currentState.unityPath + "/" + currentState.inFile)
   const allVars = JSON.parse(response);
-  console.log(allVars);
   currentState.allVariables.forEach(element => {
     if (typeof element === 'object' && element !== null) {
         // Check if element has 'name' and 'localValue' properties
@@ -84,6 +78,10 @@ const fetchAllVars = async () => {
 
 const startFetchLoop = async () => {
   setInterval(fetchAllVars, 5000);
+}
+
+function notInSync(index: number): boolean  {
+  return currentState.allVariables[index].remoteValue !== currentState.allVariables[index].localValue;
 }
 
 onReloadPage();
@@ -134,16 +132,24 @@ function onReloadPage(){
               <v-card width="320" >
                 <template v-slot:text>
                   <v-text-field
+                    label="Name"
                     v-model="currentState.allVariables[index].name"
                   ></v-text-field>
                   <v-text-field
+                    label="Value"
                     v-model="theModel.value"
-                    :messages="currentState.allVariables[index].remoteValue !== currentState.allVariables[index].localValue ? `${currentState.allVariables[index].remoteValue}` : ''"
-                    :error="currentState.allVariables[index].remoteValue !== currentState.allVariables[index].localValue"
+                    :error="notInSync(index)"
                     :outlined="currentState.allVariables[index].remoteValue === currentState.allVariables[index].localValue"
-                    :bg-color="currentState.allVariables[index].remoteValue !== currentState.allVariables[index].localValue ? 'red-lighten-4' : ''"
-                    color="currentState.allVariables[index].remoteValue !== currentState.allVariables[index].localValue ? 'red' : ''"
+                    :bg-color="notInSync(index) ? 'red-lighten-4' : ''"
+                    color="notInSync(index) ? 'red' : ''"
                     ></v-text-field>
+                    <div
+                    :style="{ color: notInSync(index) ? 'red' : 'gray', marginLeft: '16px', fontSize: '12px', marginTop: '-16px' }"
+                  >
+                    {{ notInSync(index) ? `Variable out of Sync. Fetched: ` : 'In Sync' }}
+                    <br>
+                    <p style="color: gray">  {{ notInSync(index) ? `${currentState.allVariables[index].remoteValue}` : '' }}</p>
+                  </div>
                 </template>
 
                 <template v-slot:actions>
