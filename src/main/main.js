@@ -1,4 +1,5 @@
 import { app, BrowserWindow, ipcMain  } from 'electron';
+import isDev from 'electron-is-dev'
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -16,6 +17,12 @@ function createWindow() {
 
   // Vite dev server URL
   mainWindow.loadURL('http://localhost:5173');
+  if(isDev) {
+    mainWindow.loadURL('http://localhost:5173');
+  }
+  else {
+    mainWindow.loadURL(`file://${path.join(__dirname, '../renderer/index.html')}`)
+  }
   mainWindow.on('closed', () => mainWindow = null);
 }
 
