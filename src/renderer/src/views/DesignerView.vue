@@ -14,7 +14,11 @@ const currentState = reactive({
 });
 
 window.server.onMessage('asynchronous-message', (message: any) => {
-  console.log(message); // Returns: {'SAVED': 'File Saved'}
+  //console.log(message); // Returns: {'SAVED': 'File Saved'}
+  if(!message.startsWith("Last ping")){
+    console.log(message);
+  }
+
   currentState.ping = message;
 });
 
@@ -30,13 +34,18 @@ function OnDelete(index: number){
 }
 
 function OnApply(index: number){
+  const current = currentState.allVariables[index];
+  if(current.remoteValue === "Variable does not exist in Game Engine."){
+    OnDelete(index);
+    return;
+  }
   currentState.allVariables[index].localValue = currentState.allVariables[index].remoteValue;
 }
 
 function ApplyAll(){
-  currentState.allVariables.forEach(element => {
-    element.localValue = element.remoteValue;
-  });
+  for(let i = currentState.allVariables.length - 1; i >= 0; i--){
+    OnApply(i);
+  }
 }
 
 function send(index: number){
@@ -85,6 +94,9 @@ const fetchAllVars = async () => {
         // Check if element has 'name' and 'localValue' properties
         const { name } = element;
         if (name) {
+            if (allVars[name] === undefined) {
+              allVars[name] = 'Variable does not exist in Game Engine.';
+            }
             element.remoteValue = allVars[name];
         }
     }
