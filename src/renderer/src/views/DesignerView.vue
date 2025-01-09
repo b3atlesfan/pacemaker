@@ -10,18 +10,33 @@ const currentState = reactive({
   outFile: "designerVarsFromPacemaker.json",
   inFile: "designerVarsFromUnity.json",
   allVariables: [model_localValue,model_localValue,model_localValue],
-  random2: "hi"
+  ping: "Timeout reached",
+});
+
+window.server.onMessage('asynchronous-message', (message: any) => {
+  console.log(message); // Returns: {'SAVED': 'File Saved'}
+  currentState.ping = message;
 });
 
 
 function addRow(){
   const next_id : number = currentState.allVariables.length;
-  const  temp_model = reactive({id: next_id, name: '', remoteValue: 'undefined', localValue: 'Default Value'});
+  const  temp_model = reactive({id: next_id, name: '', remoteValue: 'undefined', localValue: ''});
   currentState.allVariables.push(temp_model);
 }
 
 function OnDelete(index: number){
   currentState.allVariables.splice(index, 1);
+}
+
+function OnApply(index: number){
+  currentState.allVariables[index].localValue = currentState.allVariables[index].remoteValue;
+}
+
+function ApplyAll(){
+  currentState.allVariables.forEach(element => {
+    element.localValue = element.remoteValue;
+  });
 }
 
 function send(index: number){
@@ -39,7 +54,7 @@ const sendAllVars = async () => {
       if (typeof element === 'object' && element !== null) {
           // Check if element has 'name' and 'localValue' properties
           const { name, localValue } = element;
-          if (name && localValue) {
+          if (name) {
               result[name] = localValue;
           }
       }
@@ -76,8 +91,14 @@ const fetchAllVars = async () => {
   });
 }
 
+const pingGameEngine = async () => {
+  const response = await window.versions.pingGameEngine();
+  //currentState.ping = response;
+}
+
 const startFetchLoop = async () => {
   setInterval(fetchAllVars, 5000);
+  setInterval(pingGameEngine, 1000);
 }
 
 function notInSync(index: number): boolean  {
@@ -95,10 +116,12 @@ function onReloadPage(){
 </script>
 <template>
   <h1>Designer View</h1>
-  <v-spacer></v-spacer>
-  <v-btn @click="sendAllVars"> Send All </v-btn>
-  <v-btn @click="fetchAllVars"> Fetch Changes </v-btn>
   <p>This is the designer view, here you can sync design variables with the game engine.</p>
+
+  <div style="height: 20px;"></div>
+  <!-- <v-btn @click="fetchAllVars"> Fetch Changes </v-btn>-->
+  <v-btn @click="ApplyAll"> Apply All </v-btn>
+  <v-btn @click="sendAllVars"> Send All </v-btn>
 
   <v-btn @click="addRow">Create Variable</v-btn>
 
@@ -121,12 +144,18 @@ function onReloadPage(){
     placeholder="Enter the input file name"
   ></v-text-field></v-row>
 
+  <div style="height: 20px;"></div>
+
+  <p>Ping to Game Engine: {{ currentState.ping }}</p>
+
+  <div style="height: 20px;"></div>
+
   <v-app>
     <v-container>
       <v-row>
       <div v-for="(row, index) in currentState.allVariables" :key="currentState.allVariables.id">
         <v-col>
-          <v-confirm-edit cancel-text="Cancel" ok-text="Send" v-model="currentState.allVariables[index].localValue"
+          <v-confirm-edit cancel-text="Cancel" ok-text="Save" v-model="currentState.allVariables[index].localValue"
           @save="send(index)">
             <template v-slot:default="{ model: theModel, actions }">
               <v-card width="320" >
@@ -155,6 +184,7 @@ function onReloadPage(){
                 <template v-slot:actions>
                   <v-spacer></v-spacer>
                   <v-btn color="red" @click="OnDelete(index)">Delete</v-btn>
+                  <v-btn color="green" @click="OnApply(index)">Apply</v-btn>
 
                   <component :is="actions"></component>
                 </template>
