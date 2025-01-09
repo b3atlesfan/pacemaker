@@ -22,6 +22,11 @@ function createWindow() {
     mainWindow.loadURL(`file://${path.join(__dirname, '../renderer/index.html')}`)
   }
   mainWindow.on('closed', () => mainWindow = null);
+
+  
+  mainWindow.webContents.on('console-message', (event, level, message) => {
+    console.log(`[CSP Message] ${message}`);
+  });
 }
 
 app.whenReady().then(() => {
@@ -66,6 +71,9 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
+});
+
+app.on('web-contents-created', () => {
 });
 
 app.on('activate', () => {
