@@ -5,8 +5,11 @@ import {reactive, ref, shallowRef, watchEffect} from "vue";
 
 const  model_localValue = reactive({id: 0, name: 'ERROR VIEW NOT LOADED', remoteValue: 'undefined', localValue: 'Default Value'});
 
+const path1 = "C:/git-projects/Unity/KartTemplate_MasterThesis/Packages/com.unity.pacemaker-for-unity/Editor/Temporary";
+const path2 = "C:/git-projects/Unity/2D-Platformer-Unity-main/Packages/com.unity.pacemaker-for-unity/Editor/Temporary";
+
 const currentState = reactive({
-  unityPath: "C:/git-projects/Unity/KartTemplate_MasterThesis/Packages/com.unity.pacemaker-for-unity/Editor/Temporary",
+  unityPath: path2,
   outFile: "designerVarsFromPacemaker.json",
   inFile: "designerVarsFromUnity.json",
   allVariables: [model_localValue,model_localValue,model_localValue],
