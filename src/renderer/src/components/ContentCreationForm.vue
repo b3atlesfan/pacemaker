@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed, reactive, ref} from 'vue'
+import {computed, reactive, ref, watch} from 'vue'
 import { useVuelidate } from '@vuelidate/core'
 import { required, integer } from '@vuelidate/validators'
 import {Categories, Skills} from "@/assets/BeatContent";
@@ -9,9 +9,11 @@ const emit = defineEmits(['onSubmit', 'onExit'])
 
 const props = defineProps<{
   dialog: boolean,
+  overrideInitialState: BeatContent | null
 }>()
 
-const initialState = {
+const initialState : ContentFormState = {
+  overridingBeatContent: -1,
   name: '',
   intensity: null,
   narrativeIntensity: null,
@@ -22,9 +24,31 @@ const initialState = {
   requiredSkills: [],
 }
 
-const state = reactive({
+const state : ContentFormState = reactive({
   ...initialState
 })
+
+watch(() => props.dialog, (newValue) => {
+  if (newValue == true) {
+    console.log("Dialog opened!");
+    if(props.overrideInitialState == null) {
+      //onClear()
+      state.overridingBeatContent = -1
+      return;
+    }
+    const newContent = props.overrideInitialState
+    state.name = newContent.description || '';
+    state.intensity = newContent.intensity || null;
+    state.narrativeIntensity = newContent.narrativeIntensity || null;
+    state.category = newContent.category || null;
+    state.playtime = newContent.playtime || '';
+    state.introducedSkills = newContent.introducedSkills || [];
+    state.reinforcedSkills = newContent.reinforcedSkills || [];
+    state.requiredSkills = newContent.requiredSkills || [];
+    state.overridingBeatContent = newContent.id
+  }
+}, { immediate: true });
+
 
 const computedIntensity = computed(() => {
   return state.intensity != null && state.narrativeIntensity != null ? (+state.intensity + +state.narrativeIntensity) / 2 : null
@@ -50,7 +74,7 @@ async function onSubmit() {
   if (!isValidated) return
 
   emit('onSubmit', state)
-  onClear()
+  //onClear()
 }
 
 function onClear() {

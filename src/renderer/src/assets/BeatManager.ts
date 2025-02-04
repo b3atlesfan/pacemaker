@@ -31,13 +31,15 @@ export class BeatManager {
         })
     }
 
-    createNode(pos: {x: number, y: number}) {
+    createNode(pos: {x: number, y: number}) : number {
         const id = this.idManager.getId()
         const beat = new GameplayBeat('' + id, 'Beat ' + id, -1, pos)
 
         this.elements.elements.value.push(beat)
 
+        return id;
     }
+
 
     deleteNode(id: string) {
         this.vueFlowStore.removeNodes(id)
@@ -45,8 +47,20 @@ export class BeatManager {
         //this.elements.elements.value
     }
 
+    deleteAllNodes() {
+        this.elements.elements.value.forEach(elem => {
+            if (!isNode(elem as MaybeElement)) return
+
+            this.deleteNode(elem.id)
+        })
+    }
+
     getNode(id: string) {
       return this.elements.elements.value.find(elem => elem.id == id) as GameplayBeat
+    }
+
+    getLatestNodeID() {
+      return this.idManager.getLatestId()
     }
 
     editNodeLabel(id: string, label: string) {

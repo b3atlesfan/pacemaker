@@ -12,6 +12,7 @@ import {Category, Skill} from "@/assets/BeatContent";
 import {BeatContentManager} from "@/assets/BeatContentManager";
 import {useTheme} from "vuetify";
 import ContentCreationForm from "@/components/ContentCreationForm.vue";
+import { BeatContent } from '@/assets/BeatContent';
 
 const theme = useTheme()
 
@@ -99,6 +100,15 @@ function onAddContent(id: string) {
   contentSelectorDialog.value = true
 }
 
+function onEditContent() {
+  const selectedElement = getSelectedElements.value[0];
+  if (selectedElement && isNode(selectedElement)) {
+    console.log("Editing content id: " + selectedElement.id);
+    beatId = selectedElement.id
+    contentSelectorDialog.value = true;
+  }
+}
+
 function onRemoveContent(id: string) {
   beatManager.editContentId(id, -1)
 }
@@ -139,6 +149,7 @@ function onExit() {
 }
 
 function onCreate() {
+  overrideInitialState.value = null
   contentCreatorDialog.value = true
 }
 
@@ -147,6 +158,15 @@ function onSave(contentId: number) {
   //console.log(contentId)
   beatManager.editContentId(beatId, contentId)
   contentSelectorDialog.value = false
+}
+
+function onEdit(selectedId: number) {
+  console.log("Editing " + selectedId)
+  contentCreatorDialog.value = true
+  contentSelectorDialog.value = false
+
+
+  overrideInitialState.value = contentManager.getContent(selectedId)
 }
 
 function onCreateContent(formInput: Object) {
@@ -159,13 +179,99 @@ function createNode() {
   beatManager.createNode({x: -viewport.x / viewport.zoom, y: -viewport.y / viewport.zoom})
 }
 
+function deleteAllNodes() {
+  beatManager.deleteAllNodes()
+}
+
+
+/** export type ContentFormState = {
+  name: string,
+  intensity: number,
+  narrativeIntensity: number,
+  category: Category,
+  playtime: string,
+  introducedSkills: [],
+  reinforcedSkills: [],
+  requiredSkills: [],
+} */
+
+function addEdgesDelayed(edge : any) {
+  setTimeout(() => {
+    addEdges(edge)
+  }, 1)
+}
+
+window.server.onMessage('asynchronous-message', (message: any) => {
+  if(!message.startsWith("Last ping")){
+    console.log(message);
+  }
+  recordEvent(message);
+});
+
+function recordEvent(event:string) {
+  const eventObj = JSON.parse(event)
+
+  console.log("Recording event: " + event)
+
+  const viewport = getViewport()
+
+  // get position of last beat
+  var lastBeatId = beatManager.getLatestNodeID()
+  var lastBeat = beatManager.getNode(lastBeatId)
+  
+  var lastBeatPos = {x: viewport.x / viewport.zoom, y: viewport.y / viewport.zoom}
+  if (lastBeat != null) {
+    lastBeatPos = {x: lastBeat.position.x, y: lastBeat.position.y}
+  }
+
+  var beatId : number = beatManager.createNode({x: lastBeatPos.x + 300, y: lastBeatPos.y})
+  const contentId = contentManager.createContent({
+    name: eventObj.name + " " + beatId + " " + eventObj.args.strength,
+    intensity: 0,
+    narrativeIntensity: 0,
+    category: "Platforming",
+    playtime: "0"
+  })
+
+  beatManager.editContentId(beatId, contentId)
+
+  const edge = {
+    id: 'e' + lastBeatId + '-' + beatId,
+    //label: 'edge with arrowhead',
+    source: String(lastBeatId),
+    target: String(beatId),
+    sourceHandle: 'c_out',
+    targetHandle: 'a_in',
+    animated: false,
+    markerEnd: {
+      type: MarkerType.ArrowClosed,
+      width: 20,
+      height: 20,
+      color: '#000000',
+    },
+    style: {
+      strokeWidth: 2,
+      stroke: '#000000',
+    },
+  }
+  if (beatId != 0) {
+    addEdgesDelayed(edge)
+  }
+  lastBeatId = beatId
+  
+  // beatmanager.createNode
+  // contentManager.CreateContent
+  // connect beats
+  // connect content to beat*/
+}
+const overrideInitialState = ref<BeatContent | null>(null);
 </script>
 
 <template>
   <BeatContentSelector :dialog="contentSelectorDialog" @on-exit="onExit" @on-create="onCreate"
-                       @on-save="onSave"></BeatContentSelector>
+                       @on-save="onSave" @on-edit="onEdit"></BeatContentSelector>
 
-  <ContentCreationForm :dialog="contentCreatorDialog" @on-submit="onCreateContent" @on-exit="contentCreatorDialog = false"></ContentCreationForm>
+  <ContentCreationForm :dialog="contentCreatorDialog" :overrideInitialState="overrideInitialState" @on-submit="onCreateContent" @on-exit="contentCreatorDialog = false"></ContentCreationForm>
 
   <!--
   <ContentCreatorForm :dialog="contentCreatorDialog" @on-create-content="onCreateContent"></ContentCreatorForm>
@@ -241,12 +347,27 @@ function createNode() {
 
     <!-- General Panel -->
     <Panel :position="PanelPosition.BottomRight">
+      <v-tooltip text="Edit Contents" location="start">
+        <template v-slot:activator="{ props }">
+          <v-btn v-bind="props" icon="mdi-tag" color="secondary" @click="onEditContent"></v-btn>
+        </template>
+      </v-tooltip>
+      <v-tooltip text="Record" location="start">
+        <template v-slot:activator="{ props }">
+          <v-btn v-bind="props" icon="mdi-record" color="secondary" @click="recordEvent"></v-btn>
+        </template>
+      </v-tooltip>
+      <v-tooltip text="Delete All" location="start">
+        <template v-slot:activator="{ props }">
+          <v-btn v-bind="props" icon="mdi-delete" color="secondary" @click="deleteAllNodes"></v-btn>
+        </template>
+      </v-tooltip>
       <v-tooltip text="Create Gameplay Beat" location="start">
         <template v-slot:activator="{ props }">
           <v-btn v-bind="props" icon="mdi-plus" color="secondary" @click="createNode"></v-btn>
         </template>
       </v-tooltip>
-
+      
       <!--
       <v-btn icon="mdi-fit-to-screen-outline" color="surface" @click="fitView">
         <v-icon></v-icon>

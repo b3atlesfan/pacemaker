@@ -25,6 +25,10 @@ export class IdManager {
         return currentFreeId
     }
 
+    getLatestId() {
+        return this.id - 1
+    }
+
     returnId(id: number) {
         console.log("return id " + id)
         this.idIsTaken[id] = false

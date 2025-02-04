@@ -9,7 +9,7 @@ const props = defineProps<{
   dialog: boolean
 }>()
 
-const emit = defineEmits(['onSave', 'onExit', 'onCreate'])
+const emit = defineEmits(['onSave', 'onExit', 'onCreate', 'onEdit'])
 
 const manager = BeatContentManager.getInstance()
 
@@ -30,12 +30,20 @@ function onCreate() {
   emit('onCreate')
 }
 
+function onEdit() {
+  emit('onEdit', id.value)
+}
+
 function onSelect(selectedId: number) {
   id.value = id.value == selectedId ? -1 : selectedId
 }
 
 function onDelete(selectedId: number) {
   manager.deleteContent(selectedId)
+}
+
+function onDeleteAll() {
+  manager.deleteAllContents()
 }
 
 </script>
@@ -50,7 +58,8 @@ function onDelete(selectedId: number) {
       <v-card-text>
         <v-item-group>
           <v-container>
-            <v-row>
+            <v-row
+            cols = "12">
               <v-col
                 v-for="content in contents"
                 cols="12"
@@ -72,6 +81,8 @@ function onDelete(selectedId: number) {
 
       <v-card-actions>
         <v-btn @click="onCreate">Create</v-btn>
+        <v-btn @click="onEdit">Edit</v-btn>
+        <v-btn @click="onDeleteAll">Delete All</v-btn>
         <v-spacer></v-spacer>
         <v-btn @click="onExit">Exit</v-btn>
         <v-btn @click="onSave">Save</v-btn>
