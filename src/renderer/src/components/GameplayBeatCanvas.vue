@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {MarkerType, Panel, PanelPosition, useVueFlow, VueFlow, isNode, isEdge} from '@vue-flow/core'
 import {Background} from '@vue-flow/background'
-import {computed, ref} from 'vue'
+import {computed, ref, watch} from 'vue'
 import GameplayBeatNode from "@/components/GameplayBeatNode.vue";
 import {useElementsStore} from "@/store/elements";
 import {storeToRefs} from "pinia";
@@ -205,11 +205,34 @@ window.server.onMessage('asynchronous-message', (message: any) => {
   if(!message.startsWith("Last ping")){
     console.log(message);
   }
-  recordEvent(message);
+  if(isRecording.value){
+    recordEvent(message)
+  }
+});
+
+var isRecording = ref(false)
+var recordingIcon = ref('mdi-record')
+
+function toggleRecording(){
+  isRecording.value = !isRecording.value
+  recordingIcon.value = isRecording.value ? 'mdi-stop' : 'mdi-record'
+}
+const startListening = async () => {
+      const response = await window.versions.startListening();
+    }
+watch(isRecording, (newValue) => {
+  recordingIcon.value = newValue ? 'mdi-stop' : 'mdi-record';
+  if(isRecording.value){
+    startListening()
+  } else {
+    console.log("Recording stopped")
+  }
 });
 
 function recordEvent(event:string) {
   const eventObj = JSON.parse(event)
+
+  if(eventObj.name != "distanceTriggerEvent") return;
 
   console.log("Recording event: " + event)
 
@@ -226,8 +249,8 @@ function recordEvent(event:string) {
 
   var beatId : number = beatManager.createNode({x: lastBeatPos.x + 300, y: lastBeatPos.y})
   const contentId = contentManager.createContent({
-    name: eventObj.name + " " + beatId + " " + eventObj.args.strength,
-    intensity: 0,
+    name: eventObj.name + " " + beatId,
+    intensity: eventObj.args.jumpsSinceLastTrigger * 10 + eventObj.args.timeSinceLastTrigger,
     narrativeIntensity: 0,
     category: "Platforming",
     playtime: "0"
@@ -354,7 +377,7 @@ const overrideInitialState = ref<BeatContent | null>(null);
       </v-tooltip>
       <v-tooltip text="Record" location="start">
         <template v-slot:activator="{ props }">
-          <v-btn v-bind="props" icon="mdi-record" color="secondary" @click="recordEvent"></v-btn>
+            <v-btn v-bind="props" :icon="recordingIcon" color="secondary" @click="toggleRecording"></v-btn>
         </template>
       </v-tooltip>
       <v-tooltip text="Delete All" location="start">
