@@ -1,34 +1,47 @@
 <script setup lang="ts">
+import { log } from "console";
 import { color } from "d3";
 import {reactive, ref, shallowRef, watchEffect} from "vue";
 
 
-const  model_localValue = reactive({id: 0, name: 'ERROR VIEW NOT LOADED', remoteValue: 'undefined', localValue: 'Default Value'});
+const  model_localValue = reactive({id: 0, name: 'ERROR VIEW NOT LOADED', remoteValue: 0, localValue: 0});
 
 const path1 = "C:/git-projects/Unity/KartTemplate_MasterThesis/Packages/com.unity.pacemaker-for-unity/Editor/Temporary";
-const path2 = "C:/git-projects/Unity/2D-Platformer-Unity-main/Packages/com.unity.pacemaker-for-unity/Editor/Temporary";
+const path2 = "C:/git-projects/Unity/TheLostForest-master/Packages/com.unity.pacemaker-for-unity/Editor/Temporary";
 
 const currentState = reactive({
   unityPath: path2,
   outFile: "designerVarsFromPacemaker.json",
   inFile: "designerVarsFromUnity.json",
   allVariables: [model_localValue,model_localValue,model_localValue],
-  ping: "Timeout reached",
+  lastMessage : "lM",
+  messageAge: 0.0,
 });
 
 window.server.onMessage('asynchronous-message', (message: any) => {
-  //console.log(message); // Returns: {'SAVED': 'File Saved'}
   if(!message.startsWith("Last ping")){
     console.log(message);
   }
 
-  currentState.ping = message;
+  currentState.lastMessage = message;
+
+  StartReactiveLastMessageTimer();
 });
+
+
+const ageInterval = setInterval(() => {
+    currentState.messageAge += 1;
+}, 100);
+ 
+function StartReactiveLastMessageTimer(){
+  currentState.messageAge = 0;
+}
+
 
 
 function addRow(){
   const next_id : number = currentState.allVariables.length;
-  const  temp_model = reactive({id: next_id, name: '', remoteValue: 'undefined', localValue: ''});
+  const  temp_model = reactive({id: next_id, name: '', remoteValue: 0, localValue: 0});
   currentState.allVariables.push(temp_model);
 }
 
@@ -38,7 +51,7 @@ function OnDelete(index: number){
 
 function OnApply(index: number){
   const current = currentState.allVariables[index];
-  if(current.remoteValue === "Variable does not exist in Game Engine."){
+  if(current.remoteValue === null){
     OnDelete(index);
     return;
   }
@@ -60,7 +73,8 @@ const sendString = async (message: string) => {
 }
 
 const sendAllVars = async () => {
-  const result: Record<string, string> = {};
+  return;
+  const result: Record<string, number> = {};
 
   currentState.allVariables.forEach(element => {
       if (typeof element === 'object' && element !== null) {
@@ -84,36 +98,43 @@ const loadCurrentState = async () => {
 
   currentState.allVariables = [];
   Object.keys(allVars).forEach((key, index) => {
-    const temp_model = reactive({id: index, name: key, remoteValue: 'undefined', localValue: allVars[key]});
+    const temp_model = reactive({id: index, name: key, remoteValue: 0, localValue: allVars[key]});
     currentState.allVariables.push(temp_model);
   });
 }
 
 const fetchAllVars = async () => {
   const response = await window.versions.fetchFile(currentState.unityPath + "/" + currentState.inFile)
-  const allVars = JSON.parse(response);
-  currentState.allVariables.forEach(element => {
+  const allVars: Array<{ name: string, value: number, path: string }> = JSON.parse(response);
+  allVars.forEach(element => {
     if (typeof element === 'object' && element !== null) {
         // Check if element has 'name' and 'localValue' properties
         const { name } = element;
         if (name) {
-            if (allVars[name] === undefined) {
-              allVars[name] = 'Variable does not exist in Game Engine.';
+            var index = currentState.allVariables.findIndex((e) => e.name === name);
+            var localVar = currentState.allVariables[index];
+            if (localVar === undefined){ 
+                const temp_model = reactive({id: currentState.allVariables.length, name: name, remoteValue: element.value, localValue: element.value});
+                currentState.allVariables.push(temp_model);
+                index = currentState.allVariables.length - 1;
             }
-            element.remoteValue = allVars[name];
+            currentState.allVariables[index].remoteValue = element.value;
         }
     }
   });
+  currentState.allVariables = currentState.allVariables.filter((e) => allVars.find((a) => a.name === e.name) !== undefined);
+
+  currentState.allVariables.sort((a, b) => a.name.localeCompare(b.name));
 }
 
-const pingGameEngine = async () => {
-  const response = await window.versions.pingGameEngine();
+const startListening = async () => {
+  const response = await window.versions.startListening();
   //currentState.ping = response;
 }
 
 const startFetchLoop = async () => {
-  setInterval(fetchAllVars, 5000);
-  setInterval(pingGameEngine, 1000);
+  setInterval(fetchAllVars, 1000);
+  setInterval(startListening, 1000);
 }
 
 function notInSync(index: number): boolean  {
@@ -161,56 +182,61 @@ function onReloadPage(){
 
   <div style="height: 20px;"></div>
 
-  <p>Ping to Game Engine: {{ currentState.ping }}</p>
+  <p>Latest Event: {{ currentState.lastMessage }}</p>
+  <p>Age [s]: {{ (currentState.messageAge / 10).toFixed(1) }}</p>
 
   <div style="height: 20px;"></div>
 
   <v-app>
     <v-container>
-      <v-row>
-      <div v-for="(row, index) in currentState.allVariables" :key="currentState.allVariables.id">
-        <v-col>
-          <v-confirm-edit cancel-text="Cancel" ok-text="Save" v-model="currentState.allVariables[index].localValue"
-          @save="send(index)">
-            <template v-slot:default="{ model: theModel, actions }">
-              <v-card width="320" >
-                <template v-slot:text>
-                  <v-text-field
-                    label="Name"
-                    v-model="currentState.allVariables[index].name"
-                  ></v-text-field>
-                  <v-text-field
-                    label="Value"
-                    v-model="theModel.value"
-                    :error="notInSync(index)"
-                    :outlined="currentState.allVariables[index].remoteValue === currentState.allVariables[index].localValue"
-                    :bg-color="notInSync(index) ? 'red-lighten-4' : ''"
-                    color="notInSync(index) ? 'red' : ''"
-                    ></v-text-field>
-                    <div
-                    :style="{ color: notInSync(index) ? 'red' : 'gray', marginLeft: '16px', fontSize: '12px', marginTop: '-16px' }"
-                  >
-                    {{ notInSync(index) ? `Variable out of Sync. Fetched: ` : 'In Sync' }}
-                    <br>
-                    <p style="color: gray">  {{ notInSync(index) ? `${currentState.allVariables[index].remoteValue}` : '' }}</p>
-                  </div>
-                </template>
+  <v-row v-for="(row, index) in currentState.allVariables" :key="row.id">
+    <v-col>
+      <v-card>
+        <v-text-field
+          label="Name"
+          v-model="currentState.allVariables[index].name"
+          dense
+          outlined
+        ></v-text-field>
+        <v-row>
+          <v-col cols="3"><!--v-model.number=... @input="value => currentState.allVariables[index].localValue = value" -->
+            <v-text-field
+              v-model="currentState.allVariables[index].localValue"
+              type="number"
+              dense
+              outlined
+            ></v-text-field>
+          </v-col>
+          <v-col>
+            <v-slider
+              v-model="currentState.allVariables[index].localValue"
+              @update:modelValue="value => currentState.allVariables[index].localValue = value"
+              :min="0"
+              :max="100"
+              :step="1"
+              thumb-label
+              :color="notInSync(index) ? 'red' : 'green'"
+            ></v-slider>
+          </v-col>
+        </v-row>
+        <div
+          :style="{
+            color: notInSync(index) ? 'red' : 'gray',
+            fontSize: '12px',
+            marginTop: '-8px',
+          }"
+        >
+          {{ notInSync(index) ? `Variable out of Sync. Fetched: ${currentState.allVariables[index].remoteValue}` : 'In Sync' }}
+        </div>
+        <v-btn color="red" @click="OnDelete(index)">Delete</v-btn>
+        <v-btn color="green" @click="OnApply(index)">Apply</v-btn>
+      </v-card>
+    </v-col>
+  </v-row>
+</v-container>
 
-                <template v-slot:actions>
-                  <v-spacer></v-spacer>
-                  <v-btn color="red" @click="OnDelete(index)">Delete</v-btn>
-                  <v-btn color="green" @click="OnApply(index)">Apply</v-btn>
 
-                  <component :is="actions"></component>
-                </template>
-              </v-card>
-            </template>
-          </v-confirm-edit>
 
-        </v-col>
-      </div>
-      </v-row>
-    </v-container>
   </v-app>
 </template>
 
