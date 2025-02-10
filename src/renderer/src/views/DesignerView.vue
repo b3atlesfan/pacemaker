@@ -1,10 +1,18 @@
 <script setup lang="ts">
 import { log } from "console";
 import { color } from "d3";
-import {reactive, ref, shallowRef, watchEffect} from "vue";
+import {computed, reactive, ref, shallowRef, watchEffect} from "vue";
+import VariableCard from "@/components/VariableCard.vue";
+
+function toggleFetchLoop() {
+  currentState.fetchLoopEnabled = !currentState.fetchLoopEnabled;
+  console.log("Fetch Loop Enabled: " + currentState.fetchLoopEnabled);
+}
 
 
-const  model_localValue = reactive({id: 0, name: 'ERROR VIEW NOT LOADED', remoteValue: 0, localValue: 0});
+const  model_localValue = reactive(
+  {id: 0, name: 'ERROR VIEW NOT LOADED', remoteValue: 0, 
+  localValue: 0, path: "", detailedView: false, markedFavorite: false});
 
 const path1 = "C:/git-projects/Unity/KartTemplate_MasterThesis/Packages/com.unity.pacemaker-for-unity/Editor/Temporary";
 const path2 = "C:/git-projects/Unity/TheLostForest-master/Packages/com.unity.pacemaker-for-unity/Editor/Temporary";
@@ -16,6 +24,9 @@ const currentState = reactive({
   allVariables: [model_localValue,model_localValue,model_localValue],
   lastMessage : "lM",
   messageAge: 0.0,
+  fetchLoopEnabled: false,
+  sendLoopEnabled: false,
+  favoritesOnly: false,
 });
 
 window.server.onMessage('asynchronous-message', (message: any) => {
@@ -37,11 +48,20 @@ function StartReactiveLastMessageTimer(){
   currentState.messageAge = 0;
 }
 
+const pathFilterText = ref("");
+
+function getPathFilteredVariables() {
+  var a = currentState.allVariables.filter(variable => variable.path.includes(pathFilterText.value));
+  if(currentState.favoritesOnly){
+    a = a.filter(variable => variable.markedFavorite);
+  }
+  return a;
+}
 
 
 function addRow(){
   const next_id : number = currentState.allVariables.length;
-  const  temp_model = reactive({id: next_id, name: '', remoteValue: 0, localValue: 0});
+  const  temp_model = reactive({id: next_id, name: '', remoteValue: 0, localValue: 0, path: "", detailedView: false, markedFavorite: false});
   currentState.allVariables.push(temp_model);
 }
 
@@ -73,21 +93,9 @@ const sendString = async (message: string) => {
 }
 
 const sendAllVars = async () => {
-  return;
-  const result: Record<string, number> = {};
-
-  currentState.allVariables.forEach(element => {
-      if (typeof element === 'object' && element !== null) {
-          // Check if element has 'name' and 'localValue' properties
-          const { name, localValue } = element;
-          if (name) {
-              result[name] = localValue;
-          }
-      }
-  });
-
-  const allVarsJsonFile = JSON.stringify(result, null, 2);
-  const response = await window.versions.sendFile(allVarsJsonFile, currentState.unityPath + "/" + currentState.outFile)
+  const filteredVars = currentState.allVariables.map(({ name, localValue: value, path }) => ({ name, value, path }));
+  const allVarsJsonFile = JSON.stringify(filteredVars, null, 2);
+  const response = await window.versions.sendFile(allVarsJsonFile, currentState.unityPath + "/" + currentState.outFile);
 
   fetchAllVars();
 }
@@ -98,33 +106,53 @@ const loadCurrentState = async () => {
 
   currentState.allVariables = [];
   Object.keys(allVars).forEach((key, index) => {
-    const temp_model = reactive({id: index, name: key, remoteValue: 0, localValue: allVars[key]});
-    currentState.allVariables.push(temp_model);
+    //const temp_model = reactive({id: index, name: key, remoteValue: 0, localValue: allVars[key]});
+    //currentState.allVariables.push(temp_model);
   });
 }
 
+function fetchAndSend() {
+  if(currentState.fetchLoopEnabled){
+    fetchAllVars();
+  }
+  if(currentState.sendLoopEnabled){
+    sendAllVars();
+  }
+}
+
 const fetchAllVars = async () => {
-  const response = await window.versions.fetchFile(currentState.unityPath + "/" + currentState.inFile)
+  const response = await window.versions.fetchFile(currentState.unityPath + "/" + currentState.inFile);
   const allVars: Array<{ name: string, value: number, path: string }> = JSON.parse(response);
+  
   allVars.forEach(element => {
-    if (typeof element === 'object' && element !== null) {
-        // Check if element has 'name' and 'localValue' properties
-        const { name } = element;
-        if (name) {
-            var index = currentState.allVariables.findIndex((e) => e.name === name);
-            var localVar = currentState.allVariables[index];
-            if (localVar === undefined){ 
-                const temp_model = reactive({id: currentState.allVariables.length, name: name, remoteValue: element.value, localValue: element.value});
-                currentState.allVariables.push(temp_model);
-                index = currentState.allVariables.length - 1;
-            }
-            currentState.allVariables[index].remoteValue = element.value;
-        }
+    let index = currentState.allVariables.findIndex((e) => e.name === element.name && e.path === element.path);
+    if (index === -1) {
+      const temp_model = reactive({
+        id: currentState.allVariables.length,
+        name: element.name,
+        remoteValue: element.value,
+        localValue: element.value,
+        path: element.path || "",
+        detailedView: false,
+        markedFavorite: false
+      });
+      currentState.allVariables.push(temp_model);
+      index = currentState.allVariables.length - 1;
+    }
+    currentState.allVariables[index].remoteValue = element.value;
+  });
+
+  currentState.allVariables.forEach((element, index) => {
+    if (allVars.findIndex((e) => e.name === element.name && e.path === element.path) === -1) {
+      currentState.allVariables[index].remoteValue = null;
     }
   });
-  currentState.allVariables = currentState.allVariables.filter((e) => allVars.find((a) => a.name === e.name) !== undefined);
 
-  currentState.allVariables.sort((a, b) => a.name.localeCompare(b.name));
+  currentState.allVariables.sort((a, b) => pathWithName(a).localeCompare(pathWithName(b)));
+};
+
+function pathWithName (a: { path: string; name: string; }) : string  {
+  return a.path + "_" + a.name;
 }
 
 const startListening = async () => {
@@ -133,7 +161,7 @@ const startListening = async () => {
 }
 
 const startFetchLoop = async () => {
-  setInterval(fetchAllVars, 1000);
+  setInterval(fetchAndSend, 1000);
   setInterval(startListening, 1000);
 }
 
@@ -158,6 +186,18 @@ function onReloadPage(){
   <!-- <v-btn @click="fetchAllVars"> Fetch Changes </v-btn>-->
   <v-btn @click="ApplyAll"> Apply All </v-btn>
   <v-btn @click="sendAllVars"> Send All </v-btn>
+
+  <v-row>
+    <v-checkbox 
+      v-model="currentState.fetchLoopEnabled" 
+      label="Fetch automatically" 
+    ></v-checkbox>
+    <v-checkbox 
+      v-model="currentState.sendLoopEnabled" 
+      label="Send automatically" 
+    ></v-checkbox>
+  </v-row>
+
 
   <v-btn @click="addRow">Create Variable</v-btn>
 
@@ -187,50 +227,35 @@ function onReloadPage(){
 
   <div style="height: 20px;"></div>
 
+  
+  <v-text-field v-model="pathFilterText" label="Filter by Path" placeholder="Enter path to filter"></v-text-field>
+  <v-checkbox 
+      v-model="currentState.favoritesOnly" 
+      label="Show only favorites" 
+    ></v-checkbox>
+
   <v-app>
     <v-container>
-  <v-row v-for="(row, index) in currentState.allVariables" :key="row.id">
+  <v-row v-for="(row, index) in getPathFilteredVariables()" :key="row.id">
     <v-col>
-      <v-card>
-        <v-text-field
-          label="Name"
-          v-model="currentState.allVariables[index].name"
-          dense
-          outlined
-        ></v-text-field>
+      <p v-if="row.detailedView">
+        <variable-card :row="row" :currentState="currentState" :currentVariable="currentState.allVariables[row.id]" :sendAllVars="sendAllVars" :onDelete="OnDelete" :onApply="OnApply"></variable-card>
+      </p>
+      <p v-else>
         <v-row>
-          <v-col cols="3"><!--v-model.number=... @input="value => currentState.allVariables[index].localValue = value" -->
-            <v-text-field
-              v-model="currentState.allVariables[index].localValue"
-              type="number"
-              dense
-              outlined
-            ></v-text-field>
+          <v-col cols="1">
+            <v-btn @click="row.markedFavorite=!row.markedFavorite">
+              <v-icon v-if="row.markedFavorite" icon="mdi-star"></v-icon>
+              <v-icon v-else icon="mdi-star-outline"></v-icon>
+            </v-btn>
           </v-col>
-          <v-col>
-            <v-slider
-              v-model="currentState.allVariables[index].localValue"
-              @update:modelValue="value => currentState.allVariables[index].localValue = value"
-              :min="0"
-              :max="100"
-              :step="1"
-              thumb-label
-              :color="notInSync(index) ? 'red' : 'green'"
-            ></v-slider>
+          <v-col cols="1">
+            <v-btn @click="row.detailedView = true">Open</v-btn>
           </v-col>
+          <v-col cols="2">{{ row.name }}</v-col>
+          <v-col cols="4500">{{ row.path }}</v-col>
         </v-row>
-        <div
-          :style="{
-            color: notInSync(index) ? 'red' : 'gray',
-            fontSize: '12px',
-            marginTop: '-8px',
-          }"
-        >
-          {{ notInSync(index) ? `Variable out of Sync. Fetched: ${currentState.allVariables[index].remoteValue}` : 'In Sync' }}
-        </div>
-        <v-btn color="red" @click="OnDelete(index)">Delete</v-btn>
-        <v-btn color="green" @click="OnApply(index)">Apply</v-btn>
-      </v-card>
+      </p>
     </v-col>
   </v-row>
 </v-container>
