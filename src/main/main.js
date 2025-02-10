@@ -66,7 +66,7 @@ app.whenReady().then(() => {
       return "{}";
     }
   });
-  ipcMain.handle('pingGameEngine', () => {
+  ipcMain.handle('startListening', () => {
     startListening();
 
   });
@@ -85,12 +85,12 @@ function startListening() {
   server = net.createServer((socket) => {
     console.log('client connected');
     socket.on('data', (data) => {
-      stopTimeoutCounter();
+      //stopTimeoutCounter();
       console.log(`Received data: ${data}`);
       socket.write('pong');
       mainWindow.webContents.send('asynchronous-message', `${data}`);
 
-      startTimeoutCounter();
+      //startTimeoutCounter();
     });
     socket.on('close', () => {
       console.log('Client disconnected');
