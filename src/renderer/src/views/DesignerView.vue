@@ -67,6 +67,9 @@ function addRow(){
 
 function OnDelete(index: number){
   currentState.allVariables.splice(index, 1);
+  currentState.allVariables.forEach((element, index) => {
+    element.id = index;
+  });
 }
 
 function OnApply(index: number){
@@ -169,6 +172,13 @@ function notInSync(index: number): boolean  {
   return currentState.allVariables[index].remoteValue !== currentState.allVariables[index].localValue;
 }
 
+function isDetailedView(index: number): boolean  {
+  if(currentState.allVariables[index] === undefined){
+    return false;
+  }
+  return currentState.allVariables[index].detailedView;
+}
+
 onReloadPage();
 
 function onReloadPage(){
@@ -238,24 +248,22 @@ function onReloadPage(){
     <v-container>
   <v-row v-for="(row, index) in getPathFilteredVariables()" :key="row.id">
     <v-col>
-      <p v-if="row.detailedView">
-        <variable-card :row="row" :currentState="currentState" :currentVariable="currentState.allVariables[row.id]" :sendAllVars="sendAllVars" :onDelete="OnDelete" :onApply="OnApply"></variable-card>
-      </p>
-      <p v-else>
-        <v-row>
-          <v-col cols="1">
-            <v-btn @click="row.markedFavorite=!row.markedFavorite">
-              <v-icon v-if="row.markedFavorite" icon="mdi-star"></v-icon>
-              <v-icon v-else icon="mdi-star-outline"></v-icon>
-            </v-btn>
-          </v-col>
-          <v-col cols="1">
-            <v-btn @click="row.detailedView = true">Open</v-btn>
-          </v-col>
-          <v-col cols="2">{{ row.name }}</v-col>
-          <v-col cols="4500">{{ row.path }}</v-col>
+      <variable-card v-if="isDetailedView(row.id)" :currentState="currentState" :currentVariable="currentState.allVariables[row.id]" :sendAllVars="sendAllVars" :onDelete="OnDelete" :onApply="OnApply"></variable-card>
+      
+      <v-card v-else><v-row>
+        <v-col cols="1">
+          <v-btn @click="row.markedFavorite=!row.markedFavorite">
+            <v-icon v-if="row.markedFavorite" icon="mdi-star"></v-icon>
+            <v-icon v-else icon="mdi-star-outline"></v-icon>
+          </v-btn>
+        </v-col>
+        <v-col cols="1">
+          <v-btn @click="row.detailedView = true">Open</v-btn>
+        </v-col>
+        <v-col cols="2">{{ row.name }}</v-col>
+        <v-col cols="4500">{{ row.path }}</v-col>
         </v-row>
-      </p>
+      </v-card>
     </v-col>
   </v-row>
 </v-container>
