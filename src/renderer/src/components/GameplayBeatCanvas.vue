@@ -13,6 +13,7 @@ import {BeatContentManager} from "@/assets/BeatContentManager";
 import {useTheme} from "vuetify";
 import ContentCreationForm from "@/components/ContentCreationForm.vue";
 import { BeatContent } from '@/assets/BeatContent';
+import { time } from 'console';
 
 const theme = useTheme()
 
@@ -105,7 +106,12 @@ function onEditContent() {
   if (selectedElement && isNode(selectedElement)) {
     console.log("Editing content id: " + selectedElement.id);
     beatId = selectedElement.id
-    contentSelectorDialog.value = true;
+    var contentId = beatManager.getNode(selectedElement.id).data.contentId
+    onEdit(contentId)
+  }
+  else {
+    beatId = ""
+    contentSelectorDialog.value = true; 
   }
 }
 
@@ -156,7 +162,9 @@ function onCreate() {
 function onSave(contentId: number) {
   //console.log(beatId)
   //console.log(contentId)
-  beatManager.editContentId(beatId, contentId)
+  if(beatId != "") {
+    beatManager.editContentId(beatId, contentId)
+  }
   contentSelectorDialog.value = false
 }
 
@@ -229,10 +237,25 @@ watch(isRecording, (newValue) => {
   }
 });
 
+function getTimeDiffInMinAndSec(timeDiffInS: number) {
+  var timeDiffInMin  = Math.floor(timeDiffInS / 60);
+  var timeDiffInSec = Math.floor((timeDiffInS % 60));
+  var timeDiffTotal = ""
+  if(timeDiffInMin < 10){
+    timeDiffTotal += "0"
+  }
+  timeDiffTotal += timeDiffInMin + ":"
+  if(timeDiffInSec < 10){
+    timeDiffTotal += "0"
+  }
+  timeDiffTotal += timeDiffInSec
+  return timeDiffTotal
+}
+
 function recordEvent(event:string) {
   const eventObj = JSON.parse(event)
 
-  if(eventObj.name != "distanceTriggerEvent") return;
+  if(eventObj.name != "checkpointReached") return;
 
   console.log("Recording event: " + event)
 
@@ -246,14 +269,16 @@ function recordEvent(event:string) {
   if (lastBeat != null) {
     lastBeatPos = {x: lastBeat.position.x, y: lastBeat.position.y}
   }
-
+  var v = eventObj.args;
+  var timeDiffInMs = v.TimeDiff;
+  var timeDiffInMinAndSec = getTimeDiffInMinAndSec(timeDiffInMs);
   var beatId : number = beatManager.createNode({x: lastBeatPos.x + 300, y: lastBeatPos.y})
   const contentId = contentManager.createContent({
-    name: eventObj.name + " " + beatId,
-    intensity: eventObj.args.jumpsSinceLastTrigger * 10 + eventObj.args.timeSinceLastTrigger,
-    narrativeIntensity: 0,
+    name: beatId + " "+ eventObj.name,
+    intensity: v.EnemiesKilled + v.Deaths * 10,
+    narrativeIntensity: v.Jumps + v.ScoreDiff,
     category: "Platforming",
-    playtime: "0"
+    playtime: timeDiffInMinAndSec
   })
 
   beatManager.editContentId(beatId, contentId)
