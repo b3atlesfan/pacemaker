@@ -138,7 +138,11 @@ const fetchAllVars = async () => {
   if(response === null || response === ''){
     return;
   }
-  const allVars: Array<{ name: string, value: number, path: string, isPublic: bool }> = JSON.parse(response);
+  //const allVars: Array<{ name: string, value: number, path: string, isPublic: bool }> = JSON.parse(response);
+  // Example for response: {"(speed, 1_Moving Platform_FlyPlats_Platform)":{"name":"speed","value":5.0,"path":"1_Moving Platform_FlyPlats_Platform","isPublic":false,"fieldType":"System.Single"},"(killcounter, 1_Enemies_Bees_Bee0_Enemy)":{"name":"killcounter","value":0.0,"path":"1_Enemies_Bees_Bee0_Enemy","isPublic":true,"fieldType":"System.Int32"}
+  // Read as dictionary with name and path for key
+  const allVarsAsDict : { [key: string]: { name: string, value: number, path: string, isPublic: boolean } } = JSON.parse(response);
+  const allVars : Array<{ name: string, value: number, path: string, isPublic: bool }> = Object.values(allVarsAsDict);
   
   allVars.forEach(element => {
     let index = currentState.allVariables.findIndex((e) => e.name === element.name && e.path === element.path);
@@ -166,6 +170,9 @@ const fetchAllVars = async () => {
   });
 
   currentState.allVariables.sort((a, b) => pathWithName(a).localeCompare(pathWithName(b)));
+  currentState.allVariables.forEach((element, index) => {
+    element.id = index;
+  });
 };
 
 function pathWithName (a: { path: string; name: string; }) : string  {
