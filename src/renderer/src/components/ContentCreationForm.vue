@@ -41,7 +41,7 @@ watch(() => props.dialog, (newValue) => {
     state.intensity = newContent.intensity || null;
     state.narrativeIntensity = newContent.narrativeIntensity || null;
     state.category = newContent.category || null;
-    state.playtime = newContent.playtime || '';
+    state.playtime = newContent.expectedPlaytime || '';
     state.introducedSkills = newContent.introducedSkills || [];
     state.reinforcedSkills = newContent.reinforcedSkills || [];
     state.requiredSkills = newContent.requiredSkills || [];
