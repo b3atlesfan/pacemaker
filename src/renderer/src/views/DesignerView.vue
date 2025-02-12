@@ -27,6 +27,7 @@ const currentState = reactive({
   fetchLoopEnabled: false,
   sendLoopEnabled: false,
   favoritesOnly: false,
+  onlyPublic: true
 });
 
 window.server.onMessage('asynchronous-message', (message: any) => {
@@ -55,13 +56,16 @@ function getPathFilteredVariables() {
   if(currentState.favoritesOnly){
     a = a.filter(variable => variable.markedFavorite);
   }
+  if(currentState.onlyPublic){
+    a = a.filter(variable => variable.isPublic);
+  }
   return a;
 }
 
 
 function addRow(){
   const next_id : number = currentState.allVariables.length;
-  const  temp_model = reactive({id: next_id, name: '', remoteValue: 0, localValue: 0, path: "", detailedView: false, markedFavorite: false});
+  const  temp_model = reactive({id: next_id, name: '', remoteValue: 0, localValue: 0, path: "", detailedView: false, markedFavorite: false, isPublic: true});
   currentState.allVariables.push(temp_model);
 }
 
@@ -87,6 +91,10 @@ function ApplyAll(){
   }
 }
 
+function deleteAll(){
+  currentState.allVariables = [];
+}
+
 function send(index: number){
   sendString("Sending... " + index);
 }
@@ -100,7 +108,9 @@ const sendAllVars = async () => {
   const allVarsJsonFile = JSON.stringify(filteredVars, null, 2);
   const response = await window.versions.sendFile(allVarsJsonFile, currentState.unityPath + "/" + currentState.outFile);
 
-  fetchAllVars();
+  if(currentState.fetchLoopEnabled){
+    fetchAllVars();
+  }
 }
 
 const loadCurrentState = async () => {
@@ -125,7 +135,10 @@ function fetchAndSend() {
 
 const fetchAllVars = async () => {
   const response = await window.versions.fetchFile(currentState.unityPath + "/" + currentState.inFile);
-  const allVars: Array<{ name: string, value: number, path: string }> = JSON.parse(response);
+  if(response === null || response === ''){
+    return;
+  }
+  const allVars: Array<{ name: string, value: number, path: string, isPublic: bool }> = JSON.parse(response);
   
   allVars.forEach(element => {
     let index = currentState.allVariables.findIndex((e) => e.name === element.name && e.path === element.path);
@@ -137,7 +150,8 @@ const fetchAllVars = async () => {
         localValue: element.value,
         path: element.path || "",
         detailedView: false,
-        markedFavorite: false
+        markedFavorite: false,
+        isPublic: element.isPublic || false
       });
       currentState.allVariables.push(temp_model);
       index = currentState.allVariables.length - 1;
@@ -196,6 +210,7 @@ function onReloadPage(){
   <!-- <v-btn @click="fetchAllVars"> Fetch Changes </v-btn>-->
   <v-btn @click="ApplyAll"> Apply All </v-btn>
   <v-btn @click="sendAllVars"> Send All </v-btn>
+  <v-btn @click="deleteAll">Delete All</v-btn>
 
   <v-row>
     <v-checkbox 
@@ -242,6 +257,10 @@ function onReloadPage(){
   <v-checkbox 
       v-model="currentState.favoritesOnly" 
       label="Show only favorites" 
+    ></v-checkbox>
+    <v-checkbox 
+      v-model="currentState.onlyPublic" 
+      label="Show only public variables" 
     ></v-checkbox>
 
   <v-app>
