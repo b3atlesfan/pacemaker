@@ -3,31 +3,36 @@ import { log } from "console";
 import { color } from "d3";
 import {computed, reactive, ref, shallowRef, watchEffect} from "vue";
 import VariableCard from "@/components/VariableCard.vue";
+import VariableCardClosed from "@/components/VariableCardClosed.vue";
 
 function toggleFetchLoop() {
   currentState.fetchLoopEnabled = !currentState.fetchLoopEnabled;
   console.log("Fetch Loop Enabled: " + currentState.fetchLoopEnabled);
 }
 
+const path1 = "C:/git-projects/Unity/KartTemplate_MasterThesis/Packages/com.unity.pacemaker-for-unity/Runtime/Temporary";
+const path2 = "C:/git-projects/Unity/TheLostForest-master/Packages/com.unity.pacemaker-for-unity/Runtime/Temporary";
 
-const  model_localValue = reactive(
-  {id: 0, name: 'ERROR VIEW NOT LOADED', remoteValue: 0, 
-  localValue: 0, path: "", detailedView: false, markedFavorite: false});
-
-const path1 = "C:/git-projects/Unity/KartTemplate_MasterThesis/Packages/com.unity.pacemaker-for-unity/Editor/Temporary";
-const path2 = "C:/git-projects/Unity/TheLostForest-master/Packages/com.unity.pacemaker-for-unity/Editor/Temporary";
-
-const currentState = reactive({
+const savedState = localStorage.getItem('currentState');
+const initialState = savedState ? JSON.parse(savedState) : {
   unityPath: path2,
   outFile: "designerVarsFromPacemaker.json",
   inFile: "designerVarsFromUnity.json",
-  allVariables: [model_localValue,model_localValue,model_localValue],
-  lastMessage : "lM",
+  allVariables: [],
+  lastMessage: "lM",
   messageAge: 0.0,
   fetchLoopEnabled: false,
   sendLoopEnabled: false,
   favoritesOnly: false,
-  onlyPublic: true
+  onlyPublic: true,
+  onlyWithWeight: false,
+  pathFilterText: "",
+};
+
+const currentState = reactive(initialState);
+
+watchEffect(() => {
+  localStorage.setItem('currentState', JSON.stringify(currentState));
 });
 
 window.server.onMessage('asynchronous-message', (message: any) => {
@@ -49,15 +54,17 @@ function StartReactiveLastMessageTimer(){
   currentState.messageAge = 0;
 }
 
-const pathFilterText = ref("");
 
 function getPathFilteredVariables() {
-  var a = currentState.allVariables.filter(variable => variable.path.includes(pathFilterText.value));
+  var a = currentState.allVariables.filter(variable => (variable.path + "/" + variable.name).match(new RegExp(currentState.pathFilterText, "i")));
   if(currentState.favoritesOnly){
     a = a.filter(variable => variable.markedFavorite);
   }
   if(currentState.onlyPublic){
     a = a.filter(variable => variable.isPublic);
+  }
+  if(currentState.onlyWithWeight){
+    a = a.filter(variable => (variable.intensityWeight || 0) > 0);
   }
   return a;
 }
@@ -65,7 +72,8 @@ function getPathFilteredVariables() {
 
 function addRow(){
   const next_id : number = currentState.allVariables.length;
-  const  temp_model = reactive({id: next_id, name: '', remoteValue: 0, localValue: 0, path: "", detailedView: false, markedFavorite: false, isPublic: true});
+  const  temp_model = reactive({id: next_id, name: '', remoteValue: 0, localValue: 0, path: "", 
+      detailedView: false, markedFavorite: false, isPublic: true, intensityWeight: 0});
   currentState.allVariables.push(temp_model);
 }
 
@@ -104,7 +112,8 @@ const sendString = async (message: string) => {
 }
 
 const sendAllVars = async () => {
-  const filteredVars = currentState.allVariables.map(({ name, localValue: value, path }) => ({ name, value, path }));
+  const filteredVars = currentState.allVariables.map(
+      ({ name, localValue: value, path, intensityWeight }) => ({ name, value, path, hasIntensity: intensityWeight > 0 }));
   const allVarsJsonFile = JSON.stringify(filteredVars, null, 2);
   const response = await window.versions.sendFile(allVarsJsonFile, currentState.unityPath + "/" + currentState.outFile);
 
@@ -142,7 +151,7 @@ const fetchAllVars = async () => {
   // Example for response: {"(speed, 1_Moving Platform_FlyPlats_Platform)":{"name":"speed","value":5.0,"path":"1_Moving Platform_FlyPlats_Platform","isPublic":false,"fieldType":"System.Single"},"(killcounter, 1_Enemies_Bees_Bee0_Enemy)":{"name":"killcounter","value":0.0,"path":"1_Enemies_Bees_Bee0_Enemy","isPublic":true,"fieldType":"System.Int32"}
   // Read as dictionary with name and path for key
   const allVarsAsDict : { [key: string]: { name: string, value: number, path: string, isPublic: boolean } } = JSON.parse(response);
-  const allVars : Array<{ name: string, value: number, path: string, isPublic: bool }> = Object.values(allVarsAsDict);
+  const allVars : Array<{ name: string, value: number, path: string, isPublic: boolean }> = Object.values(allVarsAsDict);
   
   allVars.forEach(element => {
     let index = currentState.allVariables.findIndex((e) => e.name === element.name && e.path === element.path);
@@ -155,7 +164,8 @@ const fetchAllVars = async () => {
         path: element.path || "",
         detailedView: false,
         markedFavorite: false,
-        isPublic: element.isPublic || false
+        isPublic: element.isPublic || false,
+        intensityWeight: 0
       });
       currentState.allVariables.push(temp_model);
       index = currentState.allVariables.length - 1;
@@ -203,8 +213,8 @@ function isDetailedView(index: number): boolean  {
 onReloadPage();
 
 function onReloadPage(){
-  loadCurrentState();
-  fetchAllVars();
+  //loadCurrentState();
+  //fetchAllVars();
   startFetchLoop();
 }
 
@@ -260,39 +270,50 @@ function onReloadPage(){
   <div style="height: 20px;"></div>
 
   
-  <v-text-field v-model="pathFilterText" label="Filter by Path" placeholder="Enter path to filter"></v-text-field>
-  <v-checkbox 
-      v-model="currentState.favoritesOnly" 
-      label="Show only favorites" 
-    ></v-checkbox>
-    <v-checkbox 
-      v-model="currentState.onlyPublic" 
-      label="Show only public variables" 
-    ></v-checkbox>
+  <v-text-field v-model="currentState.pathFilterText" label="Filter by Path" placeholder="Enter path to filter"></v-text-field>
+  <v-row>
+    <v-col cols="1" class="d-flex align-center justify-center"><strong>Filters</strong></v-col>
+    <v-col cols="1">
+      <v-checkbox 
+        class="d-flex align-center"
+        v-model="currentState.favoritesOnly" 
+        label="Favorite" 
+      ></v-checkbox>
+    </v-col>
+    <v-col cols="1">
+      <v-checkbox 
+        v-model="currentState.onlyPublic" 
+        label="Public" 
+        class="d-flex align-center"
+      ></v-checkbox>
+    </v-col>
+    <v-col cols="1">
+      <v-checkbox 
+        v-model="currentState.onlyWithWeight" 
+        label="Has Weight"
+        class="d-flex align-center"
+      ></v-checkbox>
+    </v-col>
+  </v-row>
 
   <v-app>
     <v-container>
-  <v-row v-for="(row, index) in getPathFilteredVariables()" :key="row.id">
-    <v-col>
-      <variable-card v-if="isDetailedView(row.id)" :currentState="currentState" :currentVariable="currentState.allVariables[row.id]" :sendAllVars="sendAllVars" :onDelete="OnDelete" :onApply="OnApply"></variable-card>
-      
-      <v-card v-else><v-row>
-        <v-col cols="1">
-          <v-btn @click="row.markedFavorite=!row.markedFavorite">
-            <v-icon v-if="row.markedFavorite" icon="mdi-star"></v-icon>
-            <v-icon v-else icon="mdi-star-outline"></v-icon>
-          </v-btn>
+      <v-row>
+        <v-col cols="1"><strong>Favorite</strong></v-col>
+        <v-col cols="1"></v-col>
+        <v-col cols="2"><strong>Name</strong></v-col>
+        <v-col cols="2"><strong>Path</strong></v-col>
+        <v-col cols="1"><strong>Intensity Weight</strong></v-col>
+      </v-row>
+
+      <v-row v-for="(row, index) in getPathFilteredVariables()" :key="row.id">
+        <v-col>
+          <variable-card v-if="isDetailedView(row.id)" :currentState="currentState" :currentVariable="currentState.allVariables[row.id]" :sendAllVars="sendAllVars" :onDelete="OnDelete" :onApply="OnApply"></variable-card>
+          
+          <variable-card-closed v-else :currentVariable="currentState.allVariables[row.id]"></variable-card-closed>
         </v-col>
-        <v-col cols="1">
-          <v-btn @click="row.detailedView = true">Open</v-btn>
-        </v-col>
-        <v-col cols="2">{{ row.name }}</v-col>
-        <v-col cols="4500">{{ row.path }}</v-col>
-        </v-row>
-      </v-card>
-    </v-col>
-  </v-row>
-</v-container>
+      </v-row>
+    </v-container>
 
 
 
