@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {MarkerType, Panel, PanelPosition, useVueFlow, VueFlow, isNode, isEdge} from '@vue-flow/core'
 import {Background} from '@vue-flow/background'
-import {computed, ref, watch} from 'vue'
+import {computed, ref, watch, onMounted, nextTick } from 'vue'
 import GameplayBeatNode from "@/components/GameplayBeatNode.vue";
 import {useElementsStore} from "@/store/elements";
 import {storeToRefs} from "pinia";
@@ -14,6 +14,8 @@ import {useTheme} from "vuetify";
 import ContentCreationForm from "@/components/ContentCreationForm.vue";
 import { BeatContent } from '@/assets/BeatContent';
 import { time } from 'console';
+import Filemanager from "@/assets/Filemanager";
+import * as XLSX from "xlsx";
 
 const theme = useTheme()
 
@@ -225,8 +227,29 @@ function toggleRecording(){
   isRecording.value = !isRecording.value
   recordingIcon.value = isRecording.value ? 'mdi-stop' : 'mdi-record'
 }
+
+var recordingName :string = ""
+function startNewRecording(index : number = -1){
+  if(index == -1) {
+    totalRecordings += 1
+  } else {
+    totalRecordings = index
+  }
+  // Create empty beat with name "Recording x"
+  beatId = beatManager.createNode({x: 0, y: totalRecordings * 200})
+  recordingName = "Recording " + totalRecordings
+  beatManager.editNodeLabel(beatId, recordingName)
+}
+
+function displayAverage(){
+  beatId = beatManager.createNode({x: 0, y: -200})
+  recordingName = "Average up to Rec " + totalRecordings
+  beatManager.editNodeLabel(beatId, recordingName)
+}
+
 const startListening = async () => {
       const response = await window.versions.startListening();
+      startNewRecording()
     }
 watch(isRecording, (newValue) => {
   recordingIcon.value = newValue ? 'mdi-stop' : 'mdi-record';
@@ -252,13 +275,124 @@ function getTimeDiffInMinAndSec(timeDiffInS: number) {
   return timeDiffTotal
 }
 
-function recordEvent(event:string) {
-  const eventObj = JSON.parse(event)
 
+//let exampleEvent = '{\r\n  "name": "checkpointReached",\r\n  "args": {\r\n    "index": 1,\r\n    "TimeDiff": 0.0,\r\n    "EnemiesKilled": 0,\r\n    "Deaths": 0,\r\n    "Jumps": 0,\r\n    "ScoreDiff": 0\r\n  }\r\n}'
+//window.versions.writeToExcelFile("TestWrite", exampleEvent)
+
+var totalRecordings = 0
+const beatContentSelector = ref(null);
+
+onMounted(async() => {
+  await nextTick();
+  console.log("Component instance:", beatContentSelector.value); // Should not be null after mounting
+  loadRecordings()
+});
+
+const calculateAverages = async () => {
+  const workbook = await window.versions.readFromExcelFile("event_log");
+  if (!workbook || workbook === "null") return;
+
+  var n_rows = 0;
+  for (let i = 0; i < workbook.SheetNames.length; i++) {
+    const sheet = workbook.Sheets[workbook.SheetNames[i]];
+    const range = XLSX.utils.decode_range(sheet["!ref"]); // Get the range of the first sheet
+    const local_n_rows = range.e.r + 1; // Number of rows
+    if (local_n_rows > n_rows) {
+      n_rows = local_n_rows;
+    }
+  }
+
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+  const range = XLSX.utils.decode_range(sheet["!ref"]); // Get the range of the first sheet
+
+  const n_cols = range.e.c + 1; // Number of columns
+  const n_of_sheets = workbook.SheetNames.length; 
+  const skipCols = 2
+  const skipRows = 1
+
+  let totalValues = Array.from({ length: n_rows - skipRows }, () => Array(n_cols-skipCols).fill(0));
+
+  for (let i = 0; i < workbook.SheetNames.length; i++) {
+    const sheet = workbook.Sheets[workbook.SheetNames[i]];
+    const localValues = XLSX.utils.sheet_to_json(sheet, { header: 1 }); // Convert sheet to a 2D array
+
+    for (let j = skipRows; j < n_rows; j++) {
+      for (let k = skipCols; k < n_cols; k++) {
+        if (localValues[j] && localValues[j][k] !== undefined) {
+          totalValues[j - skipRows][k-skipCols] += Number(localValues[j][k]) / n_of_sheets || 0; // Convert to number and sum
+        }
+      }
+    }
+  }
+
+  // get args array
+  const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+  const firstRow : string[] = XLSX.utils.sheet_to_json(firstSheet, { header: 1 })[0].slice(2);
+  
+  displayAverage()
+  // create nodes with averages
+  for(let i = 0; i < n_rows - skipRows; i++){
+    const event = totalValues[i];
+    const eventName = "checkpointReached"
+    const eventArgs = firstRow.reduce((argsObj, name, index) => {
+      argsObj[name] = event[index]; // Assign each value to its respective key
+      return argsObj;
+    }, {});
+    const eventAsExpected = {
+      name: eventName,
+      args: eventArgs
+    }
+    createNodeFromValidEvent(eventAsExpected)
+  }
+};
+
+
+const loadRecordings = async () => {
+  const workbook = await window.versions.readFromExcelFile("event_log");
+  if(!workbook || workbook == "null") return;
+  deleteAllNodes()
+  beatContentSelector.value.onDeleteAll()
+  
+  // wait for 1 ms to ensure that all nodes are deleted
+  await nextTick();
+
+  for(var i = 0; i < workbook.SheetNames.length; i++){
+    const sheet = workbook.Sheets[workbook.SheetNames[i]];
+    
+    const index = workbook.SheetNames[i].split(" ")[1]
+    startNewRecording(parseInt(index))
+
+    // "Record" for each line in sheet
+    const events = XLSX.utils.sheet_to_json(sheet);
+    
+    events.forEach((event: any) => {
+      const eventName = event.eventName;
+      if(eventName != "checkpointReached") return;
+      delete event["Timestamp"];
+      delete event["eventName"];
+      const eventAsExpected = {
+        name: eventName,
+        args: event
+      }
+      createNodeFromValidEvent(eventAsExpected)
+    })
+  }
+  calculateAverages()
+}
+
+
+function recordEvent(event: any) {
+  var eventObj = JSON.parse(event)
   if(eventObj.name != "checkpointReached") return;
 
-  console.log("Recording event: " + event)
+  console.log("Recording event: " + JSON.stringify(eventObj))
 
+  window.versions.writeToExcelFile("Recording " + totalRecordings, event)
+
+  createNodeFromValidEvent(eventObj)
+}
+
+function createNodeFromValidEvent(eventObj) {
   const viewport = getViewport()
 
   // get position of last beat
@@ -273,8 +407,10 @@ function recordEvent(event:string) {
   var timeDiffInMs = v.TimeDiff;
   var timeDiffInMinAndSec = getTimeDiffInMinAndSec(timeDiffInMs);
   var beatId : number = beatManager.createNode({x: lastBeatPos.x + 300, y: lastBeatPos.y})
+  beatManager.editNodeLabel(beatId, eventObj.name + " " + v.index)
+
   const contentId = contentManager.createContent({
-    name: beatId + " "+ eventObj.name,
+    name: "B" + v.index + " " + recordingName,
     intensity: v.EnemiesKilled + v.Deaths * 10,
     narrativeIntensity: v.Jumps + v.ScoreDiff,
     category: "Platforming",
@@ -302,21 +438,16 @@ function recordEvent(event:string) {
       stroke: '#000000',
     },
   }
-  if (beatId != 0) {
+  if (beatId != 0 && beatId != '') {
     addEdgesDelayed(edge)
   }
   lastBeatId = beatId
-  
-  // beatmanager.createNode
-  // contentManager.CreateContent
-  // connect beats
-  // connect content to beat*/
 }
 const overrideInitialState = ref<BeatContent | null>(null);
 </script>
 
 <template>
-  <BeatContentSelector :dialog="contentSelectorDialog" @on-exit="onExit" @on-create="onCreate"
+  <BeatContentSelector ref="beatContentSelector" :dialog="contentSelectorDialog" @on-exit="onExit" @on-create="onCreate"
                        @on-save="onSave" @on-edit="onEdit"></BeatContentSelector>
 
   <ContentCreationForm :dialog="contentCreatorDialog" :overrideInitialState="overrideInitialState" @on-submit="onCreateContent" @on-exit="contentCreatorDialog = false"></ContentCreationForm>
