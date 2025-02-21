@@ -6,6 +6,8 @@ contextBridge.exposeInMainWorld('versions', {
   sendFile: (file, destinationPath) => ipcRenderer.invoke('sendFile', file, destinationPath),
   fetchFile: (filePath) => ipcRenderer.invoke('fetchFile', filePath),
   startListening: () => ipcRenderer.invoke('startListening'),
+  writeToExcelFile: (sheetName, data) => ipcRenderer.invoke('writeToExcelFile', sheetName, data),
+  readFromExcelFile: (fileName) => ipcRenderer.invoke('readFromExcelFile', fileName),
   // we can also expose variables, not just functions HALLO?
 })
 

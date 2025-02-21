@@ -3,9 +3,24 @@ import isDev from 'electron-is-dev'
 import * as path from 'path';
 import * as fs from 'fs';
 import { findSourceMap } from 'module';
+import * as XLSX from "xlsx";
+import * as os from "os";
 
 let mainWindow;
 let client;
+
+
+const EXCEL_FILE_PATH = "event_log.xlsx";
+
+
+function isFileLocked(filePath) {
+  try {
+    fs.accessSync(filePath, fs.constants.R_OK | fs.constants.W_OK);
+    return false;
+  } catch (err) {
+    return true;
+  }
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -69,6 +84,69 @@ app.whenReady().then(() => {
   ipcMain.handle('startListening', () => {
     startListening();
 
+  });
+
+  ipcMain.handle('readFromExcelFile', (event, arg) => {
+
+    if (!arg) {
+      return "null";
+    }
+    let filePath = arg + ".xlsx";
+    let workbook;
+    let worksheet;
+    let buffer;
+
+    if (fs.existsSync(filePath) && !isFileLocked(filePath)) {
+      buffer = fs.readFileSync(filePath);
+      workbook = XLSX.read(buffer, { type: "buffer" });
+      return workbook;
+    } else {
+      return "null";
+    }
+  })
+
+  ipcMain.handle('writeToExcelFile', (event, sheetName, arg) => {
+
+    const eventObj = JSON.parse(arg);
+
+    let workbook;
+    let worksheet;
+    let buffer;
+
+    let arr_args = Object.keys(eventObj.args);
+
+    // Time, Name, One column per item in arr_args_in_arg
+    let titleRow = ["Timestamp", "eventName", ...arr_args];
+    
+    // Check if file exists
+    if (fs.existsSync(EXCEL_FILE_PATH) && !isFileLocked(EXCEL_FILE_PATH)) {
+      buffer = fs.readFileSync(EXCEL_FILE_PATH);
+      workbook = XLSX.read(buffer, { type: "buffer" });
+      worksheet = workbook.Sheets[sheetName] 
+      if(!worksheet) {
+        worksheet = XLSX.utils.aoa_to_sheet([titleRow]);
+        workbook.SheetNames.push(sheetName);
+      }
+    } else {
+      workbook = XLSX.utils.book_new();
+      worksheet = XLSX.utils.aoa_to_sheet([titleRow]);
+      workbook.SheetNames.push(sheetName);
+    }
+
+    const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 })
+    const newRow = [
+      new Date().toISOString(),
+      eventObj.name,
+      ...arr_args.map(arg => eventObj.args[arg])
+    ];
+
+    data.push(newRow);
+    const newWorksheet = XLSX.utils.aoa_to_sheet(data);
+
+    workbook.Sheets[sheetName] = newWorksheet;
+
+    buffer = XLSX.write(workbook, { type: "buffer" });
+    fs.writeFileSync(EXCEL_FILE_PATH, buffer);
   });
   createWindow();
 });
@@ -135,3 +213,5 @@ app.on('activate', () => {
     createWindow();
   }
 });
+
+
