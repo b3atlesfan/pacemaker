@@ -11,6 +11,7 @@ const props = defineProps<{
 
 const emit = defineEmits(['onSave', 'onExit', 'onCreate', 'onEdit'])
 
+
 const manager = BeatContentManager.getInstance()
 
 const {contents} = storeToRefs(useContentsStore())
@@ -45,6 +46,8 @@ function onDelete(selectedId: number) {
 function onDeleteAll() {
   manager.deleteAllContents()
 }
+
+defineExpose({onDeleteAll})
 
 </script>
 
