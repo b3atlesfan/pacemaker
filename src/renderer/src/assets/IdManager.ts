@@ -30,10 +30,7 @@ export class IdManager {
     }
 
     returnId(id: number) {
-        console.log("return id " + id)
         this.idIsTaken[id] = false
-
-        console.log("current id " + this.id)
 
         if (id < this.id) {
             console.log("is smaller")
