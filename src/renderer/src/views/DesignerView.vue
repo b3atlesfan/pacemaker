@@ -58,7 +58,7 @@ function StartReactiveLastMessageTimer(){
 function getPathFilteredVariables() {
   var a = currentState.allVariables.filter(variable => (variable.path + "/" + variable.name).match(new RegExp(currentState.pathFilterText, "i")));
   if(currentState.favoritesOnly){
-    a = a.filter(variable => variable.markedFavorite);
+    a = a.filter(variable => variable.markedFavorite || variable.requestedFromPM);
   }
   if(currentState.onlyPublic){
     a = a.filter(variable => variable.isPublic);
@@ -72,8 +72,8 @@ function getPathFilteredVariables() {
 
 function addRow(){
   const next_id : number = currentState.allVariables.length;
-  const  temp_model = reactive({id: next_id, name: '', remoteValue: 0, localValue: 0, path: "", 
-      detailedView: false, markedFavorite: false, isPublic: true, intensityWeight: 0});
+  const  temp_model = reactive({id: next_id, name: '', remoteValue: 0, localValue: 0, path: "FromPM", 
+      detailedView: true, markedFavorite: false, isPublic: true, intensityWeight: 0, requestedFromPM: true});
   currentState.allVariables.push(temp_model);
 }
 
@@ -269,6 +269,12 @@ function onReloadPage(){
 
   <div style="height: 20px;"></div>
 
+  <p>
+    <strong>Gameplay Intensity := </strong> 
+    <span v-if="currentState.allVariables.length > 0">
+      {{ currentState.allVariables.filter(variable => variable.intensityWeight > 0).map(variable => variable.intensityWeight + " * " + variable.name).join(" + ") }}
+    </span>
+  </p>
   
   <v-text-field v-model="currentState.pathFilterText" label="Filter by Path" placeholder="Enter path to filter"></v-text-field>
   <v-row>
