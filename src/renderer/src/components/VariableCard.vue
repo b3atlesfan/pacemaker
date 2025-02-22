@@ -13,6 +13,10 @@ function notInSync(): boolean  {
   return props.currentVariable.remoteValue !== props.currentVariable.localValue;
 }
 
+function createdInPM(): boolean {
+  return props.currentVariable.requestedFromPM;
+}
+
 function onClose() {
   props.currentVariable.detailedView = false;
 }
@@ -20,25 +24,26 @@ function onClose() {
 
 <template>
     <v-card>
-      <v-row>
+      <v-row >
         <v-col cols="1">
-          <v-btn @click="props.currentVariable.markedFavorite=!props.currentVariable.markedFavorite">
-            <v-icon v-if="props.currentVariable.markedFavorite" icon="mdi-star"></v-icon>
-            <v-icon v-else icon="mdi-star-outline"></v-icon>
-          </v-btn>
+          <v-btn @click="props.currentVariable.markedFavorite=!props.currentVariable.markedFavorite" :color="props.currentVariable.requestedFromPM ? 'secondary' : 'primary'">
+                    <v-icon v-if="props.currentVariable.requestedFromPM" icon="mdi-account"></v-icon>
+                    <v-icon v-else-if="props.currentVariable.markedFavorite" icon="mdi-star"></v-icon>
+                    <v-icon v-else icon="mdi-star-outline"></v-icon>
+                </v-btn>
         </v-col>
         <v-col cols="1">
-          <v-btn color="blue" @click="onClose()">Close</v-btn>
+          <v-btn color="secondary" @click="onClose()">Close</v-btn>
         </v-col>
         <v-col cols = "2">
           <v-text-field label="Name" v-model="props.currentVariable.name" dense outlined></v-text-field>
         </v-col>
         <v-col cols="2">{{ props.currentVariable.path }}</v-col>
         <v-col cols="1">
-          <v-btn color="red" @click="onDelete(props.currentVariable.id)">Delete</v-btn>
+          <v-btn color="error" @click="onDelete(props.currentVariable.id)">Delete</v-btn>
         </v-col>
         <v-col>
-        <v-btn color="green" @click="onApply(props.currentVariable.id)">Apply</v-btn>
+        <v-btn color="success" @click="onApply(props.currentVariable.id)">Apply</v-btn>
         </v-col>
       </v-row>
       <span style="color: gray;">Path: </span>
@@ -75,6 +80,9 @@ function onClose() {
         {{ notInSync() ? `Variable out of Sync. Fetched: ${props.currentVariable.remoteValue}` : 'In Sync' }}
       </div>
 
+      <v-icon v-if="createdInPM()" color="blue" icon="mdi-account"></v-icon>
+
+      {{ props.currentVariable.requestedFromPM ? '\nVariable created in Pacemaker' : '' }}
     
   </v-card>
 </template>

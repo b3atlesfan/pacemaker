@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { defineProps } from 'vue';
+import { useTheme } from 'vuetify';
+const theme = useTheme();
 
 const props = defineProps({
     currentVariable: Object,
@@ -12,14 +14,16 @@ function toggleFavorite() {
 function openDetailedView() {
     props.currentVariable.detailedView = true;
 }
+
 </script>
 
 <template>
     <v-card>
-        <v-row>
+        <v-row >
             <v-col cols="1">
-                <v-btn @click="toggleFavorite">
-                    <v-icon v-if="props.currentVariable.markedFavorite" icon="mdi-star"></v-icon>
+                <v-btn @click="toggleFavorite" :color="props.currentVariable.requestedFromPM ? 'secondary' : 'primary'">
+                    <v-icon v-if="props.currentVariable.requestedFromPM" icon="mdi-account"></v-icon>
+                    <v-icon v-else-if="props.currentVariable.markedFavorite" icon="mdi-star"></v-icon>
                     <v-icon v-else icon="mdi-star-outline"></v-icon>
                 </v-btn>
             </v-col>
