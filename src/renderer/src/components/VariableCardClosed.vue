@@ -19,7 +19,7 @@ function openDetailedView() {
 
 <template>
     <v-card>
-        <v-row >
+        <v-row class="d-flex align-center justify-left" style="margin-left: 10px;">
             <v-col cols="1">
                 <v-btn @click="toggleFavorite" :color="props.currentVariable.requestedFromPM ? 'secondary' : 'primary'">
                     <v-icon v-if="props.currentVariable.requestedFromPM" icon="mdi-account"></v-icon>
@@ -34,6 +34,12 @@ function openDetailedView() {
             <v-col cols="2">{{ props.currentVariable.path }}</v-col>
             <v-col cols="1">
                 <v-text-field v-model="props.currentVariable.intensityWeight" type="number" density="compact" hide-details="auto"></v-text-field>
+            </v-col>
+            <v-col cols="1">
+                <v-text-field v-model="props.currentVariable.narrativeIntensity" type="number" density="compact" hide-details="auto"></v-text-field>
+            </v-col>
+            <v-col cols="1">
+                <v-checkbox v-model="props.currentVariable.isMultiplier" label="Multiplier"></v-checkbox>
             </v-col>
         </v-row>
     </v-card>
