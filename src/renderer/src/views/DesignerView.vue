@@ -4,6 +4,10 @@ import { color } from "d3";
 import {computed, reactive, ref, shallowRef, watchEffect} from "vue";
 import VariableCard from "@/components/VariableCard.vue";
 import VariableCardClosed from "@/components/VariableCardClosed.vue";
+import { useDesignVariablesStore } from "@/store/designVariables";
+
+
+const designVariablesStore = useDesignVariablesStore();
 
 function toggleFetchLoop() {
   currentState.fetchLoopEnabled = !currentState.fetchLoopEnabled;
@@ -18,7 +22,6 @@ const initialState = savedState ? JSON.parse(savedState) : {
   unityPath: path2,
   outFile: "designerVarsFromPacemaker.json",
   inFile: "designerVarsFromUnity.json",
-  allVariables: [],
   lastMessage: "lM",
   messageAge: 0.0,
   fetchLoopEnabled: false,
@@ -56,7 +59,13 @@ function StartReactiveLastMessageTimer(){
 
 
 function getPathFilteredVariables() {
-  var a = currentState.allVariables.filter(variable => (variable.path + "/" + variable.name).match(new RegExp(currentState.pathFilterText, "i")));
+  var a
+  if(!currentState.pathFilterText) {
+    a = designVariablesStore.allVariables;
+  }
+  else {
+    a = designVariablesStore.allVariables.filter(variable => (variable.path + "/" + variable.name).match(new RegExp(currentState.pathFilterText, "i")));
+  }
   if(currentState.favoritesOnly){
     a = a.filter(variable => variable.markedFavorite || variable.requestedFromPM);
   }
@@ -64,43 +73,34 @@ function getPathFilteredVariables() {
     a = a.filter(variable => variable.isPublic);
   }
   if(currentState.onlyWithWeight){
-    a = a.filter(variable => (variable.intensityWeight || 0) > 0);
+    a = a.filter(variable => (variable.intensityWeight || 0) != 0 || (variable.narrativeIntensity || 0) != 0);
   }
   return a;
 }
 
 
 function addRow(){
-  const next_id : number = currentState.allVariables.length;
+  const next_id : number = designVariablesStore.allVariables.length;
   const  temp_model = reactive({id: next_id, name: '', remoteValue: 0, localValue: 0, path: "FromPM", 
-      detailedView: true, markedFavorite: false, isPublic: true, intensityWeight: 0, requestedFromPM: true});
-  currentState.allVariables.push(temp_model);
+      detailedView: true, markedFavorite: false, isPublic: true, intensityWeight: 0, narrativeIntensity: 0, requestedFromPM: true,
+    isMultiplier:false});
+      designVariablesStore.addVariable(temp_model);
 }
 
 function OnDelete(index: number){
-  currentState.allVariables.splice(index, 1);
-  currentState.allVariables.forEach((element, index) => {
-    element.id = index;
-  });
+  designVariablesStore.deleteVariable(index);
 }
 
 function OnApply(index: number){
-  const current = currentState.allVariables[index];
-  if(current.remoteValue === null){
-    OnDelete(index);
-    return;
-  }
-  currentState.allVariables[index].localValue = currentState.allVariables[index].remoteValue;
+  designVariablesStore.applyVariable(index);
 }
 
 function ApplyAll(){
-  for(let i = currentState.allVariables.length - 1; i >= 0; i--){
-    OnApply(i);
-  }
+  designVariablesStore.applyAllVariables();
 }
 
 function deleteAll(){
-  currentState.allVariables = [];
+  designVariablesStore.deleteAllVariables();
 }
 
 function send(index: number){
@@ -112,8 +112,8 @@ const sendString = async (message: string) => {
 }
 
 const sendAllVars = async () => {
-  const filteredVars = currentState.allVariables.map(
-      ({ name, localValue: value, path, intensityWeight }) => ({ name, value, path, hasIntensity: intensityWeight > 0 }));
+  const filteredVars = designVariablesStore.allVariables.map(
+      ({ name, localValue: value, path, intensityWeight, narrativeIntensity }) => ({ name, value, path, hasIntensity: intensityWeight != 0 || narrativeIntensity != 0}));
   const allVarsJsonFile = JSON.stringify(filteredVars, null, 2);
   const response = await window.versions.sendFile(allVarsJsonFile, currentState.unityPath + "/" + currentState.outFile);
 
@@ -123,14 +123,14 @@ const sendAllVars = async () => {
 }
 
 const loadCurrentState = async () => {
-  const response = await window.versions.fetchFile(currentState.unityPath + "/" + currentState.outFile)
+  /*const response = await window.versions.fetchFile(currentState.unityPath + "/" + currentState.outFile)
   const allVars = JSON.parse(response);
 
   currentState.allVariables = [];
   Object.keys(allVars).forEach((key, index) => {
     //const temp_model = reactive({id: index, name: key, remoteValue: 0, localValue: allVars[key]});
     //currentState.allVariables.push(temp_model);
-  });
+  });*/
 }
 
 function fetchAndSend() {
@@ -154,10 +154,10 @@ const fetchAllVars = async () => {
   const allVars : Array<{ name: string, value: number, path: string, isPublic: boolean }> = Object.values(allVarsAsDict);
   
   allVars.forEach(element => {
-    let index = currentState.allVariables.findIndex((e) => e.name === element.name && e.path === element.path);
+    let index = designVariablesStore.allVariables.findIndex((e) => e.name === element.name && e.path === element.path);
     if (index === -1) {
       const temp_model = reactive({
-        id: currentState.allVariables.length,
+        id: designVariablesStore.allVariables.length,
         name: element.name,
         remoteValue: element.value,
         localValue: element.value,
@@ -165,22 +165,23 @@ const fetchAllVars = async () => {
         detailedView: false,
         markedFavorite: false,
         isPublic: element.isPublic || false,
-        intensityWeight: 0
+        intensityWeight: 0,
+        narrativeIntensity: 0,
       });
-      currentState.allVariables.push(temp_model);
-      index = currentState.allVariables.length - 1;
+      designVariablesStore.addVariable(temp_model);
+      index = designVariablesStore.allVariables.length - 1;
     }
-    currentState.allVariables[index].remoteValue = element.value;
+    designVariablesStore.allVariables[index].remoteValue = element.value;
   });
 
-  currentState.allVariables.forEach((element, index) => {
+  designVariablesStore.allVariables.forEach((element, index) => {
     if (allVars.findIndex((e) => e.name === element.name && e.path === element.path) === -1) {
-      currentState.allVariables[index].remoteValue = null;
+      designVariablesStore.allVariables[index].remoteValue = null;
     }
   });
 
-  currentState.allVariables.sort((a, b) => pathWithName(a).localeCompare(pathWithName(b)));
-  currentState.allVariables.forEach((element, index) => {
+  designVariablesStore.allVariables.sort((a, b) => pathWithName(a).localeCompare(pathWithName(b)));
+  designVariablesStore.allVariables.forEach((element, index) => {
     element.id = index;
   });
 };
@@ -200,14 +201,14 @@ const startFetchLoop = async () => {
 }
 
 function notInSync(index: number): boolean  {
-  return currentState.allVariables[index].remoteValue !== currentState.allVariables[index].localValue;
+  return designVariablesStore.allVariables[index].remoteValue !== designVariablesStore.allVariables[index].localValue;
 }
 
 function isDetailedView(index: number): boolean  {
-  if(currentState.allVariables[index] === undefined){
+  if(designVariablesStore.allVariables[index] === undefined){
     return false;
   }
-  return currentState.allVariables[index].detailedView;
+  return designVariablesStore.allVariables[index].detailedView;
 }
 
 onReloadPage();
@@ -218,8 +219,28 @@ function onReloadPage(){
   startFetchLoop();
 }
 
+// variable => variable.intensityWeight + " * " + variable.name
+function getIntensityWeightString(variable: { intensityWeight: number; name: string; isMultiplier: boolean; }, invert =false) : string {
+  var intensity = variable.intensityWeight;
+  if(invert){
+    // remove first symbol, which is probably a minus signss
+    intensity = intensity.toString().substring(1);
+  }
+  if(intensity === '1'){
+    return variable.name;
+  }
+  return intensity + " * " + variable.name;
+}
+
+function getNarrativeIntensityWeightString(variable: { narrativeIntensity: number; name: string; isMultiplier: boolean; }, invert =false) : string {
+  var input: { intensityWeight: number; name: string; isMultiplier: boolean; }
+  input = {intensityWeight: variable.narrativeIntensity, name: variable.name, isMultiplier: variable.isMultiplier};
+  return getIntensityWeightString(input, invert);
+}
+
 </script>
 <template>
+  <div style="margin-left: 20px;">
   <h1>Designer View</h1>
   <p>This is the designer view, here you can sync design variables with the game engine.</p>
 
@@ -271,13 +292,37 @@ function onReloadPage(){
 
   <p>
     <strong>Gameplay Intensity := </strong> 
-    <span v-if="currentState.allVariables.length > 0">
-      {{ currentState.allVariables.filter(variable => variable.intensityWeight > 0).map(variable => variable.intensityWeight + " * " + variable.name).join(" + ") }}
+    <span v-if="designVariablesStore.allVariables.length > 0" style="margin-left: 120px;">
+      <br>
+      <span style="margin-left: 120px;"></span>
+      (1 + {{ designVariablesStore.allVariables.filter(variable => variable.intensityWeight > 0 && variable.isMultiplier).map(variable => getIntensityWeightString(variable)).join(" + ") }})
+      <br>
+      <span style="margin-left: 120px;"></span>
+      * ({{ designVariablesStore.allVariables.filter(variable => variable.intensityWeight != 0 && !variable.isMultiplier).map(variable => getIntensityWeightString(variable)).join(" + ") }})
+      <br>
+      <span style="margin-left: 120px;"></span>
+      / (1 + {{ designVariablesStore.allVariables.filter(variable => variable.intensityWeight < 0 && variable.isMultiplier).map(variable => getIntensityWeightString(variable, true)).join(" + ") }})
+    </span>
+    <br>
+    <strong>Narrative Intensity := </strong>
+    <span v-if="designVariablesStore.allVariables.length > 0" style="margin-left: 120px;">
+      <br>
+      <span style="margin-left: 120px;"></span>
+      (1 + {{ designVariablesStore.allVariables.filter(variable => variable.narrativeIntensity > 0 && variable.isMultiplier).map(variable => getNarrativeIntensityWeightString(variable)).join(" + ") }})
+      <br>
+      <span style="margin-left: 120px;"></span>
+      * ({{ designVariablesStore.allVariables.filter(variable =>variable.narrativeIntensity&& variable.narrativeIntensity != 0 && !variable.isMultiplier).map(variable => getNarrativeIntensityWeightString(variable)).join(" + ") }})
+      <br>
+      <span style="margin-left: 120px;"></span>
+      / (1 + {{ designVariablesStore.allVariables.filter(variable => variable.narrativeIntensity < 0 && variable.isMultiplier).map(variable => getNarrativeIntensityWeightString(variable, true)).join(" + ") }})
     </span>
   </p>
   
-  <v-text-field v-model="currentState.pathFilterText" label="Filter by Path" placeholder="Enter path to filter"></v-text-field>
   <v-row>
+  <div style="margin-top: 10px; width: 33.33%;">
+    <v-text-field v-model="currentState.pathFilterText" 
+    label="Filter by Path" placeholder="Enter path to filter" clearable=""></v-text-field>
+  </div>
     <v-col cols="1" class="d-flex align-center justify-center"><strong>Filters</strong></v-col>
     <v-col cols="1">
       <v-checkbox 
@@ -309,21 +354,23 @@ function onReloadPage(){
         <v-col cols="1"></v-col>
         <v-col cols="2"><strong>Name</strong></v-col>
         <v-col cols="2"><strong>Path</strong></v-col>
-        <v-col cols="1"><strong>Intensity Weight</strong></v-col>
+        <v-col cols="1"><strong>Gameplay Intensity Weight</strong></v-col>
+        <v-col cols="1"><strong>Narrative Intensity Weight</strong></v-col>
+        <v-col cols="1"><strong>Is multiplier</strong></v-col>
       </v-row>
 
-      <v-row v-for="(row, index) in getPathFilteredVariables()" :key="row.id">
+      <v-row v-for="(row, index) in getPathFilteredVariables()" :key="row.id" class="d-flex align-center justify-center">
         <v-col>
-          <variable-card v-if="isDetailedView(row.id)" :currentState="currentState" :currentVariable="currentState.allVariables[row.id]" :sendAllVars="sendAllVars" :onDelete="OnDelete" :onApply="OnApply"></variable-card>
+          <variable-card v-if="isDetailedView(row.id)" :currentState="currentState" :currentVariable="designVariablesStore.allVariables[row.id]" :sendAllVars="sendAllVars" :onDelete="OnDelete" :onApply="OnApply"></variable-card>
           
-          <variable-card-closed v-else :currentVariable="currentState.allVariables[row.id]"></variable-card-closed>
+          <variable-card-closed v-else :currentVariable="designVariablesStore.allVariables[row.id]"></variable-card-closed>
         </v-col>
       </v-row>
     </v-container>
 
 
 
-  </v-app>
+  </v-app></div>
 </template>
 
 
