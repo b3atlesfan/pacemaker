@@ -16,6 +16,10 @@ import { BeatContent } from '@/assets/BeatContent';
 import { time } from 'console';
 import Filemanager from "@/assets/Filemanager";
 import * as XLSX from "xlsx";
+import { useDesignVariablesStore } from "@/store/designVariables";
+
+
+const designVariablesStore = useDesignVariablesStore();
 
 const theme = useTheme()
 
@@ -230,6 +234,9 @@ function toggleRecording(){
 
 var recordingName :string = ""
 function startNewRecording(index : number = -1){
+  if(isNaN(totalRecordings)){
+    totalRecordings = 0
+  }
   if(index == -1) {
     totalRecordings += 1
   } else {
@@ -279,7 +286,7 @@ function getTimeDiffInMinAndSec(timeDiffInS: number) {
 //let exampleEvent = '{\r\n  "name": "checkpointReached",\r\n  "args": {\r\n    "index": 1,\r\n    "TimeDiff": 0.0,\r\n    "EnemiesKilled": 0,\r\n    "Deaths": 0,\r\n    "Jumps": 0,\r\n    "ScoreDiff": 0\r\n  }\r\n}'
 //window.versions.writeToExcelFile("TestWrite", exampleEvent)
 
-var totalRecordings = 0
+var totalRecordings : number = 0
 const beatContentSelector = ref(null);
 
 onMounted(async() => {
@@ -295,15 +302,17 @@ const calculateAverages = async () => {
   var n_rows = 0;
   for (let i = 0; i < workbook.SheetNames.length; i++) {
     const sheet = workbook.Sheets[workbook.SheetNames[i]];
-    const range = XLSX.utils.decode_range(sheet["!ref"]); // Get the range of the first sheet
-    const local_n_rows = range.e.r + 1; // Number of rows
+    if(!sheet || !sheet["!ref"]) continue;
+    const range = XLSX.utils.decode_range(sheet["!ref"]); 
+    const local_n_rows = range.e.r + 1;
     if (local_n_rows > n_rows) {
       n_rows = local_n_rows;
     }
   }
 
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
-  const range = XLSX.utils.decode_range(sheet["!ref"]); // Get the range of the first sheet
+  if(!sheet || !sheet["!ref"]) return;
+  const range = XLSX.utils.decode_range(sheet["!ref"]); 
 
   const n_cols = range.e.c + 1; // Number of columns
   const n_of_sheets = workbook.SheetNames.length; 
@@ -357,6 +366,8 @@ const loadRecordings = async () => {
   await nextTick();
 
   for(var i = 0; i < workbook.SheetNames.length; i++){
+    var sheetName :string = workbook.SheetNames[i]
+    if(!sheetName.includes("Recording")) continue;
     const sheet = workbook.Sheets[workbook.SheetNames[i]];
     
     const index = workbook.SheetNames[i].split(" ")[1]
@@ -381,7 +392,7 @@ const loadRecordings = async () => {
 }
 
 
-function recordEvent(event: any) {
+function recordEvent(event: string) {
   var eventObj = JSON.parse(event)
   if(eventObj.name != "checkpointReached") return;
 
@@ -390,6 +401,30 @@ function recordEvent(event: any) {
   window.versions.writeToExcelFile("Recording " + totalRecordings, event)
 
   createNodeFromValidEvent(eventObj)
+}
+
+function calculateIntensityFromArray(event: { [key: string]: number }) : number {
+  //return event.EnemiesKilled + event.Deaths * 10
+  var intensity = 0;
+  var M1 = 1; var M2 = 1; var M3 = 1;
+  for (var key in event) {
+    // Find corresponding weight in designVars from store
+    var variable = designVariablesStore.getVariable(key);
+    if(variable == null) continue;  
+    var weight = variable.intensityWeight;
+    var isMultiplier = variable.isMultiplier;
+    if(weight == null) continue;
+    if(isMultiplier){
+      if(weight > 0){
+        M1 += weight * event[key]
+      } else {
+        M3 -= weight * event[key]
+      }
+    } else {
+      M2 += weight * event[key]
+    }
+  }
+  return M1 * M2 / M3;
 }
 
 function createNodeFromValidEvent(eventObj) {
@@ -403,16 +438,18 @@ function createNodeFromValidEvent(eventObj) {
   if (lastBeat != null) {
     lastBeatPos = {x: lastBeat.position.x, y: lastBeat.position.y}
   }
-  var v = eventObj.args;
+  var v : { [key: string]: number } = eventObj.args;
   var timeDiffInMs = v.TimeDiff;
   var timeDiffInMinAndSec = getTimeDiffInMinAndSec(timeDiffInMs);
   var beatId : number = beatManager.createNode({x: lastBeatPos.x + 300, y: lastBeatPos.y})
   beatManager.editNodeLabel(beatId, eventObj.name + " " + v.index)
 
+  var gameplayIntensity = calculateIntensityFromArray(v);
+
   const contentId = contentManager.createContent({
     name: "B" + v.index + " " + recordingName,
-    intensity: v.EnemiesKilled + v.Deaths * 10,
-    narrativeIntensity: v.Jumps + v.ScoreDiff,
+    intensity: gameplayIntensity,
+    narrativeIntensity: gameplayIntensity,
     category: "Platforming",
     playtime: timeDiffInMinAndSec
   })
