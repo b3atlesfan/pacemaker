@@ -1,26 +1,95 @@
+import { is } from '@babel/types';
 import { defineStore } from 'pinia'
 
-type DesignVariable = {
-    id: number;
-    name: string;
-    remoteValue: number | null;
-    localValue: number;
-    path: string;
-    detailedView: boolean;
-    markedFavorite: boolean;
-    isPublic: boolean;
-    intensityWeight: number;
-    requestedFromPM: boolean;
-  };
+export class DesignVariable {
+  id: number;
+  name: string;
+  remoteValue: number | null;
+  localValue: number;
+  path: string;
+  detailedView: boolean;
+  markedFavorite: boolean;
+  isPublic: boolean;
+  private intensityWeight: number;
+  private narrativeWeight: number;
+  isMultiplier: boolean;
+  requestedFromPM: boolean;
 
-export const useDesignVariablesStore = defineStore('designVariables', {
+  constructor(
+    id: number,
+    name: string,
+    remoteValue: number | null,
+    localValue: number,
+    path: string,
+    detailedView: boolean,
+    markedFavorite: boolean,
+    isPublic: boolean,
+    intensityWeight: number,
+    narrativeWeight: number,
+    isMultiplier: boolean,
+    requestedFromPM: boolean
+  ) {
+    this.id = id;
+    this.name = name;
+    this.remoteValue = remoteValue;
+    this.localValue = localValue;
+    this.path = path;
+    this.detailedView = detailedView;
+    this.markedFavorite = markedFavorite;
+    this.isPublic = isPublic;
+    this.intensityWeight = intensityWeight;
+    this.narrativeWeight = narrativeWeight;
+    this.isMultiplier = isMultiplier;
+    this.requestedFromPM = requestedFromPM;
+  }
+
+  getWeight(type: string): number {
+    if(type === 'narrative') {
+      return this.narrativeWeight;
+    }
+    else if (type === 'gameplay') {
+      return this.intensityWeight;
+    }
+    throw new Error('Invalid type');
+  }
+
+  getIntensityWeight(): number {
+    return this.intensityWeight;
+  }
+
+  getNarrativeWeight(): number {
+    return this.narrativeWeight;
+  }
+}
+
+export const useDesignVariablesStore = defineStore('designVariablesStore',  {
   state: () => ({
     allVariables: [] as DesignVariable[],
   }),
   actions: {
-    addVariable(variable: VariableType) {
-      this.allVariables.push(variable);
+    addVariable(variable){
+      if(variable instanceof DesignVariable) {
+        this.allVariables.push(variable);
+        return;
+      }
+
+      const newVar = new DesignVariable(
+        variable.id,
+        variable.name,
+        variable.remoteValue,
+        variable.localValue,
+        variable.path,
+        variable.detailedView,
+        variable.markedFavorite,
+        variable.isPublic,
+        variable.intensityWeight,
+        variable.narrativeWeight,
+        variable.isMultiplier,
+        variable.requestedFromPM
+      );
+      this.allVariables.push(newVar);
     },
+
     deleteVariable(index: number) {
       this.allVariables.splice(index, 1);
       this.allVariables.forEach((element, index) => {
@@ -43,15 +112,61 @@ export const useDesignVariablesStore = defineStore('designVariables', {
     deleteAllVariables() {
       this.allVariables = [];
     },
-    updateVariables(variables: VariableType[]) {
+    updateVariables(variables: DesignVariable[]) {
       this.allVariables = variables;
     },
-    getWeight(index: number) {
-        return this.allVariables[index].intensityWeight;
+    getWeight(index: number, type: string) {
+      if(type === 'narrative') {
+        return this.allVariables[index].getNarrativeWeight();
+      }
+      else if (type === 'gameplay') {
+        return this.allVariables[index].getIntensityWeight();
+      }
+      throw new Error('Invalid type');
     },
-    getVariable(name: string) : VariableType {
-        return this.allVariables.find((element) => element.name === name);
+    getNarrativeWeight(index: number) {
+      return this.allVariables[index].getNarrativeWeight();
+    },
+    getVariable(name: string) : DesignVariable | undefined {
+        const match = this.allVariables.find((element) => element.name === name);
+       
+        if (match && !(match instanceof DesignVariable)) {
+          const newVar : DesignVariable = new DesignVariable(
+            match.id,
+            match.name,
+            match.remoteValue,
+            match.localValue,
+            match.path,
+            match.detailedView,
+            match.markedFavorite,
+            match.isPublic,
+            match.intensityWeight,
+            match.narrativeWeight,
+            match.isMultiplier,
+            match.requestedFromPM
+          );
+          this.allVariables[this.allVariables.indexOf(match)] = newVar;
+          return newVar;
+        }
+        return match;
     }
   },
-  persist: true,
+  persist: {
+    afterRestore: (ctx) => {
+      ctx.store.allVariables = ctx.store.allVariables.map(variable => new DesignVariable(
+        variable.id,
+        variable.name,
+        variable.remoteValue,
+        variable.localValue,
+        variable.path,
+        variable.detailedView,
+        variable.markedFavorite,
+        variable.isPublic,
+        variable.intensityWeight,
+        variable.narrativeWeight,
+        variable.isMultiplier,
+        variable.requestedFromPM
+      ));
+    }
+  }
 })
