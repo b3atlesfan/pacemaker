@@ -12,6 +12,7 @@ class DijkstraNode {
   }
 }
 
+
 export function computePath(selectedPathBeats: { id: string, }[], vue: VueFlowStore): number[] {
   const path: number[] = []
 
@@ -22,10 +23,20 @@ export function computePath(selectedPathBeats: { id: string, }[], vue: VueFlowSt
 
   if (selectedPathBeats.length == 1) {
     //console.log("length is 1")
-    path.push(parseInt(selectedPathBeats[0].id))
+    path.push(...computeLinearPathFromStartOnly(parseInt(selectedPathBeats[0].id), vue))
     return path
   }
 
+  try {
+    return computeDijkstraPath(selectedPathBeats, vue)
+  } catch (e) {
+    console.log(e)
+    return []
+  }
+}
+
+function computeDijkstraPath(selectedPathBeats: { id: string, }[], vue: VueFlowStore): number[] {
+  const path: number[] = []
   const nodesToVisit: DijkstraNode[] = []
 
   const startNode = new DijkstraNode(parseInt(selectedPathBeats[0].id), 0)
@@ -82,5 +93,18 @@ export function computePath(selectedPathBeats: { id: string, }[], vue: VueFlowSt
 
   path.reverse()
 
+  return path
+}
+
+
+export function computeLinearPathFromStartOnly(startId: number, vue: VueFlowStore): number[] {
+  const path: number[] = []
+  const startNode = new DijkstraNode(startId, 0)
+  while (true) {
+    path.push(startNode.id)
+    const outGoers = vue.getOutgoers(startNode.id.toString())
+    if (outGoers.length == 0) break
+    startNode.id = parseInt(outGoers[0].id)
+  }
   return path
 }
