@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import GameplayBeatCanvas from "@/components/GameplayBeatCanvas.vue";
-import {computed, ref, watch} from "vue";
+import {computed, ref, watch, onMounted, nextTick} from "vue";
 import {BeatManager} from "@/assets/BeatManager";
 import {GameplayBeat} from "@/assets/GameplayBeat";
 import BeatChart from "@/components/BeatChart.vue";
@@ -12,6 +12,11 @@ import {BeatContent} from "@/assets/BeatContent";
 import {BeatContentManager} from "@/assets/BeatContentManager";
 import ContentGraph from "@/components/ContentGraph.vue";
 import ContentChart from "@/components/ContentChart.vue";
+import { identifierToKeywordKind } from "typescript";
+import { on } from "events";
+import { start } from "repl";
+import DesignerView from "./DesignerView.vue";
+import IntensityFormulasView from "./IntensityFormulasView.vue";
 
 const vue = useVueFlow()
 
@@ -44,7 +49,23 @@ const items = computed(() => {
   return result
 })
 
-const path = computed(() => computePath(selectedPathBeats.value, vue))
+const path = computed(() => 
+  computePath(selectedPathBeats.value, vue)
+)
+
+const pathOnSelection = computed(() => {
+    if (selectedBeats.value.length == 0) {
+      return []
+    }
+    const beatPath:number[] = computePath(selectedBeats.value, vue) || []
+    const result: (BeatContent | null) [] = []
+    beatPath.forEach(beatId => {
+      const beat = beatManager.getNode(beatId.toString())
+      result.push(beat.data.contentId == -1 ? null : contentManager.getContent(beat.data.contentId))
+    })
+    return result
+  }
+)
 
 const currentContentPath = computed(() => {
   const result: (BeatContent | null) [] = []
@@ -62,8 +83,10 @@ let snapShots: {name: string, path: (BeatContent | null) []}[] = []
 let id = 1
 
 const allContentPaths = computed(() => {
-  const result: {name: string, path: (BeatContent | null) []}[] = snapShots.concat({name: "Path " + id.toString(), path: currentContentPath.value})
-
+  var result: {name: string, path: (BeatContent | null) []}[] = snapShots.concat({name: "Path " + id.toString(), path: currentContentPath.value})
+  if(pathOnSelection.value.length > 0) {
+    result.push({name: "Selection", path: pathOnSelection.value})
+  }
   return result
 })
 
@@ -80,9 +103,45 @@ watch(path, () => {
 })
 
 function onSnapshot() {
-  snapShots.push({name: "Path " + id.toString(), path: currentContentPath.value})
+  snapShots.push({name: currentPathName, path: currentContentPath.value})
+  currentPathName = ""
   id++
   selectedPathBeats.value = []
+}
+
+function addToPath(beat: GameplayBeat) {
+
+}
+
+
+var startID = "-1"
+function onAddNode(id){
+}
+
+function onDrawFromNode(){
+  snapShots.push({name: "Path " + id.toString(), path: pathOnSelection.value})
+  id++
+}
+
+const onFinishRecording = async() => {
+  if(startID == "-1") {
+    return
+  }
+  var firstNode = beatManager.getNode(startID)
+  selectedPathBeats.value.push(firstNode)
+  var lastNode = beatManager.getNode(beatManager.getLatestNodeID())
+  selectedPathBeats.value.push(lastNode)
+
+  await nextTick()
+  onSnapshot()
+}
+
+var currentPathName = ""
+
+const onNextRecording = async() => {
+  startID = beatManager.getLatestNodeID() + 1
+  const namingBeat = beatManager.getNode(beatManager.getLatestNodeID())
+  currentPathName = namingBeat.label
 }
 
 function onAddNodes() {
@@ -112,6 +171,20 @@ onBeforeRouteLeave(() => {
   beatManager.resetPath()
 })
 
+function onUpdateIntensityFormula() {
+  console.log("Intensity Formula Updated")
+  // reload whole page
+
+  window.location.reload();
+}
+
+const gameplayBeatCanvas = ref(null)
+
+onMounted(async() => {
+  await nextTick();
+  console.log("Component instance:", gameplayBeatCanvas.value); // Should not be null after mounting
+});
+
 
 </script>
 
@@ -138,9 +211,13 @@ onBeforeRouteLeave(() => {
 
   <v-container class="container2">
     <v-row>
-      <v-col cols="12">
+      <v-col cols="6">
         <v-card class="container2" elevation="3">
-          <GameplayBeatCanvas>
+          <GameplayBeatCanvas ref="gameplayBeatCanvas" @onAddNode="onAddNode"
+          @on-next-recording="onNextRecording"
+          @on-finish-recording="onFinishRecording"
+          @on-draw-from-node="onDrawFromNode"
+          :isInVisualizerView="true">
             <template v-slot:panel-bottom-left>
 
               <v-list width="auto" elevation="6">
@@ -172,6 +249,13 @@ onBeforeRouteLeave(() => {
 
             </template>
           </GameplayBeatCanvas>
+        </v-card>
+      </v-col>
+      <v-col cols="6">
+        <v-card class="container2" elevation="3">
+          <IntensityFormulasView @on-update-intensity-formula="onUpdateIntensityFormula">
+
+          </IntensityFormulasView>
         </v-card>
       </v-col>
     </v-row>

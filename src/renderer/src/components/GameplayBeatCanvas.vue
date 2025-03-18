@@ -2,6 +2,7 @@
 import {MarkerType, Panel, PanelPosition, useVueFlow, VueFlow, isNode, isEdge} from '@vue-flow/core'
 import {Background} from '@vue-flow/background'
 import {computed, ref, watch, onMounted, nextTick } from 'vue'
+import VisualizerView from "@/views/VisualizerView.vue"
 import GameplayBeatNode from "@/components/GameplayBeatNode.vue";
 import {useElementsStore} from "@/store/elements";
 import {storeToRefs} from "pinia";
@@ -16,15 +17,15 @@ import { BeatContent } from '@/assets/BeatContent';
 import { time } from 'console';
 import Filemanager from "@/assets/Filemanager";
 import * as XLSX from "xlsx";
-import { useDesignVariablesStore } from "@/store/designVariables";
-
+import { useDesignVariablesStore, DesignVariable } from "@/store/designVariables";
 
 const designVariablesStore = useDesignVariablesStore();
-
 const theme = useTheme()
 
 const contentSelectorDialog = ref(false)
 const contentCreatorDialog = ref(false)
+
+const props = defineProps<{ isInVisualizerView: boolean }>();
 
 const dark = ref(true)
 
@@ -69,6 +70,24 @@ function onContextMenu(mouseEvent: MouseEvent) {
   // for now, just create node
   pos = {x: mouseEvent.x, y: mouseEvent.y}
   beatManager.createNode(project(pos))
+}
+
+var justReloaded = true
+
+// call onNodeSelected, when a node gets selected
+watch(getSelectedElements, (newValue) => {
+  if (newValue.length == 1 && isNode(newValue[0])) {
+    if(justReloaded){
+      justReloaded = false
+      return
+    }
+    console.log("Node selected")
+    onNodeSelected()
+  }
+})
+
+function onNodeSelected() {
+  //emit('on-draw-from-node', getSelectedElements.value[0].id)
 }
 
 /**
@@ -125,6 +144,7 @@ function onRemoveContent(id: string) {
   beatManager.editContentId(id, -1)
 }
 
+
 function onEditLabel(id: string, label: string) {
   editId.value = ""
   beatManager.editNodeLabel(id, label)
@@ -146,6 +166,12 @@ function onSelectionPanelDelete() {
 
 function onSelectionPanelAdd() {
   onAddContent(getSelectedElements.value[0].id)
+}
+
+
+function onSelectionPanelDrawGraph() {
+  console.log("Drawing graph")
+  emit('on-draw-from-node', getSelectedElements.value[0].id)
 }
 
 function onSelectionPanelRemove() {
@@ -209,10 +235,9 @@ function deleteAllNodes() {
   requiredSkills: [],
 } */
 
-function addEdgesDelayed(edge : any) {
-  setTimeout(() => {
-    addEdges(edge)
-  }, 1)
+const addEdgesDelayed = async (edge : any) => {
+  await nextTick();
+  addEdges(edge)
 }
 
 window.server.onMessage('asynchronous-message', (message: any) => {
@@ -233,25 +258,31 @@ function toggleRecording(){
 }
 
 var recordingName :string = ""
-function startNewRecording(index : number = -1){
+const startNewRecording = async (index : number = -1) => {
   if(isNaN(totalRecordings)){
-    totalRecordings = 0
+    totalRecordings = 0 
   }
   if(index == -1) {
     totalRecordings += 1
   } else {
     totalRecordings = index
   }
-  // Create empty beat with name "Recording x"
-  beatId = beatManager.createNode({x: 0, y: totalRecordings * 200})
-  recordingName = "Recording " + totalRecordings
-  beatManager.editNodeLabel(beatId, recordingName)
+  recordingName = "R" + totalRecordings
+  await newGraph("Recording " + totalRecordings)
 }
 
-function displayAverage(){
-  beatId = beatManager.createNode({x: 0, y: -200})
-  recordingName = "Average up to Rec " + totalRecordings
-  beatManager.editNodeLabel(beatId, recordingName)
+const newGraph = async (name:string, pos=totalRecordings) =>{
+  emit('on-finish-recording')
+  beatId = beatManager.createNode({x: 0, y: pos * 200})
+  beatManager.editNodeLabel(beatId, name)
+  await(nextTick())
+  emit('on-next-recording')
+  await(nextTick())
+}
+
+const displayAverage = async () => {
+  recordingName = "Avg" + totalRecordings
+  await newGraph("Average up to Rec " + totalRecordings, -1)
 }
 
 const startListening = async () => {
@@ -295,14 +326,24 @@ onMounted(async() => {
   loadRecordings()
 });
 
+var do_average = true
+
 const calculateAverages = async () => {
+  if(!do_average) return;
+
   const workbook = await window.versions.readFromExcelFile("event_log");
+
+  var lastSheet;
   if (!workbook || workbook === "null") return;
 
   var n_rows = 0;
   for (let i = 0; i < workbook.SheetNames.length; i++) {
-    const sheet = workbook.Sheets[workbook.SheetNames[i]];
+    const sheetName :string = workbook.SheetNames[i]
+    const sheet = workbook.Sheets[sheetName];
     if(!sheet || !sheet["!ref"]) continue;
+    if(!sheetName.includes("Recording")) continue;
+    lastSheet = sheet;
+
     const range = XLSX.utils.decode_range(sheet["!ref"]); 
     const local_n_rows = range.e.r + 1;
     if (local_n_rows > n_rows) {
@@ -310,16 +351,14 @@ const calculateAverages = async () => {
     }
   }
 
-  const sheet = workbook.Sheets[workbook.SheetNames[0]];
-  if(!sheet || !sheet["!ref"]) return;
-  const range = XLSX.utils.decode_range(sheet["!ref"]); 
+  const range = XLSX.utils.decode_range(lastSheet["!ref"]); 
 
   const n_cols = range.e.c + 1; // Number of columns
-  const n_of_sheets = workbook.SheetNames.length; 
   const skipCols = 2
   const skipRows = 1
 
   let totalValues = Array.from({ length: n_rows - skipRows }, () => Array(n_cols-skipCols).fill(0));
+  let n_entries = Array.from({ length: n_rows - skipRows }, () => Array(n_cols-skipCols).fill(0));
 
   for (let i = 0; i < workbook.SheetNames.length; i++) {
     const sheet = workbook.Sheets[workbook.SheetNames[i]];
@@ -328,17 +367,22 @@ const calculateAverages = async () => {
     for (let j = skipRows; j < n_rows; j++) {
       for (let k = skipCols; k < n_cols; k++) {
         if (localValues[j] && localValues[j][k] !== undefined) {
-          totalValues[j - skipRows][k-skipCols] += Number(localValues[j][k]) / n_of_sheets || 0; // Convert to number and sum
+          totalValues[j - skipRows][k-skipCols] += Number(localValues[j][k]) || 0; 
+          n_entries[j - skipRows][k-skipCols] += 1; 
         }
       }
     }
   }
 
-  // get args array
-  const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-  const firstRow : string[] = XLSX.utils.sheet_to_json(firstSheet, { header: 1 })[0].slice(2);
+  for (let i = 0; i < n_rows - skipRows; i++) {
+    for (let j = 0; j < n_cols - skipCols; j++) {
+      totalValues[i][j] /= n_entries[i][j];
+    }
+  }
+
+  const firstRow : string[] = XLSX.utils.sheet_to_json(lastSheet, { header: 1 })[0].slice(2);
   
-  displayAverage()
+  await displayAverage()
   // create nodes with averages
   for(let i = 0; i < n_rows - skipRows; i++){
     const event = totalValues[i];
@@ -353,6 +397,8 @@ const calculateAverages = async () => {
     }
     createNodeFromValidEvent(eventAsExpected)
   }
+
+  emit('on-finish-recording')
 };
 
 
@@ -371,7 +417,7 @@ const loadRecordings = async () => {
     const sheet = workbook.Sheets[workbook.SheetNames[i]];
     
     const index = workbook.SheetNames[i].split(" ")[1]
-    startNewRecording(parseInt(index))
+    await startNewRecording(parseInt(index))
 
     // "Record" for each line in sheet
     const events = XLSX.utils.sheet_to_json(sheet);
@@ -387,6 +433,8 @@ const loadRecordings = async () => {
       }
       createNodeFromValidEvent(eventAsExpected)
     })
+
+    var lastBeat = beatManager.getNode(beatManager.getLatestNodeID())
   }
   calculateAverages()
 }
@@ -403,17 +451,17 @@ function recordEvent(event: string) {
   createNodeFromValidEvent(eventObj)
 }
 
-function calculateIntensityFromArray(event: { [key: string]: number }) : number {
+function calculateIntensityFromArray(event: { [key: string]: number }, weightType: 'gameplay' | 'narrative') : number {
   //return event.EnemiesKilled + event.Deaths * 10
   var intensity = 0;
   var M1 = 1; var M2 = 1; var M3 = 1;
   for (var key in event) {
     // Find corresponding weight in designVars from store
-    var variable = designVariablesStore.getVariable(key);
+    const variable: DesignVariable = designVariablesStore.getVariable(key);
     if(variable == null) continue;  
-    var weight = variable.intensityWeight;
+    var weight = variable.getWeight(weightType);
     var isMultiplier = variable.isMultiplier;
-    if(weight == null) continue;
+    if(weight == null || weight == 0) continue;
     if(isMultiplier){
       if(weight > 0){
         M1 += weight * event[key]
@@ -442,14 +490,15 @@ function createNodeFromValidEvent(eventObj) {
   var timeDiffInMs = v.TimeDiff;
   var timeDiffInMinAndSec = getTimeDiffInMinAndSec(timeDiffInMs);
   var beatId : number = beatManager.createNode({x: lastBeatPos.x + 300, y: lastBeatPos.y})
-  beatManager.editNodeLabel(beatId, eventObj.name + " " + v.index)
+  beatManager.editNodeLabel(beatId, recordingName + " " +eventObj.name + " " + v.index)
 
-  var gameplayIntensity = calculateIntensityFromArray(v);
+  var gameplayIntensity = calculateIntensityFromArray(v, 'gameplay')
+  var narrativeIntensity = calculateIntensityFromArray(v, 'narrative');
 
   const contentId = contentManager.createContent({
     name: "B" + v.index + " " + recordingName,
     intensity: gameplayIntensity,
-    narrativeIntensity: gameplayIntensity,
+    narrativeIntensity: narrativeIntensity,
     category: "Platforming",
     playtime: timeDiffInMinAndSec
   })
@@ -481,6 +530,12 @@ function createNodeFromValidEvent(eventObj) {
   lastBeatId = beatId
 }
 const overrideInitialState = ref<BeatContent | null>(null);
+
+function getPaths() {
+  return beatManager.getLatestNodeID();
+}
+defineExpose({getPaths})
+const emit = defineEmits(['on-add-node', 'on-next-recording', 'on-finish-recording', 'on-draw-from-node'])
 </script>
 
 <template>
@@ -512,6 +567,7 @@ const overrideInitialState = ref<BeatContent | null>(null);
           </template>
         </v-tooltip>
 
+
         <!--
         <v-tooltip text="Show Content" location="bottom">
           <template v-slot:activator="{ props }">
@@ -526,6 +582,12 @@ const overrideInitialState = ref<BeatContent | null>(null);
           </template>
         </v-tooltip>
 
+        
+        <v-tooltip v-if="props.isInVisualizerView" text="Save Graph from selection" location="bottom">
+          <template v-slot:activator="{ props }">
+            <v-btn v-bind="props" icon="mdi-chart-line" @click="onSelectionPanelDrawGraph" color="secondary"></v-btn>
+          </template>
+        </v-tooltip>
 
         <!--
         <v-tooltip text="Switch Content" location="bottom">
@@ -581,6 +643,12 @@ const overrideInitialState = ref<BeatContent | null>(null);
       <v-tooltip text="Create Gameplay Beat" location="start">
         <template v-slot:activator="{ props }">
           <v-btn v-bind="props" icon="mdi-plus" color="secondary" @click="createNode"></v-btn>
+        </template>
+      </v-tooltip>
+
+      <v-tooltip text="Recalculate Average" location="start">
+        <template v-slot:activator="{ props }">
+          <v-btn v-bind="props" icon="mdi-calculator" color="secondary" @click="do_average = false"></v-btn>
         </template>
       </v-tooltip>
       
