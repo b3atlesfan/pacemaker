@@ -36,7 +36,7 @@ function openDetailedView() {
                 <v-text-field v-model="props.currentVariable.intensityWeight" type="number" density="compact" hide-details="auto"></v-text-field>
             </v-col>
             <v-col cols="1">
-                <v-text-field v-model="props.currentVariable.narrativeIntensity" type="number" density="compact" hide-details="auto"></v-text-field>
+                <v-text-field v-model="props.currentVariable.narrativeWeight" type="number" density="compact" hide-details="auto"></v-text-field>
             </v-col>
             <v-col cols="1">
                 <v-checkbox v-model="props.currentVariable.isMultiplier" label="Multiplier"></v-checkbox>

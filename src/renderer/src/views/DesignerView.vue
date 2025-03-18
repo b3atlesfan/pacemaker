@@ -4,7 +4,7 @@ import { color } from "d3";
 import {computed, reactive, ref, shallowRef, watchEffect} from "vue";
 import VariableCard from "@/components/VariableCard.vue";
 import VariableCardClosed from "@/components/VariableCardClosed.vue";
-import { useDesignVariablesStore } from "@/store/designVariables";
+import { useDesignVariablesStore, DesignVariable} from "@/store/designVariables";
 
 
 const designVariablesStore = useDesignVariablesStore();
@@ -35,6 +35,7 @@ const initialState = savedState ? JSON.parse(savedState) : {
 const currentState = reactive(initialState);
 
 watchEffect(() => {
+  currentState.allVariables = null
   localStorage.setItem('currentState', JSON.stringify(currentState));
 });
 
@@ -73,7 +74,7 @@ function getPathFilteredVariables() {
     a = a.filter(variable => variable.isPublic);
   }
   if(currentState.onlyWithWeight){
-    a = a.filter(variable => (variable.intensityWeight || 0) != 0 || (variable.narrativeIntensity || 0) != 0);
+    a = a.filter(variable => (variable.intensityWeight || 0) != 0 || (variable.narrativeWeight || 0) != 0);
   }
   return a;
 }
@@ -154,24 +155,33 @@ const fetchAllVars = async () => {
   const allVars : Array<{ name: string, value: number, path: string, isPublic: boolean }> = Object.values(allVarsAsDict);
   
   allVars.forEach(element => {
-    let index = designVariablesStore.allVariables.findIndex((e) => e.name === element.name && e.path === element.path);
+    let index = designVariablesStore.allVariables.findIndex((e : DesignVariable) => e.name === element.name && e.path === element.path);
     if (index === -1) {
-      const temp_model = reactive({
-        id: designVariablesStore.allVariables.length,
-        name: element.name,
-        remoteValue: element.value,
-        localValue: element.value,
-        path: element.path || "",
-        detailedView: false,
-        markedFavorite: false,
-        isPublic: element.isPublic || false,
-        intensityWeight: 0,
-        narrativeIntensity: 0,
-      });
+      const temp_model = new DesignVariable(
+        designVariablesStore.allVariables.length,
+        element.name,
+        element.value,
+        null,
+        element.path || "",
+        false,
+        false,
+        element.isPublic || false,
+        0,
+        0,
+        false
+      );
       designVariablesStore.addVariable(temp_model);
       index = designVariablesStore.allVariables.length - 1;
     }
     designVariablesStore.allVariables[index].remoteValue = element.value;
+
+    // Remove all other matches from store
+    designVariablesStore.allVariables.forEach((element, i) => {
+      if (element.name === designVariablesStore.allVariables[index].name && element.path === designVariablesStore.allVariables[index].path && i !== index) {
+        designVariablesStore.deleteVariable(i);
+      }
+    });
+    
   });
 
   designVariablesStore.allVariables.forEach((element, index) => {
@@ -234,7 +244,7 @@ function getIntensityWeightString(variable: { intensityWeight: number; name: str
 
 function getNarrativeIntensityWeightString(variable: { narrativeIntensity: number; name: string; isMultiplier: boolean; }, invert =false) : string {
   var input: { intensityWeight: number; name: string; isMultiplier: boolean; }
-  input = {intensityWeight: variable.narrativeIntensity, name: variable.name, isMultiplier: variable.isMultiplier};
+  input = {intensityWeight: variable.narrativeWeight, name: variable.name, isMultiplier: variable.isMultiplier};
   return getIntensityWeightString(input, invert);
 }
 
@@ -308,13 +318,13 @@ function getNarrativeIntensityWeightString(variable: { narrativeIntensity: numbe
     <span v-if="designVariablesStore.allVariables.length > 0" style="margin-left: 120px;">
       <br>
       <span style="margin-left: 120px;"></span>
-      (1 + {{ designVariablesStore.allVariables.filter(variable => variable.narrativeIntensity > 0 && variable.isMultiplier).map(variable => getNarrativeIntensityWeightString(variable)).join(" + ") }})
+      (1 + {{ designVariablesStore.allVariables.filter(variable => variable.narrativeWeight > 0 && variable.isMultiplier).map(variable => getNarrativeIntensityWeightString(variable)).join(" + ") }})
       <br>
       <span style="margin-left: 120px;"></span>
-      * ({{ designVariablesStore.allVariables.filter(variable =>variable.narrativeIntensity&& variable.narrativeIntensity != 0 && !variable.isMultiplier).map(variable => getNarrativeIntensityWeightString(variable)).join(" + ") }})
+      * ({{ designVariablesStore.allVariables.filter(variable =>variable.narrativeWeight&& variable.narrativeWeight != 0 && !variable.isMultiplier).map(variable => getNarrativeIntensityWeightString(variable)).join(" + ") }})
       <br>
       <span style="margin-left: 120px;"></span>
-      / (1 + {{ designVariablesStore.allVariables.filter(variable => variable.narrativeIntensity < 0 && variable.isMultiplier).map(variable => getNarrativeIntensityWeightString(variable, true)).join(" + ") }})
+      / (1 + {{ designVariablesStore.allVariables.filter(variable => variable.narrativeWeight < 0 && variable.isMultiplier).map(variable => getNarrativeIntensityWeightString(variable, true)).join(" + ") }})
     </span>
   </p>
   
