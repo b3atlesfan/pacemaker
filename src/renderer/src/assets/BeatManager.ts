@@ -44,15 +44,23 @@ export class BeatManager {
     deleteNode(id: string) {
         this.vueFlowStore.removeNodes(id)
         this.idManager.returnId(parseInt(id))
-        //this.elements.elements.value
+        const index = this.elements.elements.value.findIndex(e => e.id === id)
+        if(index != -1){
+            this.elements.elements.value.splice(index, 1)
+            return;
+        }
+        
+        throw new Error(id + 'Node not found')
     }
 
     deleteAllNodes() {
-        this.elements.elements.value.forEach(elem => {
-            if (!isNode(elem as MaybeElement)) return
-
-            this.deleteNode(elem.id)
-        })
+        for (let i = this.elements.elements.value.length - 1; i >= 0; i--) {
+            const elem = this.elements.elements.value[i];
+            if (!(elem.type === 'gameplay-beat')) {
+              continue;
+            } 
+            this.deleteNode(elem.id);
+        }
     }
 
     getNode(id: string) {
