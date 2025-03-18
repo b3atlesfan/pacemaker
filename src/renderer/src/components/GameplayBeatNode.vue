@@ -2,6 +2,7 @@
 import {Handle, Position} from "@vue-flow/core";
 import {computed, ref} from "vue";
 import BeatContentHolder from "@/components/BeatContentHolder.vue";
+import {BeatContentManager} from "@/assets/BeatContentManager";
 
 const emit = defineEmits(['onAddContent', 'onRemoveContent', 'onEditLabel', 'onDelete'])
 
@@ -13,8 +14,9 @@ const props = defineProps<{
   isBeingEdited: boolean,
 }>()
 
+const contentManager = BeatContentManager.getInstance()
 
-const hasContent = computed(() => props.data.contentId != -1)
+const hasContent = computed(() => props.data.contentId != -1 && contentManager.getContent(props.data.contentId) != null)
 
 const label = ref(props.label)
 
