@@ -38,21 +38,27 @@ export class BeatContent {
   intensity: number
   narrativeIntensity: number
   computedIntensity: number
+  rawVariables: { [key: string]: number }
   expectedPlaytime: string
   introducedSkills: string[]
   reinforcedSkills: string[]
   requiredSkills: string[]
 
-  constructor(id: number, description: string, narrativeIntensity: number, category: Category, intensity: number, expectedPlaytime: string, introducedSkills: string[], reinforcedSkills: string[], requiredSkills: string[]) {
+  constructor(id: number, description: string, narrativeIntensity: number, category: Category, intensity: number, rawVariables: {[Key:string] : number},  expectedPlaytime: string, introducedSkills: string[], reinforcedSkills: string[], requiredSkills: string[]) {
     this.id = id
     this.description = description
     this.narrativeIntensity = narrativeIntensity
     this.category = category
     this.intensity = intensity
     this.computedIntensity = (+intensity + +narrativeIntensity) / 2
+    this.rawVariables = rawVariables
     this.expectedPlaytime = expectedPlaytime
     this.introducedSkills = introducedSkills
     this.reinforcedSkills = reinforcedSkills
     this.requiredSkills = requiredSkills
+  }
+
+  updateIntensities(){
+    
   }
 }

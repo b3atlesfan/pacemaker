@@ -11,6 +11,7 @@ export type ContentFormState = {
   narrativeIntensity: number,
   category: Category,
   playtime: string,
+  rawVariables: { [key: string]: number },
   introducedSkills: string[],
   reinforcedSkills: string[],
   requiredSkills: string[],
@@ -51,7 +52,7 @@ export class BeatContentManager {
     var id : number = input.overridingBeatContent
     if(id == undefined || id == -1){
       id = this.idManager.getId()
-      const content = new BeatContent(id, input.name, input.narrativeIntensity, input.category, input.intensity, input.playtime, input.introducedSkills, input.reinforcedSkills, input.requiredSkills)
+      const content = new BeatContent(id, input.name, input.narrativeIntensity, input.category, input.intensity, input.rawVariables, input.playtime, input.introducedSkills, input.reinforcedSkills, input.requiredSkills)
 
       this.contentsStore.contents.value.push(content)
       return id;
@@ -60,6 +61,7 @@ export class BeatContentManager {
     content.description = input.name
     content.intensity = input.intensity
     content.narrativeIntensity = input.narrativeIntensity
+    content.rawVariables = input.rawVariables
     content.category = input.category
     content.playtime = input.playtime
     content.introducedSkills = input.introducedSkills
@@ -105,5 +107,11 @@ export class BeatContentManager {
 
      */
 
+  }
+
+  updateAllContents() {
+    this.contentsStore.contents.value.forEach(content => {
+      content.update()
+    })
   }
 }
