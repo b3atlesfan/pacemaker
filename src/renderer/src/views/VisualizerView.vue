@@ -17,6 +17,7 @@ import { on } from "events";
 import { start } from "repl";
 import DesignerView from "./DesignerView.vue";
 import IntensityFormulasView from "./IntensityFormulasView.vue";
+import { time } from "console";
 
 const vue = useVueFlow()
 
@@ -53,17 +54,21 @@ const path = computed(() =>
   computePath(selectedPathBeats.value, vue)
 )
 
-const pathOnSelection = computed(() => {
-    if (selectedBeats.value.length == 0) {
-      return []
-    }
-    const beatPath:number[] = computePath(selectedBeats.value, vue) || []
+function pathFromArray(arr: GameplayBeat[]) {
+    const beatPath:number[] = computePath(arr, vue) || []
     const result: (BeatContent | null) [] = []
     beatPath.forEach(beatId => {
       const beat = beatManager.getNode(beatId.toString())
       result.push(beat.data.contentId == -1 ? null : contentManager.getContent(beat.data.contentId))
     })
     return result
+}
+
+const pathOnSelection = computed(() => { 
+    if (selectedBeats.value.length == 0) {
+      return []
+    }
+    return pathFromArray(selectedBeats.value)
   }
 )
 
@@ -109,21 +114,19 @@ function onSnapshot() {
   selectedPathBeats.value = []
 }
 
-function addToPath(beat: GameplayBeat) {
-
-}
-
 
 var startID = "-1"
 function onAddNode(id){
 }
 
 function onDrawFromNode(){
+  return;
   snapShots.push({name: "Path " + id.toString(), path: pathOnSelection.value})
   id++
 }
 
 const onFinishRecording = async() => {
+  return;
   if(startID == "-1") {
     return
   }
@@ -139,6 +142,7 @@ const onFinishRecording = async() => {
 var currentPathName = ""
 
 const onNextRecording = async() => {
+  return;
   startID = beatManager.getLatestNodeID() + 1
   const namingBeat = beatManager.getNode(beatManager.getLatestNodeID())
   currentPathName = namingBeat.label
@@ -178,12 +182,36 @@ function onUpdateIntensityFormula() {
   window.location.reload();
 }
 
+const onStartup = async () => {
+  await nextTick()
+  var ids : number[] = beatManager.getAllRecordingNodeIDs()
+  if (ids.length > 1) {
+    const lastItem = ids.pop();
+    if (lastItem !== undefined) {
+      ids.unshift(lastItem);
+    }
+  }
+  ids.forEach((recID: number) => {
+    const node = beatManager.getNode(recID)
+    if(node){
+      var path = pathFromArray([node])
+      if(path.length > 1) {
+        path = path.filter((item) => item != null)
+        snapShots.push({name: "" + node.label, path: path})
+        id++
+      }
+    }
+  })
+  allContentPaths.value
+}
+
 const gameplayBeatCanvas = ref(null)
 
 onMounted(async() => {
   await nextTick();
   console.log("Component instance:", gameplayBeatCanvas.value); // Should not be null after mounting
 });
+
 
 
 </script>
@@ -217,6 +245,7 @@ onMounted(async() => {
           @on-next-recording="onNextRecording"
           @on-finish-recording="onFinishRecording"
           @on-draw-from-node="onDrawFromNode"
+          @on-startup="onStartup"
           :isInVisualizerView="true">
             <template v-slot:panel-bottom-left>
 
