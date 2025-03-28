@@ -5,12 +5,15 @@ import * as fs from 'fs';
 import { findSourceMap } from 'module';
 import * as XLSX from "xlsx";
 import * as os from "os";
+import * as csvParser from "csv-parser";
+import * as stringify from "csv-stringify/sync";
+import Papa from "papaparse";
 
 let mainWindow;
 let client;
 
 
-const EXCEL_FILE_PATH = "event_log.xlsx";
+const EXCEL_FILE_PATH = "event_log.csv";
 
 
 function isFileLocked(filePath) {
@@ -87,66 +90,68 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle('readFromExcelFile', (event, arg) => {
-
     if (!arg) {
       return "null";
     }
-    let filePath = arg + ".xlsx";
-    let workbook;
-    let worksheet;
-    let buffer;
-
-    if (fs.existsSync(filePath) && !isFileLocked(filePath)) {
-      buffer = fs.readFileSync(filePath);
-      workbook = XLSX.read(buffer, { type: "buffer" });
-      return workbook;
-    } else {
+  
+    const filePath = `${arg}.csv`;
+    if (!fs.existsSync(filePath) || isFileLocked(filePath)) {
       return "null";
     }
-  })
-
-  ipcMain.handle('writeToExcelFile', (event, sheetName, arg) => {
-
-    const eventObj = JSON.parse(arg);
-
-    let workbook;
-    let worksheet;
-    let buffer;
-
-    let arr_args = Object.keys(eventObj.args);
-
-    // Time, Name, One column per item in arr_args_in_arg
-    let titleRow = ["Timestamp", "eventName", ...arr_args];
-    
-    // Check if file exists
-    if (fs.existsSync(EXCEL_FILE_PATH) && !isFileLocked(EXCEL_FILE_PATH)) {
-      buffer = fs.readFileSync(EXCEL_FILE_PATH);
-      workbook = XLSX.read(buffer, { type: "buffer" });
-      worksheet = workbook.Sheets[sheetName] 
-      if(!worksheet) {
-        worksheet = XLSX.utils.aoa_to_sheet([titleRow]);
-        workbook.SheetNames.push(sheetName);
-      }
-    } else {
-      workbook = XLSX.utils.book_new();
-      worksheet = XLSX.utils.aoa_to_sheet([titleRow]);
-      workbook.SheetNames.push(sheetName);
+  
+    const rows = [];
+    try {
+      const fileContent = fs.readFileSync(filePath, 'utf8');
+      return fileContent;
+      const lines = fileContent.split('\n');
+      lines.forEach((line) => {
+        const parsedLine = line.split(';').map((value) => value.trim());
+        rows.push(parsedLine);
+      });
+      const returnVal = { SheetNames: [arg], Sheets: { [arg]: rows } };
+      return returnVal;
+    } catch (err) {
+      console.error('Error reading CSV file:', err);
+      return "null";
     }
+  });
 
-    const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 })
-    const newRow = [
-      new Date().toISOString(),
-      eventObj.name,
-      ...arr_args.map(arg => eventObj.args[arg])
-    ];
+  function arrayToCSV(array) {
+    if (array.length === 0) {
+      return '';
+    }
+  
+    const keys = Object.keys(array[array.length - 1]);
+    const header = keys.join(';');
+    const rows = array.map(obj => keys.map(key => obj[key]).join(';'));
+    const csvString = `${header}\n${rows.join('\n')}`;
+  
+    return csvString;
+  }
+  
+  
+  ipcMain.handle('writeToExcelFile', (event, sheetName, arg) => {
+    const eventObj = arg;
 
-    data.push(newRow);
-    const newWorksheet = XLSX.utils.aoa_to_sheet(data);
-
-    workbook.Sheets[sheetName] = newWorksheet;
-
-    buffer = XLSX.write(workbook, { type: "buffer" });
-    fs.writeFileSync(EXCEL_FILE_PATH, buffer);
+    const filePath = EXCEL_FILE_PATH;
+  
+    let data = [];
+    if (fs.existsSync(filePath) && !isFileLocked(filePath)) {
+      const fileContent = fs.readFileSync(filePath, 'utf8');
+      data = Papa.parse(fileContent, { header: true }).data; 
+    }
+    
+    data.push(eventObj); 
+    
+    // Convert the data back to CSV format
+    const csvContent = arrayToCSV(data);
+  
+    try {
+      fs.writeFileSync(filePath, csvContent, 'utf8');
+      console.log('CSV file written successfully');
+    } catch (err) {
+      console.error('Error writing CSV file:', err);
+    }
   });
   createWindow();
 });
