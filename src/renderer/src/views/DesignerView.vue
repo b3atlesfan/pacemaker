@@ -30,6 +30,7 @@ const initialState = savedState ? JSON.parse(savedState) : {
   onlyPublic: true,
   onlyWithWeight: false,
   pathFilterText: "",
+  onlyruntimeModified: false,
 };
 
 const currentState = reactive(initialState);
@@ -60,11 +61,16 @@ function StartReactiveLastMessageTimer(){
 
 
 function getPathFilteredVariables() {
-  var a
-  if(!currentState.pathFilterText) {
-    a = designVariablesStore.allVariables;
+  var a = designVariablesStore.allVariables;
+
+  if(currentState.onlyruntimeModified){
+    a = a.filter(variable => variable.runtimeModified);
   }
   else {
+    a = a.filter(variable => !variable.runtimeModified);
+  }
+  
+  if(currentState.pathFilterText) {
     a = designVariablesStore.allVariables.filter(variable => (variable.path + "/" + variable.name).match(new RegExp(currentState.pathFilterText, "i")));
   }
   if(currentState.favoritesOnly){
@@ -113,8 +119,11 @@ const sendString = async (message: string) => {
 }
 
 const sendAllVars = async () => {
-  const filteredVars = designVariablesStore.allVariables.map(
-      ({ name, localValue: value, path, intensityWeight, narrativeIntensity }) => ({ name, value, path, hasIntensity: intensityWeight != 0 || narrativeIntensity != 0}));
+  const filteredVars = designVariablesStore.allVariables
+      .filter(a => a.localValue !== null)
+      .map(
+        ({ name, localValue: value, path, intensityWeight, narrativeIntensity, runtimeModified }) => 
+        ({ name, value, path, hasIntensity: intensityWeight != 0 || narrativeIntensity != 0, runtimeModified }));
   const allVarsJsonFile = JSON.stringify(filteredVars, null, 2);
   const response = await window.versions.sendFile(allVarsJsonFile, currentState.unityPath + "/" + currentState.outFile);
 
@@ -151,8 +160,8 @@ const fetchAllVars = async () => {
   //const allVars: Array<{ name: string, value: number, path: string, isPublic: bool }> = JSON.parse(response);
   // Example for response: {"(speed, 1_Moving Platform_FlyPlats_Platform)":{"name":"speed","value":5.0,"path":"1_Moving Platform_FlyPlats_Platform","isPublic":false,"fieldType":"System.Single"},"(killcounter, 1_Enemies_Bees_Bee0_Enemy)":{"name":"killcounter","value":0.0,"path":"1_Enemies_Bees_Bee0_Enemy","isPublic":true,"fieldType":"System.Int32"}
   // Read as dictionary with name and path for key
-  const allVarsAsDict : { [key: string]: { name: string, value: number, path: string, isPublic: boolean } } = JSON.parse(response);
-  const allVars : Array<{ name: string, value: number, path: string, isPublic: boolean }> = Object.values(allVarsAsDict);
+  const allVarsAsDict = JSON.parse(response);
+  const allVars = Object.values(allVarsAsDict);
   
   allVars.forEach(element => {
     let index = designVariablesStore.allVariables.findIndex((e : DesignVariable) => e.name === element.name && e.path === element.path);
@@ -168,12 +177,15 @@ const fetchAllVars = async () => {
         element.isPublic || false,
         0,
         0,
-        false
+        false,
+        false,
+        element.runtimeModified || false,
       );
       designVariablesStore.addVariable(temp_model);
       index = designVariablesStore.allVariables.length - 1;
     }
     designVariablesStore.allVariables[index].remoteValue = element.value;
+    designVariablesStore.allVariables[index].runtimeModified = element.runtimeModified;
 
     // Remove all other matches from store
     designVariablesStore.allVariables.forEach((element, i) => {
@@ -354,6 +366,12 @@ function getNarrativeIntensityWeightString(variable: { narrativeIntensity: numbe
         label="Has Weight"
         class="d-flex align-center"
       ></v-checkbox>
+    </v-col>
+    <v-col>
+      <v-radio-group v-model="currentState.onlyruntimeModified" class="d-flex align-center">
+        <v-radio label="Show Only Changing Variables" :value="true"></v-radio>
+        <v-radio label="Show Only Constant Variables" :value="false"></v-radio>
+      </v-radio-group>
     </v-col>
   </v-row>
 
