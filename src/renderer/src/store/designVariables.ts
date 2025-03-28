@@ -1,4 +1,4 @@
-import { is } from '@babel/types';
+import { is, valueToNode } from '@babel/types';
 import { defineStore } from 'pinia'
 
 export class DesignVariable {
@@ -14,6 +14,7 @@ export class DesignVariable {
   private narrativeWeight: number;
   isMultiplier: boolean;
   requestedFromPM: boolean;
+  runtimeModified: boolean;
 
   constructor(
     id: number,
@@ -27,7 +28,8 @@ export class DesignVariable {
     intensityWeight: number,
     narrativeWeight: number,
     isMultiplier: boolean,
-    requestedFromPM: boolean
+    requestedFromPM: boolean,
+    runtimeModified: boolean = false
   ) {
     this.id = id;
     this.name = name;
@@ -41,6 +43,7 @@ export class DesignVariable {
     this.narrativeWeight = narrativeWeight;
     this.isMultiplier = isMultiplier;
     this.requestedFromPM = requestedFromPM;
+    this.runtimeModified = runtimeModified;
   }
 
   getWeight(type: string): number {
@@ -85,7 +88,8 @@ export const useDesignVariablesStore = defineStore('designVariablesStore',  {
         variable.intensityWeight,
         variable.narrativeWeight,
         variable.isMultiplier,
-        variable.requestedFromPM
+        variable.requestedFromPM,
+        variable.runtimeModified
       );
       this.allVariables.push(newVar);
     },
@@ -143,7 +147,8 @@ export const useDesignVariablesStore = defineStore('designVariablesStore',  {
             match.intensityWeight,
             match.narrativeWeight,
             match.isMultiplier,
-            match.requestedFromPM
+            match.requestedFromPM,
+            match.runtimeModified
           );
           this.allVariables[this.allVariables.indexOf(match)] = newVar;
           return newVar;
@@ -165,7 +170,8 @@ export const useDesignVariablesStore = defineStore('designVariablesStore',  {
         variable.intensityWeight,
         variable.narrativeWeight,
         variable.isMultiplier,
-        variable.requestedFromPM
+        variable.requestedFromPM,
+        variable.runtimeModified
       ));
     }
   }
