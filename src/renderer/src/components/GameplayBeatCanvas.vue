@@ -18,6 +18,8 @@ import { time } from 'console';
 import Filemanager from "@/assets/Filemanager";
 import * as XLSX from "xlsx";
 import { useDesignVariablesStore, DesignVariable } from "@/store/designVariables";
+import Papa from "papaparse";
+import { eventNames } from 'process';
 
 const designVariablesStore = useDesignVariablesStore();
 const theme = useTheme()
@@ -257,23 +259,26 @@ function toggleRecording(){
   recordingIcon.value = isRecording.value ? 'mdi-stop' : 'mdi-record'
 }
 
-var recordingName :string = ""
-const startNewRecording = async (index : number = -1) => {
+var recordingName : number = ""
+const startNewRecording = async (recID : string = "-1") => {
   if(isNaN(totalRecordings)){
     totalRecordings = 0 
   }
-  if(index == -1) {
+  if(recID == -1 || !Number.isNaN(Number(recID))) {
     totalRecordings += 1
-  } else {
-    totalRecordings = index
+    recordingName = "R " + totalRecordings
   }
-  recordingName = "R" + totalRecordings
+  
+  if(Number.isNaN(Number(recID))) {
+    currentRecordingID = recID
+    recordingName = "R " + recID
+  }
   await newGraph("Recording " + totalRecordings)
 }
 
 const newGraph = async (name:string, pos=totalRecordings) =>{
   emit('on-finish-recording')
-  beatId = beatManager.createNode({x: 0, y: pos * 200})
+  beatId = beatManager.createNode({x: 0, y: pos * 200}, true)
   beatManager.editNodeLabel(beatId, name)
   await(nextTick())
   emit('on-next-recording')
@@ -328,114 +333,142 @@ onMounted(async() => {
 
 var do_average = true
 
+function createArrayWithKeys(arrayLength: number, entryLength: number, keys: string[]) {
+  return Array.from({ length: arrayLength }, () => {
+    const row: { [key: string]: number } = {};
+    for (let k = 0; k < entryLength; k++) {
+      const key = keys[k];
+      row[key] = 0;
+    }
+    return row;
+  });
+}
+
 const calculateAverages = async () => {
   if(!do_average) return;
 
-  const workbook = await window.versions.readFromExcelFile("event_log");
+  const keys = Object.keys(logged_events[0])
 
-  var lastSheet;
-  if (!workbook || workbook === "null") return;
 
-  var n_rows = 0;
-  for (let i = 0; i < workbook.SheetNames.length; i++) {
-    const sheetName :string = workbook.SheetNames[i]
-    const sheet = workbook.Sheets[sheetName];
-    if(!sheet || !sheet["!ref"]) continue;
-    if(!sheetName.includes("Recording")) continue;
-    lastSheet = sheet;
-
-    const range = XLSX.utils.decode_range(sheet["!ref"]); 
-    const local_n_rows = range.e.r + 1;
-    if (local_n_rows > n_rows) {
-      n_rows = local_n_rows;
+  var n_recordings = 0;
+  var lastRecordingID = -1;
+  var max_n_beats = 0;
+  var current_n_beats = 0;
+  for (let i = 0; i < logged_events.length; i++) {
+    const recID = logged_events[i].RecordingID
+    if(recID != lastRecordingID) {
+      n_recordings += 1
+      lastRecordingID = recID
+      if(current_n_beats > max_n_beats) {
+        max_n_beats = current_n_beats
+      }
+      current_n_beats = 0
     }
+    current_n_beats += 1
+  }
+  if(current_n_beats > max_n_beats) {
+    max_n_beats = current_n_beats
   }
 
-  const range = XLSX.utils.decode_range(lastSheet["!ref"]); 
+  const n_rows = logged_events.length;
+  const n_cols = keys.length;
 
-  const n_cols = range.e.c + 1; // Number of columns
-  const skipCols = 2
-  const skipRows = 1
+  let totalValues = createArrayWithKeys(max_n_beats, n_cols, keys) 
+  let n_entries = createArrayWithKeys(max_n_beats, n_cols, keys)
 
-  let totalValues = Array.from({ length: n_rows - skipRows }, () => Array(n_cols-skipCols).fill(0));
-  let n_entries = Array.from({ length: n_rows - skipRows }, () => Array(n_cols-skipCols).fill(0));
-
-  for (let i = 0; i < workbook.SheetNames.length; i++) {
-    const sheet = workbook.Sheets[workbook.SheetNames[i]];
-    const localValues = XLSX.utils.sheet_to_json(sheet, { header: 1 }); // Convert sheet to a 2D array
-
-    for (let j = skipRows; j < n_rows; j++) {
-      for (let k = skipCols; k < n_cols; k++) {
-        if (localValues[j] && localValues[j][k] !== undefined) {
-          totalValues[j - skipRows][k-skipCols] += Number(localValues[j][k]) || 0; 
-          n_entries[j - skipRows][k-skipCols] += 1; 
-        }
+  var beatIndex:number = 0;
+  var lastRecID:string = "";
+  var rec:number = 0;
+  for (let currentRow = 0; currentRow < n_rows; currentRow++) {
+    const currentRecID :string= logged_events[currentRow].RecordingID
+    if(currentRecID != lastRecID) {
+      beatIndex = 0
+      lastRecID = currentRecID
+      rec++;
+    }
+    for (let k = 0; k < n_cols; k++) {
+      const key : string = keys[k];
+      if (logged_events[currentRow] && logged_events[currentRow][key] !== undefined) {
+        totalValues[beatIndex][key] += Number(logged_events[currentRow][key]) || 0; 
+        n_entries[beatIndex][key] += 1; 
       }
     }
+    beatIndex += 1;
   }
+  
+  
 
-  for (let i = 0; i < n_rows - skipRows; i++) {
-    for (let j = 0; j < n_cols - skipCols; j++) {
-      totalValues[i][j] /= n_entries[i][j];
+  for (let i = 0; i < max_n_beats; i++) {
+    for (const key of keys) {
+      const entryAsNumber = Number(totalValues[i][key]);
+      if (!(entryAsNumber === 0) && !Number.isNaN(entryAsNumber)){
+        totalValues[i][key] /= n_entries[i][key] || 1; // Avoid division by zero
+      } 
     }
   }
-
-  const firstRow : string[] = XLSX.utils.sheet_to_json(lastSheet, { header: 1 })[0].slice(2);
   
   await displayAverage()
   // create nodes with averages
-  for(let i = 0; i < n_rows - skipRows; i++){
+  for(let i = 0; i < max_n_beats; i++){
     const event = totalValues[i];
     const eventName = "checkpointReached"
-    const eventArgs = firstRow.reduce((argsObj, name, index) => {
-      argsObj[name] = event[index]; // Assign each value to its respective key
-      return argsObj;
-    }, {});
+    
     const eventAsExpected = {
       name: eventName,
-      args: eventArgs
+      args: { ...event }
     }
+    
     createNodeFromValidEvent(eventAsExpected)
   }
 
   emit('on-finish-recording')
+  emit('on-startup')
 };
 
+var logged_events: any[]
+var currentRecordingID : string = ""
 
 const loadRecordings = async () => {
   const workbook = await window.versions.readFromExcelFile("event_log");
   if(!workbook || workbook == "null") return;
   deleteAllNodes()
   beatContentSelector.value.onDeleteAll()
+
+  logged_events = Papa.parse(workbook, { header: true }).data;
   
   // wait for 1 ms to ensure that all nodes are deleted
   await nextTick();
 
-  for(var i = 0; i < workbook.SheetNames.length; i++){
-    var sheetName :string = workbook.SheetNames[i]
-    if(!sheetName.includes("Recording")) continue;
-    const sheet = workbook.Sheets[workbook.SheetNames[i]];
-    
-    const index = workbook.SheetNames[i].split(" ")[1]
-    await startNewRecording(parseInt(index))
+  //for(var i = 0; i < workbook.SheetNames.length; i++){
+  //var sheetName :string = workbook.SheetNames[i]
+  //if(!sheetName.includes("Recording")) continue;
+  //const sheet = workbook.Sheets[workbook.SheetNames[i]];
+  
+  //const index = workbook.SheetNames[i].split(" ")[1]
+  currentRecordingID = logged_events[0].RecordingID;
+  await startNewRecording(currentRecordingID)
 
-    // "Record" for each line in sheet
-    const events = XLSX.utils.sheet_to_json(sheet);
-    
-    events.forEach((event: any) => {
-      const eventName = event.eventName;
-      if(eventName != "checkpointReached") return;
-      delete event["Timestamp"];
-      delete event["eventName"];
-      const eventAsExpected = {
-        name: eventName,
-        args: event
-      }
-      createNodeFromValidEvent(eventAsExpected)
-    })
+  
+  logged_events.forEach((event: any) => {
+    const recID = event.RecordingID
+    if(recID != currentRecordingID) {
+      currentRecordingID = recID
+      startNewRecording(recID)
+    }
+    const eventName = event.EventName;
+    if(eventName != "checkpointReached") return;
+    const eventAsExpected = {
+      name: eventName,
+      args: { ...event }
+    };
+    delete eventAsExpected.args["Timestamp"];
+    delete eventAsExpected.args["eventName"];
+    delete eventAsExpected.args["RecordingID"];
+    createNodeFromValidEvent(eventAsExpected)
+  })
 
-    var lastBeat = beatManager.getNode(beatManager.getLatestNodeID())
-  }
+  var lastBeat = beatManager.getNode(beatManager.getLatestNodeID())
+  //}
   calculateAverages()
 }
 
@@ -446,7 +479,18 @@ function recordEvent(event: string) {
 
   console.log("Recording event: " + JSON.stringify(eventObj))
 
-  window.versions.writeToExcelFile("Recording " + totalRecordings, event)
+  if(eventObj.args.index != null) {
+    const { index, ...restArgs } = eventObj.args;
+    eventObj.args = { index, ...restArgs };
+  }
+  eventObj.args = {
+    "RecordingID": totalRecordings,
+    "Timestamp": new Date().toISOString(),
+    "EventName": eventObj.name,
+    ...eventObj.args
+  }
+
+  window.versions.writeToExcelFile("Recording " + totalRecordings, eventObj.args)
 
   createNodeFromValidEvent(eventObj)
 }
@@ -457,7 +501,9 @@ function calculateIntensityFromArray(event: { [key: string]: number }, weightTyp
   var M1 = 1; var M2 = 1; var M3 = 1;
   for (var key in event) {
     // Find corresponding weight in designVars from store
-    const variable: DesignVariable = designVariablesStore.getVariable(key);
+    if(!key.includes("_Diff")) continue;
+    const undiffedKey = key.replace("_Diff", "")
+    const variable: DesignVariable = designVariablesStore.getVariable(undiffedKey);
     if(variable == null) continue;  
     var weight = variable.getWeight(weightType);
     var isMultiplier = variable.isMultiplier;
@@ -499,6 +545,7 @@ function createNodeFromValidEvent(eventObj) {
     name: "B" + v.index + " " + recordingName,
     intensity: gameplayIntensity,
     narrativeIntensity: narrativeIntensity,
+    rawVariables: v,
     category: "Platforming",
     playtime: timeDiffInMinAndSec
   })
@@ -534,8 +581,13 @@ const overrideInitialState = ref<BeatContent | null>(null);
 function getPaths() {
   return beatManager.getLatestNodeID();
 }
-defineExpose({getPaths})
-const emit = defineEmits(['on-add-node', 'on-next-recording', 'on-finish-recording', 'on-draw-from-node'])
+
+function updateAllContents() {
+  contentManager.updateAllContents()
+}
+
+defineExpose({getPaths, updateAllContents})
+const emit = defineEmits(['on-startup','on-add-node', 'on-next-recording', 'on-finish-recording', 'on-draw-from-node'])
 </script>
 
 <template>
