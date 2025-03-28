@@ -28,3 +28,5 @@ coverage
 *.sw?
 out/**
 receivedString.txt
+event_log.xlsx
+event_log.csv
