@@ -4,7 +4,7 @@ import GameplayBeatCanvas from "@/components/GameplayBeatCanvas.vue";
 </script>
 
 <template>
-  <GameplayBeatCanvas/>
+  <GameplayBeatCanvas :isInVisualizerView="false"/>
 </template>
 
 <style scoped>
