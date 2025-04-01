@@ -531,8 +531,10 @@ function calculateIntensityFromArray(event: { [key: string]: number }, weightTyp
       M2 += weight * event[key]
     }
   }
-  if(M3 == 0) M3 = 0.00001;
-  return M1 * M2 / M3;
+  if(M3 == 0 || M3 == -0) M3 = 0.00001;
+  var total = M1 + M2 / M3;
+  total = Math.floor(total);
+  return total;
 }
 
 function seperateKey(key : string) {
@@ -570,7 +572,7 @@ function createNodeFromValidEvent(eventObj) {
   }
   var v : { [key: string]: number } = eventObj.args;
 
-  var timeDiffInMs =getAllWithName(v, "TimeDiff")[0].value;
+  var timeDiffInMs =getAllWithName(v, "currentTime_Diff")[0].value;
   var timeDiffInMinAndSec = getTimeDiffInMinAndSec(timeDiffInMs);
   var beatId : number = beatManager.createNode({x: lastBeatPos.x + 300, y: lastBeatPos.y})
   beatManager.editNodeLabel(beatId, recordingName + " " +eventObj.name + " " + v.index)
@@ -623,10 +625,13 @@ function updateAllContents() {
   contentManager.updateAllContents()
 }
 
-loadSettings()
+if(settings.Name == null || settings.Name == "") {
+  loadSettings()
+}
 
 defineExpose({getPaths, updateAllContents})
 const emit = defineEmits(['on-startup','on-add-node', 'on-next-recording', 'on-finish-recording', 'on-draw-from-node'])
+
 </script>
 
 <template>
