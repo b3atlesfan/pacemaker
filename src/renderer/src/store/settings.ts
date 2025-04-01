@@ -1,19 +1,27 @@
-import { reactive, ref } from 'vue';
+import { reactive, ref, watch } from 'vue';
 import { useDesignVariablesStore, DesignVariable} from "@/store/designVariables";
 
-const designVariablesStore = useDesignVariablesStore();
+let _designVariablesStore: ReturnType<typeof useDesignVariablesStore>;
 
-export const settings = ref({
-  });
+function getDesignVariablesStore() {
+  if (!_designVariablesStore) {
+    _designVariablesStore = useDesignVariablesStore();
+  }
+  return _designVariablesStore;
+}
+
+export const settings = reactive<{ [key: string]: any }>({
+  Name: ''
+});
 
 export const currentProjectPath = ref(localStorage.getItem('currentProjectPath') || 'C:/git-projects/Vue/pacemaker/projects/lostForest');
 export const recentlyLoadedPaths = ref(localStorage.getItem('recentlyLoadedPaths') ? JSON.parse(localStorage.getItem('recentlyLoadedPaths')!) : []);
 
 currentProjectPath.value = localStorage.getItem('currentProjectPath') || currentProjectPath.value;
 
-
+const path2 = "C:/git-projects/Unity/TheLostForest-master/Packages/com.unity.pacemaker-for-unity/Runtime/Temporary";
 const savedState = localStorage.getItem('currentState');
-const initialState = savedState ? JSON.parse(savedState) : {
+const initialState = savedState && savedState != "undefined" ? JSON.parse(savedState) : {
   unityPath: path2,
   outFile: "designerVarsFromPacemaker.json",
   inFile: "designerVarsFromUnity.json",
@@ -28,7 +36,12 @@ const initialState = savedState ? JSON.parse(savedState) : {
   onlyruntimeModified: false,
 };
 
-export var currentState = reactive(initialState);
+export const currentState = reactive(initialState);
+watch(currentState, (newValue) => {
+  //console.log('currentState changed:', newValue);
+  localStorage.setItem('currentState', JSON.stringify(newValue));
+}, { deep: true });
+
 
 // Function to load settings
 export async function loadSettings() {
@@ -39,10 +52,22 @@ export async function loadSettings() {
     }
   const dv_raw = JSON.parse(loadedSettings.variables);
   const dv_arr: DesignVariable[] = Object.values(dv_raw);
-  settings.value = loadedSettings;
-  designVariablesStore.allVariables = dv_arr;
+  //settings.value = loadedSettings;
+  for (const key in loadedSettings) {
+    settings[key] = loadedSettings[key];
+  }
 
-  currentState = loadedSettings.currentState || initialState;
+  getDesignVariablesStore().allVariables = dv_arr;
+  currentState.messageAge += 1;
+  if(!loadedSettings.currentState) {
+    return;
+  }
+  // This breaks the watch: currentState = reactive(loadedSettings.currentState);
+
+  for (const key in loadedSettings.currentState) {
+    currentState[key] = loadedSettings.currentState[key];
+  }
+
   
   if(!recentlyLoadedPaths.value.includes(currentProjectPath.value)) {
     recentlyLoadedPaths.value.push(currentProjectPath.value);
@@ -53,7 +78,7 @@ export async function loadSettings() {
 
 // Function to save settings
 export async function saveSettings() : Promise<boolean> {
-  var val = { ...settings.value }; 
+  var val = { ...settings }; 
   val.currentState = {...currentState }; 
   val.variables = JSON.stringify({... designVariablesStore.allVariables });
   return await window.settings.save(currentProjectPath.value + '/settings.json', val);
