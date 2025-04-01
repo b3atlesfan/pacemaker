@@ -80,7 +80,7 @@ export async function loadSettings() {
 export async function saveSettings() : Promise<boolean> {
   var val = { ...settings }; 
   val.currentState = {...currentState }; 
-  val.variables = JSON.stringify({... designVariablesStore.allVariables });
+  val.variables = JSON.stringify({... getDesignVariablesStore().allVariables });
   return await window.settings.save(currentProjectPath.value + '/settings.json', val);
 }
 
