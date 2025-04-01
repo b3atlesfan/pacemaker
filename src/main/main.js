@@ -122,14 +122,30 @@ app.whenReady().then(() => {
     }
   });
 
+  function allPossibleKeys(array) {
+    const keys = new Set();
+    array.forEach(obj => {
+      Object.keys(obj).forEach(key => keys.add(key));
+    });
+    return Array.from(keys);
+  }
+
   function arrayToCSV(array) {
     if (array.length === 0) {
       return '';
     }
   
-    const keys = Object.keys(array[array.length - 1]);
+    const keys = allPossibleKeys(array);
     const header = keys.join(';');
-    const rows = array.map(obj => keys.map(key => obj[key]).join(';'));
+    const rows = array.map(obj => 
+      keys.map(key => {
+        let value = obj[key];
+        if (typeof value === 'number') {
+          value = value.toString().replace('.', ',');
+        }
+        return value;
+      }).join(';')
+    );
     const csvString = `${header}\n${rows.join('\n')}`;
   
     return csvString;
