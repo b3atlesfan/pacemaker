@@ -20,7 +20,7 @@ function send(index: number){
 
 
 const ageInterval = setInterval(() => {
-    currentState.messageAge += 1;
+    //currentState.messageAge += 1;
 }, 100);
  
 function toggleFetchLoop() {
