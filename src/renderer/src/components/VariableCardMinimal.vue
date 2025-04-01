@@ -13,6 +13,10 @@ watch(props.currentVariable, (newValue, oldValue) => {
     emit('onUpdateVariable', newValue);
 });
 
+function getName() {
+    return props.currentVariable.name;
+}
+
 const emit = defineEmits(['onUpdateVariable']);
 
 </script>
@@ -20,14 +24,14 @@ const emit = defineEmits(['onUpdateVariable']);
 <template>
     <v-card>
         <v-row class="d-flex align-center justify-left" style="margin-left: 10px;">
-            <v-col cols="2">{{ props.currentVariable.name }}</v-col>
+            <v-col cols="3">{{ getName() }}</v-col>
             <v-col cols="2">
                 <v-text-field v-model="props.currentVariable.intensityWeight" type="number" density="compact" hide-details="auto"></v-text-field>
             </v-col>
             <v-col cols="2">
                 <v-text-field v-model="props.currentVariable.narrativeWeight" type="number" density="compact" hide-details="auto"></v-text-field>
             </v-col>
-            <v-col cols="2">
+            <v-col cols="3">
                 <v-checkbox v-model="props.currentVariable.isMultiplier" label="Multiplier"></v-checkbox>
             </v-col>
         </v-row>
