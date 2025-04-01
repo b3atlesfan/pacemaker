@@ -9,8 +9,10 @@ const props = defineProps({
 
 // on changes of props emit the event to update the variable
 
-watch(props.currentVariable, (newValue, oldValue) => {
-    emit('onUpdateVariable', newValue);
+watch(() => props.currentVariable.intensityWeight, (newValue, oldValue) => {
+    if (newValue) {
+        emit('onUpdateVariable', newValue);
+    }
 });
 
 function getName() {
