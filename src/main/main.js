@@ -8,12 +8,15 @@ import * as os from "os";
 import * as csvParser from "csv-parser";
 import * as stringify from "csv-stringify/sync";
 import Papa from "papaparse";
+import { SettingsManager } from './settingsManager.ts';
 
 let mainWindow;
 let client;
 
 
 const EXCEL_FILE_PATH = "event_log.csv";
+
+
 
 
 function isFileLocked(filePath) {
@@ -93,8 +96,11 @@ app.whenReady().then(() => {
     if (!arg) {
       return "null";
     }
+
+    console.log("CurrentProjectPath: " + SettingsManager.currentProjectPath.value);
   
-    const filePath = `${arg}.csv`;
+    const filePath = SettingsManager.currentProjectPath.value + "/" + arg + ".csv";
+    console.log("FilePath: " + filePath);
     if (!fs.existsSync(filePath) || isFileLocked(filePath)) {
       return "null";
     }
@@ -133,7 +139,7 @@ app.whenReady().then(() => {
   ipcMain.handle('writeToExcelFile', (event, sheetName, arg) => {
     const eventObj = arg;
 
-    const filePath = EXCEL_FILE_PATH;
+    const filePath = SettingsManager.currentProjectPath.value + "/" + EXCEL_FILE_PATH;
   
     let data = [];
     if (fs.existsSync(filePath) && !isFileLocked(filePath)) {
@@ -154,6 +160,14 @@ app.whenReady().then(() => {
     }
   });
   createWindow();
+});
+
+ipcMain.handle('load-settings', (event, path) => {
+  return SettingsManager.loadSettings(path);
+});
+
+ipcMain.handle('save-settings', (event, path, settings) => {
+  return SettingsManager.saveSettings(path, settings);
 });
 
 let server;
