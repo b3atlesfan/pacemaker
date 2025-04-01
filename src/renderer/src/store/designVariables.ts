@@ -131,8 +131,9 @@ export const useDesignVariablesStore = defineStore('designVariablesStore',  {
     getNarrativeWeight(index: number) {
       return this.allVariables[index].getNarrativeWeight();
     },
-    getVariable(name: string) : DesignVariable | undefined {
-        const match = this.allVariables.find((element) => element.name === name);
+    getVariable(key: string) : DesignVariable | undefined {
+      const { name, path } = separateKey(key);
+        const match = this.allVariables.find((element) => element.name === name && element.path === path);
        
         if (match && !(match instanceof DesignVariable)) {
           const newVar : DesignVariable = new DesignVariable(
@@ -156,8 +157,11 @@ export const useDesignVariablesStore = defineStore('designVariablesStore',  {
         return match;
     }
   },
-  persist: {
+    persist: {
     afterRestore: (ctx) => {
+      if(!ctx.store.allVariables.map){
+        ctx.store.allVariables = []
+      }
       ctx.store.allVariables = ctx.store.allVariables.map(variable => new DesignVariable(
         variable.id,
         variable.name,
@@ -176,3 +180,11 @@ export const useDesignVariablesStore = defineStore('designVariablesStore',  {
     }
   }
 })
+
+export function separateKey(key: string) {
+  const parts = key.replace("(", "").replace(")", "").split(", ").map(part => part.trim());
+  return {
+    name: parts[0],
+    path: parts[1]
+  };
+}

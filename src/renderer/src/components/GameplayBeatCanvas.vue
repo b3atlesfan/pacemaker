@@ -20,6 +20,7 @@ import * as XLSX from "xlsx";
 import { useDesignVariablesStore, DesignVariable } from "@/store/designVariables";
 import Papa from "papaparse";
 import { eventNames } from 'process';
+import { settings, currentProjectPath, loadSettings, saveSettings } from '@/store/settings';
 
 const designVariablesStore = useDesignVariablesStore();
 const theme = useTheme()
@@ -478,17 +479,22 @@ function recordEvent(event: string) {
   if(eventObj.name != "checkpointReached") return;
 
   console.log("Recording event: " + JSON.stringify(eventObj))
+  // expected eventObj.args example: 
+/*{
+  "(Empty, NoPath)": 0,
+  "(index, NoPath)": 0,
+  "(userReportedIntensity, NoPath)": 0,
+}*/
 
-  if(eventObj.args.index != null) {
-    const { index, ...restArgs } = eventObj.args;
-    eventObj.args = { index, ...restArgs };
-  }
+  const { "(index, NoPath)": index, "(userReportedIntensity, NoPath)": userReportedIntensity, ...restArgs} = eventObj.args;
   eventObj.args = {
-    "RecordingID": totalRecordings,
-    "Timestamp": new Date().toISOString(),
-    "EventName": eventObj.name,
-    ...eventObj.args
-  }
+    RecordingID: totalRecordings,
+    Timestamp: new Date().toISOString(),
+    index,
+    userReportedIntensity,
+    EventName: eventObj.name,
+    ...restArgs
+  };
 
   window.versions.writeToExcelFile("Recording " + totalRecordings, eventObj.args)
 
@@ -498,27 +504,57 @@ function recordEvent(event: string) {
 function calculateIntensityFromArray(event: { [key: string]: number }, weightType: 'gameplay' | 'narrative') : number {
   //return event.EnemiesKilled + event.Deaths * 10
   var intensity = 0;
-  var M1 = 1; var M2 = 1; var M3 = 1;
+  var M1 = 1; var M2 = 0; var M3 = 1;
   for (var key in event) {
     // Find corresponding weight in designVars from store
-    if(!key.includes("_Diff")) continue;
-    const undiffedKey = key.replace("_Diff", "")
-    const variable: DesignVariable = designVariablesStore.getVariable(undiffedKey);
+    var variable : DesignVariable
+    if(key.includes("_Diff")) {
+      const undiffedKey = key.replace("_Diff", "")
+      variable = designVariablesStore.getVariable(undiffedKey);
+    } else if (key.includes("userReportedIntensity")) {
+      variable = designVariablesStore.getVariable(key);
+    }
+    else {
+      continue;
+    }
     if(variable == null) continue;  
-    var weight = variable.getWeight(weightType);
+    var weight = Number(variable.getWeight(weightType));
     var isMultiplier = variable.isMultiplier;
     if(weight == null || weight == 0) continue;
     if(isMultiplier){
       if(weight > 0){
-        M1 += weight * event[key]
+        M1 *= weight * event[key]
       } else {
-        M3 -= weight * event[key]
+        M3 *= weight * event[key]
       }
     } else {
       M2 += weight * event[key]
     }
   }
+  if(M3 == 0) M3 = 0.00001;
   return M1 * M2 / M3;
+}
+
+function seperateKey(key : string) {
+  const parts = key.replace("(", "").replace(")", "").split(", ").map(part => part.trim());
+  return {
+        name: parts[0],
+        path: parts[1]
+    };
+}
+
+function getAllWithName(v : { [key: string]: number }, wantedName: string) {
+  const all = []
+  for(const [key, value] of Object.entries(v)) {
+    const { name, path } = seperateKey(key)
+    if(name == wantedName) {
+      all.push({name: path, value: value})
+    }
+  }
+  if(all.length == 0) {
+    all.push({name: null, value: null})
+  }
+  return all;
 }
 
 function createNodeFromValidEvent(eventObj) {
@@ -533,7 +569,8 @@ function createNodeFromValidEvent(eventObj) {
     lastBeatPos = {x: lastBeat.position.x, y: lastBeat.position.y}
   }
   var v : { [key: string]: number } = eventObj.args;
-  var timeDiffInMs = v.TimeDiff;
+
+  var timeDiffInMs =getAllWithName(v, "TimeDiff")[0].value;
   var timeDiffInMinAndSec = getTimeDiffInMinAndSec(timeDiffInMs);
   var beatId : number = beatManager.createNode({x: lastBeatPos.x + 300, y: lastBeatPos.y})
   beatManager.editNodeLabel(beatId, recordingName + " " +eventObj.name + " " + v.index)
@@ -585,6 +622,8 @@ function getPaths() {
 function updateAllContents() {
   contentManager.updateAllContents()
 }
+
+loadSettings()
 
 defineExpose({getPaths, updateAllContents})
 const emit = defineEmits(['on-startup','on-add-node', 'on-next-recording', 'on-finish-recording', 'on-draw-from-node'])
