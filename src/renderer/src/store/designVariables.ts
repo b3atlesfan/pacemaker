@@ -1,5 +1,6 @@
 import { is, valueToNode } from '@babel/types';
 import { defineStore } from 'pinia'
+import { currentState } from './settings';
 
 export class DesignVariable {
   id: number;
@@ -155,6 +156,23 @@ export const useDesignVariablesStore = defineStore('designVariablesStore',  {
           return newVar;
         }
         return match;
+    },
+    getPathFilteredVariables() {
+      var a = this.allVariables;
+      
+      if(currentState.pathFilterText) {
+        a = a.filter(variable => (variable.path + "/" + variable.name).match(new RegExp(currentState.pathFilterText, "i")));
+      }
+      if(currentState.favoritesOnly){
+        a = a.filter(variable => variable.markedFavorite || variable.requestedFromPM);
+      }
+      if(currentState.onlyPublic){
+        a = a.filter(variable => variable.isPublic);
+      }
+      if(currentState.onlyWithWeight){
+        a = a.filter(variable => (variable.intensityWeight || 0) != 0 || (variable.narrativeWeight || 0) != 0);
+      }
+      return a;
     }
   },
     persist: {
@@ -188,3 +206,4 @@ export function separateKey(key: string) {
     path: parts[1]
   };
 }
+

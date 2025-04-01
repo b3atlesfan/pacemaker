@@ -18,6 +18,7 @@ import { start } from "repl";
 import DesignerView from "./DesignerView.vue";
 import IntensityFormulasView from "./IntensityFormulasView.vue";
 import { time } from "console";
+import VariableView from '@/views/VariableView.vue';
 
 const vue = useVueFlow()
 
@@ -282,9 +283,7 @@ onMounted(async() => {
       </v-col>
       <v-col cols="6">
         <v-card class="container2" elevation="3">
-          <IntensityFormulasView @on-update-intensity-formula="onUpdateIntensityFormula">
-
-          </IntensityFormulasView>
+          <VariableView :isInVisualizerView="true"></VariableView>
         </v-card>
       </v-col>
     </v-row>
