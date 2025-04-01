@@ -5,6 +5,7 @@ import {computed, reactive, ref, shallowRef, watchEffect} from "vue";
 import VariableCard from "@/components/VariableCard.vue";
 import VariableCardClosed from "@/components/VariableCardClosed.vue";
 import { useDesignVariablesStore, DesignVariable} from "@/store/designVariables";
+import { settings, loadSettings, saveSettings, currentState } from '@/store/settings';
 
 
 const designVariablesStore = useDesignVariablesStore();
@@ -17,26 +18,8 @@ function toggleFetchLoop() {
 const path1 = "C:/git-projects/Unity/KartTemplate_MasterThesis/Packages/com.unity.pacemaker-for-unity/Runtime/Temporary";
 const path2 = "C:/git-projects/Unity/TheLostForest-master/Packages/com.unity.pacemaker-for-unity/Runtime/Temporary";
 
-const savedState = localStorage.getItem('currentState');
-const initialState = savedState ? JSON.parse(savedState) : {
-  unityPath: path2,
-  outFile: "designerVarsFromPacemaker.json",
-  inFile: "designerVarsFromUnity.json",
-  lastMessage: "lM",
-  messageAge: 0.0,
-  fetchLoopEnabled: false,
-  sendLoopEnabled: false,
-  favoritesOnly: false,
-  onlyPublic: true,
-  onlyWithWeight: false,
-  pathFilterText: "",
-  onlyruntimeModified: false,
-};
-
-const currentState = reactive(initialState);
 
 watchEffect(() => {
-  currentState.allVariables = null
   localStorage.setItem('currentState', JSON.stringify(currentState));
 });
 
@@ -45,7 +28,7 @@ window.server.onMessage('asynchronous-message', (message: any) => {
     console.log(message);
   }
 
-  currentState.lastMessage = message;
+  currentState.lastMessage = message.substring(0, 200);
 
   StartReactiveLastMessageTimer();
 });
@@ -71,7 +54,7 @@ function getPathFilteredVariables() {
   }
   
   if(currentState.pathFilterText) {
-    a = designVariablesStore.allVariables.filter(variable => (variable.path + "/" + variable.name).match(new RegExp(currentState.pathFilterText, "i")));
+    a = a.filter(variable => (variable.path + "/" + variable.name).match(new RegExp(currentState.pathFilterText, "i")));
   }
   if(currentState.favoritesOnly){
     a = a.filter(variable => variable.markedFavorite || variable.requestedFromPM);
@@ -154,7 +137,7 @@ function fetchAndSend() {
 
 const fetchAllVars = async () => {
   const response = await window.versions.fetchFile(currentState.unityPath + "/" + currentState.inFile);
-  if(response === null || response === ''){
+  if(response === null || response === ''||response === "{}"){
     return;
   }
   //const allVars: Array<{ name: string, value: number, path: string, isPublic: bool }> = JSON.parse(response);
@@ -258,6 +241,29 @@ function getNarrativeIntensityWeightString(variable: { narrativeIntensity: numbe
   var input: { intensityWeight: number; name: string; isMultiplier: boolean; }
   input = {intensityWeight: variable.narrativeWeight, name: variable.name, isMultiplier: variable.isMultiplier};
   return getIntensityWeightString(input, invert);
+}
+const currentPage = ref(1);
+const itemsPerPage = 8;
+const totalPages = computed(() => {
+  return Math.ceil(getPathFilteredVariables().length / itemsPerPage);
+});
+
+const paginatedVariables = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  return getPathFilteredVariables().slice(start, end);
+});
+
+function nextPage() {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++;
+  }
+}
+
+function prevPage() {
+  if (currentPage.value > 1) {
+    currentPage.value--;
+  }
 }
 
 </script>
@@ -377,23 +383,32 @@ function getNarrativeIntensityWeightString(variable: { narrativeIntensity: numbe
 
   <v-app>
     <v-container>
+      
       <v-row>
         <v-col cols="1"><strong>Favorite</strong></v-col>
         <v-col cols="1"></v-col>
         <v-col cols="2"><strong>Name</strong></v-col>
         <v-col cols="2"><strong>Path</strong></v-col>
+        <v-col cols="1"><strong>Remote Value</strong></v-col>
         <v-col cols="1"><strong>Gameplay Intensity Weight</strong></v-col>
         <v-col cols="1"><strong>Narrative Intensity Weight</strong></v-col>
         <v-col cols="1"><strong>Is multiplier</strong></v-col>
       </v-row>
 
-      <v-row v-for="(row, index) in getPathFilteredVariables()" :key="row.id" class="d-flex align-center justify-center">
-        <v-col>
-          <variable-card v-if="isDetailedView(row.id)" :currentState="currentState" :currentVariable="designVariablesStore.allVariables[row.id]" :sendAllVars="sendAllVars" :onDelete="OnDelete" :onApply="OnApply"></variable-card>
-          
-          <variable-card-closed v-else :currentVariable="designVariablesStore.allVariables[row.id]"></variable-card-closed>
-        </v-col>
-      </v-row>
+      <v-row v-if="totalPages > 1" class="d-flex align-center justify-center">
+      <v-btn @click="prevPage" :disabled="currentPage === 1">Previous</v-btn>
+      <v-btn @click="nextPage" :disabled="currentPage === totalPages">Next</v-btn>
+    </v-row>
+      <v-row v-for="(row, index) in paginatedVariables" :key="row.id" class="d-flex align-center justify-center">
+      <v-col>
+        <variable-card v-if="isDetailedView(row.id)" :currentState="currentState" :currentVariable="designVariablesStore.allVariables[row.id]" :sendAllVars="sendAllVars" :onDelete="OnDelete" :onApply="OnApply"></variable-card>
+        <variable-card-closed v-else :currentVariable="designVariablesStore.allVariables[row.id]"></variable-card-closed>
+      </v-col>
+    </v-row>
+    <v-row v-if="totalPages > 1" class="d-flex align-center justify-center">
+      <v-btn @click="prevPage" :disabled="currentPage === 1">Previous</v-btn>
+      <v-btn @click="nextPage" :disabled="currentPage === totalPages">Next</v-btn>
+    </v-row>
     </v-container>
 
 
