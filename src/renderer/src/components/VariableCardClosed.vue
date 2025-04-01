@@ -32,6 +32,7 @@ function openDetailedView() {
             </v-col>
             <v-col cols="2">{{ props.currentVariable.name }}</v-col>
             <v-col cols="2">{{ props.currentVariable.path }}</v-col>
+            <v-col cols="1">{{ props.currentVariable.remoteValue }}</v-col>
             <v-col cols="1">
                 <v-text-field v-model="props.currentVariable.intensityWeight" type="number" density="compact" hide-details="auto"></v-text-field>
             </v-col>
