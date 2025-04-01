@@ -98,7 +98,14 @@ function prevPage() {
     currentPage.value--;
   }
 }
+
+function onUpdateVariable(){
+    saveSettings();
+    emit('onUpdateIntensityFormula')
+}
+
 const props = defineProps<{ isInVisualizerView: boolean }>();
+const emit = defineEmits(['onUpdateIntensityFormula'])
 
 </script>
 <template>
@@ -190,7 +197,7 @@ const props = defineProps<{ isInVisualizerView: boolean }>();
         <variable-card-closed v-else :currentVariable="designVariablesStore.allVariables[row.id]"></variable-card-closed>
         </v-col>
         <v-col v-else>
-        <variable-card-minimal :currentVariable="designVariablesStore.allVariables[row.id]">
+        <variable-card-minimal :currentVariable="designVariablesStore.allVariables[row.id]" @onUpdateVariable="onUpdateVariable">
 
         </variable-card-minimal>
         </v-col>
