@@ -1,5 +1,6 @@
 // Composables
 import { createRouter, createWebHistory } from 'vue-router'
+import SettingsView from '@/views/SettingsView.vue'
 
 const routes = [
   {
@@ -21,7 +22,12 @@ const routes = [
     path: '/designer',
     name: 'designer',
     component: () => import('@/views/DesignerView.vue')
-  }
+  },
+  { path: '/settings', 
+      
+      name: 'settings',
+      component: () => import('@/views/SettingsView.vue')
+   }
 ]
 
 const router = createRouter({
