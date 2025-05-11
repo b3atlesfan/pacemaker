@@ -329,6 +329,13 @@ const beatContentSelector = ref(null);
 onMounted(async() => {
   await nextTick();
   console.log("Component instance:", beatContentSelector.value); // Should not be null after mounting
+  
+  if(settings.Name == null || settings.Name == "") {
+    await loadSettings()
+  }
+  if(settings.Name == null || settings.Name == "") {
+    settings.Name = "default_event_log"
+  }
   loadRecordings()
 });
 
@@ -430,12 +437,13 @@ var logged_events: any[]
 var currentRecordingID : string = ""
 
 const loadRecordings = async () => {
-  const workbook = await window.versions.readFromExcelFile("event_log");
+  const workbook = await window.versions.readFromExcelFile(settings.Name);
   if(!workbook || workbook == "null") return;
   deleteAllNodes()
   beatContentSelector.value.onDeleteAll()
 
-  logged_events = Papa.parse(workbook, { header: true }).data;
+  const workbookWithoutDots = workbook.replace(/(\d+),(\d+)/g, '$1.$2');
+  logged_events = Papa.parse(workbookWithoutDots, { header: true }).data;
   
   // wait for 1 ms to ensure that all nodes are deleted
   await nextTick();
@@ -496,7 +504,7 @@ function recordEvent(event: string) {
     ...restArgs
   };
 
-  window.versions.writeToExcelFile("Recording " + totalRecordings, eventObj.args)
+  window.versions.writeToExcelFile(settings.Name, eventObj.args)
 
   createNodeFromValidEvent(eventObj)
 }
@@ -506,7 +514,9 @@ function calculateIntensityFromArray(event: { [key: string]: number }, weightTyp
   var intensity = 0;
   var M1 = 1; var M2 = 0; var M3 = 1;
   for (var key in event) {
-    // Find corresponding weight in designVars from store
+    if(isNaN(event[key])) {
+      continue;
+    } 
     var variable : DesignVariable
     if(key.includes("_Diff")) {
       const undiffedKey = key.replace("_Diff", "")
@@ -519,13 +529,16 @@ function calculateIntensityFromArray(event: { [key: string]: number }, weightTyp
     }
     if(variable == null) continue;  
     var weight = Number(variable.getWeight(weightType));
+    if(isNaN(weight)) {
+      continue;
+    }
     var isMultiplier = variable.isMultiplier;
     if(weight == null || weight == 0) continue;
     if(isMultiplier){
       if(weight > 0){
         M1 *= weight * event[key]
       } else {
-        M3 *= weight * event[key]
+        M3 *= -1 * weight * event[key]
       }
     } else {
       M2 += weight * event[key]
@@ -625,9 +638,6 @@ function updateAllContents() {
   contentManager.updateAllContents()
 }
 
-if(settings.Name == null || settings.Name == "") {
-  loadSettings()
-}
 
 defineExpose({getPaths, updateAllContents})
 const emit = defineEmits(['on-startup','on-add-node', 'on-next-recording', 'on-finish-recording', 'on-draw-from-node'])

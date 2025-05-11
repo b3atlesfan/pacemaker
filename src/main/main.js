@@ -14,7 +14,7 @@ let mainWindow;
 let client;
 
 
-const EXCEL_FILE_PATH = "event_log.csv";
+//const EXCEL_FILE_PATH = "event_log.csv";
 
 
 
@@ -155,7 +155,7 @@ app.whenReady().then(() => {
   ipcMain.handle('writeToExcelFile', (event, sheetName, arg) => {
     const eventObj = arg;
 
-    const filePath = SettingsManager.currentProjectPath.value + "/" + EXCEL_FILE_PATH;
+    const filePath = SettingsManager.currentProjectPath.value + "/" + sheetName + ".csv";
   
     let data = [];
     if (fs.existsSync(filePath) && !isFileLocked(filePath)) {

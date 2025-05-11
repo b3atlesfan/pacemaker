@@ -50,9 +50,9 @@ onMounted(() => {
     <v-btn color="secondary" @click="loadSettings">Load</v-btn>
     <v-text-field
       v-if="settings.value || hasValue()"
-      label="Name"
+      label="Logfile name "
       v-model="settings.Name"
-      placeholder="Enter project name"
+      placeholder="Enter logfile name"
     ></v-text-field>
     <h3>Unity</h3>
     <v-text-field

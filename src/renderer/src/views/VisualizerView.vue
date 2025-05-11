@@ -181,7 +181,7 @@ function onUpdateIntensityFormula() {
   console.log("Intensity Formula Updated")
   // reload whole page
 
-  window.location.reload();
+  //window.location.reload();
 }
 
 const onStartup = async () => {

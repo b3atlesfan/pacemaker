@@ -64,7 +64,7 @@ function getNarrativeIntensityWeightString(variable: { narrativeIntensity: numbe
   return getIntensityWeightString(input, invert);
 }
 const currentPage = ref(1);
-const itemsPerPage = 8;
+const itemsPerPage = 5;
 
 function getFilteredVars() {
     var a = designVariablesStore.getPathFilteredVariables();
