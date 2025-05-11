@@ -27,7 +27,19 @@
             "windows": {
                 "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron-vite.cmd"
             },
-            "runtimeArgs": ["--sourcemap", "--outDir=dist"],
+            "runtimeArgs": ["--sourcemap", "--outDir=dist"],// If there is an added argument, for example --experimental-network-inspection remove it
+            // in the cmd.
+            /*
+@SETLOCAL
+for /f "tokens=1,* delims= " %%a in ("%*") do set ALL_BUT_FIRST=%%b
+echo %ALL_BUT_FIRST% > .\test.txt
+@IF EXIST "%~dp0\node.exe" (
+  "%~dp0\node.exe"  "%~dp0\..\electron-vite\bin\electron-vite.js" %ALL_BUT_FIRST%
+) ELSE (
+  @SET PATHEXT=%PATHEXT:;.JS;=;%
+  node  "%~dp0\..\electron-vite\bin\electron-vite.js" %ALL_BUT_FIRST%
+)
+            */
             "env": {
                 "REMOTE_DEBUGGING_PORT": "5173"
             }
