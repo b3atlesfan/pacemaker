@@ -10,6 +10,10 @@ import * as stringify from "csv-stringify/sync";
 import Papa from "papaparse";
 import { SettingsManager } from './settingsManager.ts';
 
+
+import { setupDatabase, storeEvent, getVariablesByName, createRun, getNumberOfEventsPerBeat } from './database';
+
+
 let mainWindow;
 let client;
 
@@ -52,7 +56,15 @@ function createWindow() {
   });
 }
 
+const testDatabase = async () => {
+  await setupDatabase();
+}
+
 app.whenReady().then(() => {
+
+  testDatabase();
+
+
   ipcMain.handle('ping', () => 'pong');
   ipcMain.handle('sendString', (event, arg) => {
     console.log("Received " + arg); // prints "Hello, World!"
@@ -92,10 +104,17 @@ app.whenReady().then(() => {
 
   });
 
-  ipcMain.handle('readFromExcelFile', (event, arg) => {
+  ipcMain.handle('readFromExcelFile', async (event, arg) => {
+
+    // get 
+
     if (!arg) {
       return "null";
     }
+    var res = await getNumberOfEventsPerBeat();
+    return res.rows;
+
+    return;
 
     console.log("CurrentProjectPath: " + SettingsManager.currentProjectPath.value);
   
@@ -151,8 +170,19 @@ app.whenReady().then(() => {
     return csvString;
   }
   
+  var lastSheetName = "";
+  var runID = 0;
   
-  ipcMain.handle('writeToExcelFile', (event, sheetName, arg) => {
+  ipcMain.handle('writeToExcelFile', async (event, sheetName, arg) => {
+    
+    if(lastSheetName !== sheetName) {
+      lastSheetName = sheetName;
+      runID = await createRun();
+    }
+
+    storeEvent(runID, arg.name, arg.variables, arg.timestamp);
+    
+    return;
     const eventObj = arg;
 
     const filePath = SettingsManager.currentProjectPath.value + "/" + sheetName + ".csv";

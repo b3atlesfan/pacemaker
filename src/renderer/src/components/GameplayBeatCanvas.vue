@@ -484,7 +484,7 @@ const loadRecordings = async () => {
 
 function recordEvent(event: string) {
   var eventObj = JSON.parse(event)
-  if(eventObj.name != "checkpointReached") return;
+  if(eventObj.name != "checkpointReached" && eventObj.name != "VariableChanged" ) return;
 
   console.log("Recording event: " + JSON.stringify(eventObj))
   // expected eventObj.args example: 
@@ -495,16 +495,14 @@ function recordEvent(event: string) {
 }*/
 
   const { "(index, NoPath)": index, "(userReportedIntensity, NoPath)": userReportedIntensity, ...restArgs} = eventObj.args;
-  eventObj.args = {
-    RecordingID: totalRecordings,
-    Timestamp: new Date().toISOString(),
+  eventObj.variables = {
     index,
     userReportedIntensity,
-    EventName: eventObj.name,
     ...restArgs
   };
+  eventObj.timestamp = new Date().toISOString();
 
-  window.versions.writeToExcelFile(settings.Name, eventObj.args)
+  window.versions.writeToExcelFile(settings.Name, eventObj)
 
   createNodeFromValidEvent(eventObj)
 }
