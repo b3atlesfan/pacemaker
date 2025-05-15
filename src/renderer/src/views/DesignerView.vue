@@ -28,13 +28,6 @@ function toggleFetchLoop() {
   console.log("Fetch Loop Enabled: " + currentState.fetchLoopEnabled);
 }
 
-function addRow(){
-  const next_id : number = designVariablesStore.allVariables.length;
-  const  temp_model = reactive({id: next_id, name: '', remoteValue: 0, localValue: 0, path: "FromPM", 
-      detailedView: true, markedFavorite: false, isPublic: true, intensityWeight: 0, narrativeIntensity: 0, requestedFromPM: true,
-    isMultiplier:false});
-      designVariablesStore.addVariable(temp_model);
-}
 
 
 const sendString = async (message: string) => {
@@ -147,17 +140,49 @@ function pathWithName (a: { path: string; name: string; }) : string  {
   return a.path + "_" + a.name;
 }
 
+let currentView = ref('design');
+function switchToRV(){
+  currentView.value = 'runtime';
+}
+
+function switchToDV(){
+  currentView.value = 'design';
+}
+
+
 </script>
 
 <template>
   <div style="margin-left: 20px;">
-    <h1>Designer View</h1>
-    <p>This is the designer view, where you can sync design variables with the game engine.</p>
+    <h1>Variables View</h1>
+    <p>
+      This is the variables view.
+      <br>
+      It is seperated into two parts:
+      Design Variables View and the Runtime Variables View.
+      <br>
+      Design Variables are constant at runtime, while Runtime Variables (RVs) aren't.
+    </p>
 
     <!-- Other content -->
 
     <div style="margin-top: 20px;">
-      <h2>Variable View</h2>
+      <v-btn 
+        @click="switchToDV" 
+        :color="currentView === 'design' ? 'secondary' : undefined"
+        :variant="currentView === 'design' ? 'flat' : undefined"
+      >
+        Design Variables
+      </v-btn>
+      <v-btn 
+        @click="switchToRV" 
+        :color="currentView === 'runtime' ? 'secondary' : undefined"
+        :variant="currentView === 'runtime' ? 'flat' : undefined"
+      >
+        Runtime Variables
+      </v-btn>
+      <div v-if="currentView === 'design'">
+      <h2>Design Variables View</h2>
       <div style="height: 20px;"></div>
       <!-- <v-btn @click="fetchAllVars"> Fetch Changes </v-btn>-->
       <v-btn @click="ApplyAll"> Apply All </v-btn>
@@ -176,19 +201,22 @@ function pathWithName (a: { path: string; name: string; }) : string  {
       </v-row>
 
 
-      <v-btn @click="addRow">Create Variable</v-btn>
 
-      <v-text-field
+      <!--v-text-field
         v-model="settings.Name"
         label="Output Path"
         placeholder="Enter the output path for all variables"
-      ></v-text-field>
+      ></v-text-field-->
 
       <div style="height: 20px;"></div>
 
-      <p>Latest Event: {{ currentState.lastMessage }}</p>
-      <p>Age [s]: {{ (currentState.messageAge / 10).toFixed(1) }}</p>
-      <VariableView :isInVisualizerView="false"></VariableView>
+      <!--<p>Latest Event: {{ currentState.lastMessage }}</p>
+      <p>Age [s]: {{ (currentState.messageAge / 10).toFixed(1) }}</p>-->
+      </div>
+      <div v-else>
+      <h2>Runtime Variables View</h2>
+      </div>
+      <VariableView :isInVisualizerView="currentView === 'runtime'"></VariableView>
     </div>
   </div>
 </template>

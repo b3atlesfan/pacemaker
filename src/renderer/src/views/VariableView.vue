@@ -49,13 +49,17 @@ function isDetailedView(index: number): boolean  {
 function getIntensityWeightString(variable: { intensityWeight: number; name: string; isMultiplier: boolean; }, invert =false) : string {
   var intensity = variable.intensityWeight;
   if(invert){
-    // remove first symbol, which is probably a minus signss
+    // remove first symbol, which is probably a minus sign
     intensity = intensity.toString().substring(1);
   }
-  if(intensity === '1'){
-    return variable.name;
+  var optional_diff = "";
+  if(variable.useDiff){
+    optional_diff = "_diff";
   }
-  return intensity + " * " + variable.name;
+  if(intensity === '1'){
+    return variable.name + optional_diff;
+  }
+  return intensity + " * " + variable.name + optional_diff;
 }
 
 function getNarrativeIntensityWeightString(variable: { narrativeIntensity: number; name: string; isMultiplier: boolean; }, invert =false) : string {
@@ -64,7 +68,16 @@ function getNarrativeIntensityWeightString(variable: { narrativeIntensity: numbe
   return getIntensityWeightString(input, invert);
 }
 const currentPage = ref(1);
-const itemsPerPage = 5;
+const itemsPerPage_designer = 10;
+const itemsPerPage_runtime = 5;
+
+const itemsPerPage = computed(() => {
+  if (props.isInVisualizerView) {
+    return itemsPerPage_runtime;
+  } else {
+    return itemsPerPage_designer;
+  }
+});
 
 function getFilteredVars() {
     var a = designVariablesStore.getPathFilteredVariables();
@@ -78,12 +91,12 @@ function getFilteredVars() {
 }
 
 const totalPages = computed(() => {
-  return Math.ceil(getFilteredVars().length / itemsPerPage);
+  return Math.ceil(getFilteredVars().length / itemsPerPage.value);
 });
 
 const paginatedVariables = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage;
-  const end = start + itemsPerPage;
+  const start = (currentPage.value - 1) * itemsPerPage.value;
+  const end = start + itemsPerPage.value;
   return getFilteredVars().slice(start, end);
 });
 
@@ -104,6 +117,15 @@ function onUpdateVariable(){
     emit('onUpdateIntensityFormula')
 }
 
+
+function addRow(){
+  const next_id : number = designVariablesStore.allVariables.length;
+  const  temp_model = reactive({id: next_id, name: '', remoteValue: 0, localValue: 0, path: "FromPM", 
+      detailedView: true, markedFavorite: false, isPublic: true, intensityWeight: 0, narrativeIntensity: 0, requestedFromPM: true,
+    isMultiplier:false});
+      designVariablesStore.addVariable(temp_model);
+}
+
 const props = defineProps<{ isInVisualizerView: boolean }>();
 const emit = defineEmits(['onUpdateIntensityFormula'])
 
@@ -113,6 +135,7 @@ const emit = defineEmits(['onUpdateIntensityFormula'])
 
   <div style="height: 20px;"></div>
 
+  <v-btn v-if="isInVisualizerView" @click="addRow">Create Statistics Variable</v-btn>
   <p>
     <strong>Gameplay Intensity := </strong> 
     <span v-if="designVariablesStore.allVariables.length > 0" style="margin-left: 120px;">
@@ -162,7 +185,7 @@ const emit = defineEmits(['onUpdateIntensityFormula'])
         class="d-flex align-center"
       ></v-checkbox>
     </v-col>
-    <v-col cols="2">
+    <v-col v-if="isInVisualizerView" cols="2">
       <v-checkbox 
         v-model="currentState.onlyWithWeight" 
         label="Has Weight"
@@ -181,9 +204,9 @@ const emit = defineEmits(['onUpdateIntensityFormula'])
         <v-col cols="2"><strong>Name</strong></v-col>
         <v-col v-if="!isInVisualizerView" cols="2"><strong>Path</strong></v-col>
         <v-col v-if="!isInVisualizerView" cols="1"><strong>Remote Value</strong></v-col>
-        <v-col cols="2"><strong>Gameplay Intensity Weight</strong></v-col>
-        <v-col cols="2"><strong>Narrative Intensity Weight</strong></v-col>
-        <v-col cols="1"><strong>Is multiplier</strong></v-col>
+        <v-col v-if="isInVisualizerView" cols="2"><strong>Gameplay Intensity Weight</strong></v-col>
+        <v-col v-if="isInVisualizerView" cols="2"><strong>Narrative Intensity Weight</strong></v-col>
+        <v-col v-if="isInVisualizerView" cols="1"><strong>Is multiplier</strong></v-col>
       </v-row>
         </div>
 

@@ -11,7 +11,7 @@ import Papa from "papaparse";
 import { SettingsManager } from './settingsManager.ts';
 
 
-import { setupDatabase, storeEvent, getVariablesByName, createRun, getNumberOfEventsPerBeat } from './database';
+import { setupDatabase, storeEvent, getVariablesByName, createRun, getNumberOfEventsPerBeat, getBranches } from './database';
 
 
 let mainWindow;
@@ -111,8 +111,8 @@ app.whenReady().then(() => {
     if (!arg) {
       return "null";
     }
-    var res = await getNumberOfEventsPerBeat();
-    return res.rows;
+    var res = await getBranches();
+    return res;
 
     return;
 

@@ -7,13 +7,16 @@ const props = defineProps({
     currentVariable: Object,
 });
 
-// on changes of props emit the event to update the variable
-
-watch(() => props.currentVariable.intensityWeight, (newValue, oldValue) => {
+watch(
+  () => props.currentVariable,
+  (newValue, oldValue) => {
     if (newValue) {
-        emit('onUpdateVariable', newValue);
+      emit('onUpdateVariable', newValue);
     }
-});
+  },
+  { deep: true }
+);
+
 
 function getName() {
     return props.currentVariable.name;
@@ -29,8 +32,8 @@ function toggleFavorite() {
 <template>
     <v-card>
         <v-row class="d-flex align-center justify-left" style="margin-left: 10px;">
-            <v-col cols="1">
-                <v-btn @click="toggleFavorite" :color="props.currentVariable.requestedFromPM ? 'secondary' : 'primary'">
+            <v-col cols="2">
+                <v-btn @click="toggleFavorite" :color="(props.currentVariable.requestedFromPM || props.currentVariable.markedFavorite) ? 'secondary' : 'primary'">
                     <v-icon v-if="props.currentVariable.requestedFromPM" icon="mdi-account"></v-icon>
                     <v-icon v-else-if="props.currentVariable.markedFavorite" icon="mdi-star"></v-icon>
                     <v-icon v-else icon="mdi-star-outline"></v-icon>
@@ -42,11 +45,18 @@ function toggleFavorite() {
             <v-col cols="2">
                 <v-text-field v-model="props.currentVariable.intensityWeight" type="number" density="compact" hide-details="auto"></v-text-field>
             </v-col>
-            <v-col cols="2">
+            <!--v-col cols="2">
                 <v-text-field v-model="props.currentVariable.narrativeWeight" type="number" density="compact" hide-details="auto"></v-text-field>
-            </v-col>
-            <v-col cols="3">
+            </v-col-->
+            <v-col cols="2">
                 <v-checkbox v-model="props.currentVariable.isMultiplier" label="Multiplier"></v-checkbox>
+            </v-col>
+            
+            <v-col cols="2">
+                <v-checkbox v-model="props.currentVariable.useDiff" label="Use Diff"></v-checkbox>
+            </v-col>
+            <v-col cols="1">
+                <v-checkbox v-model="props.currentVariable.isBV" label="Is BV"></v-checkbox>
             </v-col>
         </v-row>
     </v-card>

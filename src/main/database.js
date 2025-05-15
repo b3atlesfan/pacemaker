@@ -186,6 +186,72 @@ async function getVariablesByName(runid, name) {
     return res.rows;
 }
 
+/*
+DROP TABLE IF EXISTS temp_BV_per_run;
+CREATE TEMP TABLE temp_BV_per_run AS
+SELECT DISTINCT ON (e.run_id, e.beat_id, vc.name_and_path) e.beat_id, vc.name_and_path, vc.new_value, vc.diff FROM events e JOIN 
+(SELECT * FROM variable_changes 
+WHERE name_and_path IN (${branchVariables.map(v => `'${v}'`).join(', ')})
+) vc 
+ON e.event_id=vc.event_id ORDER BY vc.name_and_path, e.run_id DESC, e.beat_id, e.timestamp DESC;
+
+SELECT 
+    beat_id, name_and_path,
+    new_value, 
+    COUNT(*) AS occurrences
+FROM temp_BV_per_run
+GROUP BY name_and_path, beat_id, new_value
+ORDER BY name_and_path, beat_id, occurrences DESC;
+*/
+
+function calculateUnionInterestedValues(branchVariables, diffMap) {
+    const queries = branchVariables.map((name, i) => {
+        const column = diffMap[i] === 1 ? 'diff' : 'new_value';
+        const isDiff = diffMap[i] === 1 ? 'TRUE' : 'FALSE';
+        return `SELECT *, ${column} AS interestedVal, 
+        ${isDiff} AS isDiff 
+        FROM variable_changes WHERE name_and_path = '${name}'`;
+    });
+
+    const finalQuery = queries.join(' UNION ');
+    return finalQuery;
+}
+
+async function getBranches(branchVariables, diffMap) {
+    if (!branchVariables || branchVariables.length === 0) {
+        branchVariables = ['(totalMouseClicks, DontDestroyOnLoad/GameDataCollector/GameDataCollector)'];
+        diffMap = [1, 0];
+    }
+    if (!diffMap || diffMap.length === 0) {
+        // Default diffMap to all 0s
+        diffMap = Array(branchVariables.length).fill(0);
+    }
+    
+    var unionInterestedValues = calculateUnionInterestedValues(branchVariables, diffMap);
+
+    const queryBranches1 = `
+DROP TABLE IF EXISTS temp_BV_per_run;`;
+    const queryBranches2 = `
+DROP TABLE IF EXISTS temp_BV_per_run;
+CREATE TEMP TABLE temp_BV_per_run AS
+SELECT * FROM (SELECT DISTINCT ON (e.run_id, e.beat_id, vc.name_and_path) e.run_id,e.beat_id, vc.name_and_path, vc.interestedVal, vc.isDiff FROM events e JOIN 
+(
+${unionInterestedValues}
+) vc 
+ON e.event_id=vc.event_id ORDER BY vc.name_and_path, e.run_id DESC, e.beat_id, e.timestamp DESC) ORDER BY name_and_path, beat_id, interestedVal;`;
+    const queryBranches3 = `SELECT 
+    beat_id, name_and_path,
+    interestedVal, isDiff,array_agg(run_id) AS listOfRunIds,
+    COUNT(*) AS occurrences
+FROM temp_BV_per_run
+GROUP BY name_and_path, beat_id, interestedVal, isDiff
+ORDER BY name_and_path, beat_id, occurrences DESC;`;
+    await dbClient.query(queryBranches1);
+    await dbClient.query(queryBranches2);
+    const res = await dbClient.query(queryBranches3);
+    return res.rows;
+}
+
 async function getNumberOfEventsPerBeat(runId) {
     runId = runId || lastRunId;
     const query = `SELECT beat_id, COUNT(*) AS event_count
@@ -197,4 +263,4 @@ async function getNumberOfEventsPerBeat(runId) {
 }
 
 
-export { setupDatabase, storeEvent, getVariablesByName, createRun, computeBeats, getNumberOfEventsPerBeat };
+export { setupDatabase, storeEvent, getVariablesByName, createRun, computeBeats, getNumberOfEventsPerBeat, getBranches};

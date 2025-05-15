@@ -24,20 +24,29 @@ function onClose() {
 
 <template>
     <v-card>
-      <v-row >
+      <v-row class="d-flex align-center justify-left" style="margin-left: 10px;">
         <v-col cols="1">
-          <v-btn @click="props.currentVariable.markedFavorite=!props.currentVariable.markedFavorite" :color="props.currentVariable.requestedFromPM ? 'secondary' : 'primary'">
+          <v-btn @click="props.currentVariable.markedFavorite=!props.currentVariable.markedFavorite" 
+          :color="(props.currentVariable.requestedFromPM || props.currentVariable.markedFavorite) ? 'secondary' : 'primary'">
                     <v-icon v-if="props.currentVariable.requestedFromPM" icon="mdi-account"></v-icon>
                     <v-icon v-else-if="props.currentVariable.markedFavorite" icon="mdi-star"></v-icon>
                     <v-icon v-else icon="mdi-star-outline"></v-icon>
                 </v-btn>
         </v-col>
+        <!--Button that opens the location of the variable in unity-->
+        <v-col cols="1">
+          <v-btn>
+            <v-icon icon="mdi-magnify"></v-icon>
+          </v-btn>
+        </v-col>
         <v-col cols="1">
           <v-btn color="secondary" @click="onClose()">Close</v-btn>
         </v-col>
-        <v-col cols = "2">
+        <!--<v-col cols = "2">
           <v-text-field label="Name" v-model="props.currentVariable.name" dense outlined></v-text-field>
-        </v-col>
+        </v-col>-->
+        
+        <v-col cols="2">{{ props.currentVariable.name }}</v-col>
         <v-col cols="2">{{ props.currentVariable.path }}</v-col>
         <v-col cols="1">
           <v-btn color="error" @click="onDelete(props.currentVariable.id)">Delete</v-btn>

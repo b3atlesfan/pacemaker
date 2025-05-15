@@ -17,7 +17,7 @@ import { BeatContent } from '@/assets/BeatContent';
 import { time } from 'console';
 import Filemanager from "@/assets/Filemanager";
 import * as XLSX from "xlsx";
-import { useDesignVariablesStore, DesignVariable } from "@/store/designVariables";
+import { useDesignVariablesStore, DesignVariable, separateKey } from "@/store/designVariables";
 import Papa from "papaparse";
 import { eventNames } from 'process';
 import { settings, currentProjectPath, loadSettings, saveSettings } from '@/store/settings';
@@ -260,12 +260,12 @@ function toggleRecording(){
   recordingIcon.value = isRecording.value ? 'mdi-stop' : 'mdi-record'
 }
 
-var recordingName : number = ""
+var recordingName : string = ""
 const startNewRecording = async (recID : string = "-1") => {
   if(isNaN(totalRecordings)){
     totalRecordings = 0 
   }
-  if(recID == -1 || !Number.isNaN(Number(recID))) {
+  if(recID == "-1" || !Number.isNaN(Number(recID))) {
     totalRecordings += 1
     recordingName = "R " + totalRecordings
   }
@@ -277,19 +277,20 @@ const startNewRecording = async (recID : string = "-1") => {
   await newGraph("Recording " + totalRecordings)
 }
 
-const newGraph = async (name:string, pos=totalRecordings) =>{
+const newGraph = async (name:string, pos=totalRecordings): Promise<number> =>{
   emit('on-finish-recording')
-  beatId = beatManager.createNode({x: 0, y: pos * 200}, true)
+  var beatId : number = beatManager.createNode({x: 0, y: pos * 200}, true)
   beatManager.editNodeLabel(beatId, name)
   await(nextTick())
   emit('on-next-recording')
   await(nextTick())
+  return beatId
 }
 
-const displayAverage = async () => {
+const displayAverage = async (): Promise<number> => {
   recordingName = "Avg" + totalRecordings
-  await newGraph("Average up to Rec " + totalRecordings, -1)
-}
+  return await newGraph("Average up to Rec " + totalRecordings, -1)
+} 
 
 const startListening = async () => {
       const response = await window.versions.startListening();
@@ -438,15 +439,47 @@ var currentRecordingID : string = ""
 
 const loadRecordings = async () => {
   const workbook = await window.versions.readFromExcelFile(settings.Name);
+
   if(!workbook || workbook == "null") return;
   deleteAllNodes()
   beatContentSelector.value.onDeleteAll()
 
+
+  // wait for 1 ms to ensure that all nodes are deleted
+  await nextTick();
+
+  
+  var prevBeatId : number = await displayAverage()
+  var beatId: number = prevBeatId;
+  var branchedBeats = workbook;
+
+  var currentBeatID = -1;
+  var variantIndex = 0;
+  for(var i in branchedBeats) {
+    const beat = branchedBeats[i]
+    if(beat.beat_id > currentBeatID) {
+      variantIndex = 1;
+      currentBeatID = beat.beat_id
+      prevBeatId = beatId
+      beatId = createEmptyNode("toTheRight")
+    }
+    else {
+      variantIndex++;
+      beatId = createEmptyNode("below", prevBeatId)
+    }
+
+    var name = separateKey(beat.name_and_path).name
+    
+    beatManager.editNodeLabel(beatId, name + " v" + variantIndex)
+  }
+
+  
+  
+
+  return;
   const workbookWithoutDots = workbook.replace(/(\d+),(\d+)/g, '$1.$2');
   logged_events = Papa.parse(workbookWithoutDots, { header: true }).data;
   
-  // wait for 1 ms to ensure that all nodes are deleted
-  await nextTick();
 
   //for(var i = 0; i < workbook.SheetNames.length; i++){
   //var sheetName :string = workbook.SheetNames[i]
@@ -570,8 +603,9 @@ function getAllWithName(v : { [key: string]: number }, wantedName: string) {
   return all;
 }
 
-function createNodeFromValidEvent(eventObj) {
+function createEmptyNode(position: "toTheRight" | "below" = "toTheRight", fromBeatId: number) : number {
   const viewport = getViewport()
+
 
   // get position of last beat
   var lastBeatId = beatManager.getLatestNodeID()
@@ -581,11 +615,54 @@ function createNodeFromValidEvent(eventObj) {
   if (lastBeat != null) {
     lastBeatPos = {x: lastBeat.position.x, y: lastBeat.position.y}
   }
+
+  var newPosition = {x: -viewport.x / viewport.zoom, y: -viewport.y / viewport.zoom}
+  if(position === "toTheRight"){
+    newPosition = {x: lastBeatPos.x + 300, y: lastBeatPos.y}
+  }
+  else if(position === "below"){
+    newPosition = {x: lastBeatPos.x, y: lastBeatPos.y + 300}
+  }
+
+  var beatId = beatManager.createNode(newPosition)
+
+   if(!fromBeatId && fromBeatId != 0) {
+      fromBeatId = lastBeatId
+    }
+
+  const edge = {
+    id: 'e' + fromBeatId + '-' + beatId,
+    //label: 'edge with arrowhead',
+    source: String(fromBeatId),
+    target: String(beatId),
+    sourceHandle: 'c_out',
+    targetHandle: 'a_in',
+    animated: false,
+    markerEnd: {
+      type: MarkerType.ArrowClosed,
+      width: 20,
+      height: 20,
+      color: '#000000',
+    },
+    style: {
+      strokeWidth: 2,
+      stroke: '#000000',
+    },
+  }
+  if (beatId != 0 && beatId != '') {
+    addEdgesDelayed(edge)
+  }
+  lastBeatId = beatId
+  return beatId
+}
+
+function createNodeFromValidEvent(eventObj) {
+  var beatId: number = createEmptyNode("toTheRight");
+  
   var v : { [key: string]: number } = eventObj.args;
 
   var timeDiffInMs =getAllWithName(v, "currentTime_Diff")[0].value;
   var timeDiffInMinAndSec = getTimeDiffInMinAndSec(timeDiffInMs);
-  var beatId : number = beatManager.createNode({x: lastBeatPos.x + 300, y: lastBeatPos.y})
   beatManager.editNodeLabel(beatId, recordingName + " " +eventObj.name + " " + v.index)
 
   var gameplayIntensity = calculateIntensityFromArray(v, 'gameplay')

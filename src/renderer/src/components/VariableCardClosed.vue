@@ -15,25 +15,35 @@ function openDetailedView() {
     props.currentVariable.detailedView = true;
 }
 
+function openInUnity(){
+    window.server.sendMessage("openInUnity", props.currentVariable.path);
+}
+
 </script>
 
 <template>
     <v-card>
         <v-row class="d-flex align-center justify-left" style="margin-left: 10px;">
             <v-col cols="1">
-                <v-btn @click="toggleFavorite" :color="props.currentVariable.requestedFromPM ? 'secondary' : 'primary'">
+                <v-btn @click="toggleFavorite" :color="(props.currentVariable.requestedFromPM || props.currentVariable.markedFavorite) ? 'secondary' : 'primary'">
                     <v-icon v-if="props.currentVariable.requestedFromPM" icon="mdi-account"></v-icon>
                     <v-icon v-else-if="props.currentVariable.markedFavorite" icon="mdi-star"></v-icon>
                     <v-icon v-else icon="mdi-star-outline"></v-icon>
                 </v-btn>
             </v-col>
+            <!--Button that opens the location of the variable in unity-->
             <v-col cols="1">
-                <v-btn @click="openDetailedView">Open</v-btn>
+            <v-btn @click="openInUnity">
+                <v-icon icon="mdi-magnify"></v-icon>
+            </v-btn>
+            </v-col>
+            <v-col cols="1">
+                <v-btn @click="openDetailedView">Edit</v-btn>
             </v-col>
             <v-col cols="2">{{ props.currentVariable.name }}</v-col>
             <v-col cols="2">{{ props.currentVariable.path }}</v-col>
             <v-col cols="1">{{ props.currentVariable.remoteValue }}</v-col>
-            <v-col cols="1">
+            <!--<v-col cols="1">
                 <v-text-field v-model="props.currentVariable.intensityWeight" type="number" density="compact" hide-details="auto"></v-text-field>
             </v-col>
             <v-col cols="1">
@@ -41,7 +51,7 @@ function openDetailedView() {
             </v-col>
             <v-col cols="1">
                 <v-checkbox v-model="props.currentVariable.isMultiplier" label="Multiplier"></v-checkbox>
-            </v-col>
+            </v-col>-->
         </v-row>
     </v-card>
 </template>
