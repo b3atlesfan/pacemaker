@@ -43,8 +43,11 @@ export class BeatContent {
   introducedSkills: string[]
   reinforcedSkills: string[]
   requiredSkills: string[]
+  runsList: number[]
+  beatColumn: number
 
-  constructor(id: number, description: string, narrativeIntensity: number, category: Category, intensity: number, rawVariables: {[Key:string] : number},  expectedPlaytime: string, introducedSkills: string[], reinforcedSkills: string[], requiredSkills: string[]) {
+  constructor(id: number, description: string, narrativeIntensity: number, category: Category, intensity: number, rawVariables: {[Key:string] : number},  
+    expectedPlaytime: string, introducedSkills: string[], reinforcedSkills: string[], requiredSkills: string[], runsList: number[] = []) {
     this.id = id
     this.description = description
     this.narrativeIntensity = narrativeIntensity
@@ -56,9 +59,21 @@ export class BeatContent {
     this.introducedSkills = introducedSkills
     this.reinforcedSkills = reinforcedSkills
     this.requiredSkills = requiredSkills
+    this.runsList = runsList
+    this.beatColumn = -1
   }
 
-  updateIntensities(){
-    
+  async waitForUpdate(arg) {
+    this.computedIntensity = await window.database.updateBeatContent(arg);
+  }
+
+  update(listOfVarsWithWeights) {
+    console.log("updating intensities" + " beatID "  + this.beatColumn + " runs: " + this.runsList )
+    const arg = {
+      beatColumn:this.beatColumn, 
+      runsList: [...this.runsList],
+      nameAndPath_andWeights: listOfVarsWithWeights
+    }
+    this.waitForUpdate(arg);
   }
 }

@@ -255,9 +255,24 @@ window.server.onMessage('asynchronous-message', (message: any) => {
 var isRecording = ref(false)
 var recordingIcon = ref('mdi-record')
 
+function enterRecordingInDB() {
+  const eventObj = {
+    name: "RecordingStarted",
+    args: {
+      recordingName: recordingName,
+      recordingID: totalRecordings
+    }
+  }
+  window.versions.writeToExcelFile(settings.Name, eventObj)
+}
+
 function toggleRecording(){
   isRecording.value = !isRecording.value
   recordingIcon.value = isRecording.value ? 'mdi-stop' : 'mdi-record'
+
+  if(isRecording.value){
+    enterRecordingInDB(); 
+  }
 }
 
 var recordingName : string = ""
@@ -438,7 +453,16 @@ var logged_events: any[]
 var currentRecordingID : string = ""
 
 const loadRecordings = async () => {
-  const workbook = await window.versions.readFromExcelFile(settings.Name);
+
+  designVariablesStore.getPathFilteredVariables();
+
+  const list_of_bvs = designVariablesStore.getAllBVVariables()
+  const list_of_bvs_names = list_of_bvs.map((bv: DesignVariable) => 
+  '(' + bv.name + ', ' + bv.path + ')');
+  const diffMap = list_of_bvs.map((bv: DesignVariable) => bv.useDiff);
+  const min_run_id = 21;
+  const BVrequest = { list_of_bvs_names, diffMap, min_run_id }
+  const workbook = await window.versions.readFromExcelFile(BVrequest); // settings.Name
 
   if(!workbook || workbook == "null") return;
   deleteAllNodes()
@@ -453,28 +477,38 @@ const loadRecordings = async () => {
   var beatId: number = prevBeatId;
   var branchedBeats = workbook;
 
+  // Edges: Remember the nodes of the previous column
+  // For each node n2 in previous column: If any of the run_ids for the current node n1 is the same as any in n2
+  // add an edge between n2 and n1
+
   var currentBeatID = -1;
   var variantIndex = 0;
+  var listOfRunsFoundAtCurrentBeat : number[] = [];
   for(var i in branchedBeats) {
     const beat = branchedBeats[i]
-    if(beat.beat_id > currentBeatID) {
+    if(beat.beat_id > currentBeatID || !beat.beat_id) {
+
       variantIndex = 1;
       currentBeatID = beat.beat_id
       prevBeatId = beatId
       beatId = createEmptyNode("toTheRight")
+      listOfRunsFoundAtCurrentBeat = []
+      listOfRunsFoundAtCurrentBeat.push(beat.listofrunids)
     }
     else {
       variantIndex++;
       beatId = createEmptyNode("below", prevBeatId)
+      listOfRunsFoundAtCurrentBeat.push(beat.listofrunids)
     }
+    beatManager.addRunsListToNodeContent(beatId, beat.listofrunids, beat.beat_id)
 
     var name = separateKey(beat.name_and_path).name
     
-    beatManager.editNodeLabel(beatId, name + " v" + variantIndex)
+    beatManager.editNodeLabel(beatId, "Beat" + beat.beat_id + ", " + name + "=" + beat.interestedval + "|" + beat.listofrunids)
   }
 
   
-  
+  updateAllContents()
 
   return;
   const workbookWithoutDots = workbook.replace(/(\d+),(\d+)/g, '$1.$2');
@@ -537,7 +571,9 @@ function recordEvent(event: string) {
 
   window.versions.writeToExcelFile(settings.Name, eventObj)
 
-  createNodeFromValidEvent(eventObj)
+  if(eventObj.name == "checkpointReached") {
+    createNodeFromValidEvent(eventObj)
+  }
 }
 
 function calculateIntensityFromArray(event: { [key: string]: number }, weightType: 'gameplay' | 'narrative') : number {
@@ -629,6 +665,17 @@ function createEmptyNode(position: "toTheRight" | "below" = "toTheRight", fromBe
    if(!fromBeatId && fromBeatId != 0) {
       fromBeatId = lastBeatId
     }
+
+  const contentId = contentManager.createContent({
+    name: "empty",
+    intensity: 0,
+    narrativeIntensity: 0,
+    rawVariables: [],
+    category: "Platforming",
+    playtime: "00:00"
+  })
+
+  beatManager.editContentId(beatId, contentId)
 
   const edge = {
     id: 'e' + fromBeatId + '-' + beatId,

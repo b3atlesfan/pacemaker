@@ -34,7 +34,6 @@ async function setupDatabase() {
         console.log(`${DB_NAME} database exists.`);
     }
 
-
     // Create the tables if they don't exist
     await dbClient.query(`
         CREATE TABLE IF NOT EXISTS runs (
@@ -93,8 +92,8 @@ SELECT setval(pg_get_serial_sequence('events', 'event_id'), (SELECT MAX(event_id
 }
 
 async function createRun() {
-    const query = 'INSERT INTO runs (timestamp) VALUES (now()::timestamp) RETURNING run_id';
-    const res = await dbClient.query(query);
+    const queryCreateRun = 'INSERT INTO runs (timestamp) VALUES (now()::timestamp) RETURNING run_id';
+    const res = await dbClient.query(queryCreateRun);
     return res.rows[0].run_id;
 }
 
@@ -133,15 +132,13 @@ const storeEvent = async(runId, type, variables, timestamp) => {
     timestamp = timestamp || new Date();
 
     
-
-    _eventId += 1;
     if (runId !== lastRunId) {
         lastRunId = runId;
-        _eventId = 0; 
     }
 
     const query1 = 'INSERT INTO events (run_id, type, timestamp) VALUES ($1, $2, $3) RETURNING event_id;';
     const res = await dbClient.query(query1, [runId, type, timestamp]);
+    _eventId = res.rows[0].event_id;
 
     if(type === 'checkpointReached') {
         computeBeats(runId);
@@ -206,22 +203,26 @@ ORDER BY name_and_path, beat_id, occurrences DESC;
 
 function calculateUnionInterestedValues(branchVariables, diffMap) {
     const queries = branchVariables.map((name, i) => {
-        const column = diffMap[i] === 1 ? 'diff' : 'new_value';
-        const isDiff = diffMap[i] === 1 ? 'TRUE' : 'FALSE';
+        const column = diffMap[i] ? 'diff' : 'new_value';
+        const isDiff = diffMap[i] ? 'TRUE' : 'FALSE';
         return `SELECT *, ${column} AS interestedVal, 
         ${isDiff} AS isDiff 
         FROM variable_changes WHERE name_and_path = '${name}'`;
     });
 
+
     const finalQuery = queries.join(' UNION ');
     return finalQuery;
 }
 
-async function getBranches(branchVariables, diffMap) {
+async function getBranches(branchVariables, diffMap, minRunId) {
     if (!branchVariables || branchVariables.length === 0) {
         branchVariables = ['(totalMouseClicks, DontDestroyOnLoad/GameDataCollector/GameDataCollector)'];
         diffMap = [1, 0];
     }
+    //else {
+    //    console.log('branchVariables', branchVariables);
+    //}
     if (!diffMap || diffMap.length === 0) {
         // Default diffMap to all 0s
         diffMap = Array(branchVariables.length).fill(0);
@@ -230,24 +231,51 @@ async function getBranches(branchVariables, diffMap) {
     var unionInterestedValues = calculateUnionInterestedValues(branchVariables, diffMap);
 
     const queryBranches1 = `
-DROP TABLE IF EXISTS temp_BV_per_run;`;
+DROP TABLE IF EXISTS only_beats_with_changes;`;
+    await dbClient.query(queryBranches1);
+    const queryDropABPR = `
+DROP TABLE IF EXISTS all_beats_in_a_run;`;
+    await dbClient.query(queryDropABPR);
+    const queryDroptemp_joinedWithEmpties = `
+DROP TABLE IF EXISTS temp_joinedWithEmpties;`;
+    await dbClient.query(queryDroptemp_joinedWithEmpties);
+    const queryBranchesAllBeatsPerRun = `
+CREATE TEMP TABLE all_beats_in_a_run AS
+SELECT DISTINCT ON (e.run_id, e.beat_id) e.run_id, e.beat_id FROM events e WHERE e.run_id > ${minRunId};
+`
+    await dbClient.query(queryBranchesAllBeatsPerRun);
     const queryBranches2 = `
-DROP TABLE IF EXISTS temp_BV_per_run;
-CREATE TEMP TABLE temp_BV_per_run AS
-SELECT * FROM (SELECT DISTINCT ON (e.run_id, e.beat_id, vc.name_and_path) e.run_id,e.beat_id, vc.name_and_path, vc.interestedVal, vc.isDiff FROM events e JOIN 
+CREATE TEMP TABLE only_beats_with_changes AS
+SELECT * FROM (SELECT DISTINCT ON (e.run_id, e.beat_id, vc.name_and_path) e.run_id,e.beat_id, vc.name_and_path, vc.interestedVal, vc.isDiff 
+FROM (
+ SELECT * FROM events WHERE run_id > ${minRunId}
+) e 
+JOIN 
 (
 ${unionInterestedValues}
 ) vc 
 ON e.event_id=vc.event_id ORDER BY vc.name_and_path, e.run_id DESC, e.beat_id, e.timestamp DESC) ORDER BY name_and_path, beat_id, interestedVal;`;
+    await dbClient.query(queryBranches2);
+    const query_temp_joinedWithEmpties = `
+CREATE TEMP TABLE temp_joinedWithEmpties AS
+SELECT 
+    ab.run_id,
+    ab.beat_id,
+    COALESCE(ob.name_and_path, '(level, Level 1/World/Ability Manager/Dagger Ability(Clone)/DaggerAbility)') AS name_and_path,
+    COALESCE(ob.interestedVal, 0) AS interestedVal,
+    COALESCE(ob.isDiff, FALSE) AS isDiff
+FROM all_beats_in_a_run ab
+LEFT JOIN only_beats_with_changes ob
+    ON ab.run_id = ob.run_id AND ab.beat_id = ob.beat_id
+ORDER BY name_and_path, ab.run_id DESC, ab.beat_id;`
+    await dbClient.query(query_temp_joinedWithEmpties);
     const queryBranches3 = `SELECT 
     beat_id, name_and_path,
     interestedVal, isDiff,array_agg(run_id) AS listOfRunIds,
     COUNT(*) AS occurrences
-FROM temp_BV_per_run
+FROM temp_joinedWithEmpties
 GROUP BY name_and_path, beat_id, interestedVal, isDiff
 ORDER BY name_and_path, beat_id, occurrences DESC;`;
-    await dbClient.query(queryBranches1);
-    await dbClient.query(queryBranches2);
     const res = await dbClient.query(queryBranches3);
     return res.rows;
 }
@@ -262,5 +290,51 @@ async function getNumberOfEventsPerBeat(runId) {
     return res;
 }
 
+async function getAvgBeatIntensity(arg) {
+    var nameAndWeightAsArg = ' ';
+    
+    for (const entry of Object.entries(arg.nameAndPath_andWeights)) {
+        var nameAndPath = entry[1].name_and_path;
+        var weight = entry[1].weight;
+        nameAndWeightAsArg += `WHEN '${nameAndPath}' THEN ${weight} * new_value `;
+    }
+    const nameAndPathAsArg = arg.nameAndPath_andWeights.map(
+        v => `'${v.name_and_path}'`
+    ).join(', ');
 
-export { setupDatabase, storeEvent, getVariablesByName, createRun, computeBeats, getNumberOfEventsPerBeat, getBranches};
+    const runIdListAsArg = arg.runsList.map(
+        v => `${v}`
+    ).join(', ');
+
+    const queryAvgBeatIntensity = `
+    WITH weighted_values AS (
+  SELECT
+    run_id,
+    beat_id,
+    SUM(
+      CASE name_and_path
+        ${nameAndWeightAsArg}
+        ELSE 0
+      END
+    ) AS weighted_sum
+  FROM (SELECT * FROM variable_changes vc JOIN events e ON vc.event_id = e.event_id)
+  WHERE beat_id = ${arg.beatColumn}
+    AND run_id IN (
+        ${runIdListAsArg}
+    )
+    AND name_and_path IN (
+        ${nameAndPathAsArg}
+    )
+  GROUP BY run_id, beat_id
+)
+SELECT AVG(weighted_sum) AS avg_weighted_score
+FROM weighted_values;`
+    const res = await dbClient.query(queryAvgBeatIntensity);
+    if (res.rows[0].avg_weighted_score === null) {
+        return 0;
+    }
+    return res.rows[0].avg_weighted_score;
+}
+
+
+export { setupDatabase, storeEvent, getVariablesByName, createRun, computeBeats, getNumberOfEventsPerBeat, getBranches, getAvgBeatIntensity};

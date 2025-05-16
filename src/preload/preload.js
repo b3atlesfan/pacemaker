@@ -16,6 +16,10 @@ contextBridge.exposeInMainWorld('server', {
   onMessage: (channel, callback) => ipcRenderer.on(channel, (event, args) => callback(args))
 })
 
+contextBridge.exposeInMainWorld('database', {
+  updateBeatContent: (arg) => ipcRenderer.invoke('update-beat-content', arg),
+})
+
 contextBridge.exposeInMainWorld('settings', {
   load: (currentSettingsPath) => ipcRenderer.invoke('load-settings', currentSettingsPath),
   save: (currentSettingsPath, settings) => ipcRenderer.invoke('save-settings', currentSettingsPath, settings),

@@ -10,9 +10,32 @@ import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
   publicDir: false,
-  main: {},
-  preload: {},
-  renderer: {plugins: [
+  main: {  
+    entry: 'src/main/main.js',
+    build: {
+      sourcemap: true,
+      outDir: 'dist/main',
+    },
+  },
+  preload: {
+    
+    input: {
+      preload: 'src/preload/preload.js',
+    },
+    build: {
+      sourcemap: true,
+      outDir: 'dist/preload',
+    },
+  },
+  renderer: {
+    input: {
+      index: 'src/renderer/index.html',
+    },
+    build: {
+      sourcemap: true,
+      outDir: 'dist/renderer',
+    },
+    plugins: [
     vue({
       template: { transformAssetUrls }
     }),

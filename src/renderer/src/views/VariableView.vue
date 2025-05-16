@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { log } from "console";
-import { color } from "d3";
 import {computed, reactive, ref, shallowRef, watchEffect} from "vue";
 import VariableCard from "@/components/VariableCard.vue";
 import VariableCardClosed from "@/components/VariableCardClosed.vue";
@@ -136,18 +134,18 @@ const emit = defineEmits(['onUpdateIntensityFormula'])
   <div style="height: 20px;"></div>
 
   <v-btn v-if="isInVisualizerView" @click="addRow">Create Statistics Variable</v-btn>
-  <p>
+  <p v-if="isInVisualizerView">
     <strong>Gameplay Intensity := </strong> 
     <span v-if="designVariablesStore.allVariables.length > 0" style="margin-left: 120px;">
       <br>
       <span style="margin-left: 120px;"></span>
-      (1 + {{ designVariablesStore.allVariables.filter(variable => variable.intensityWeight > 0 && variable.isMultiplier).map(variable => getIntensityWeightString(variable)).join(" + ") }})
+      (1 * {{ designVariablesStore.allVariables.filter(variable => variable.intensityWeight > 0 && variable.isMultiplier).map(variable => getIntensityWeightString(variable)).join(" * ") }})
       <br>
       <span style="margin-left: 120px;"></span>
       * ({{ designVariablesStore.allVariables.filter(variable => variable.intensityWeight != 0 && !variable.isMultiplier).map(variable => getIntensityWeightString(variable)).join(" + ") }})
       <br>
       <span style="margin-left: 120px;"></span>
-      / (1 + {{ designVariablesStore.allVariables.filter(variable => variable.intensityWeight < 0 && variable.isMultiplier).map(variable => getIntensityWeightString(variable, true)).join(" + ") }})
+      / (1 * {{ designVariablesStore.allVariables.filter(variable => variable.intensityWeight < 0 && variable.isMultiplier).map(variable => getIntensityWeightString(variable, true)).join(" * ") }})
     </span>
     <br>
     <!-- 
@@ -168,7 +166,7 @@ const emit = defineEmits(['onUpdateIntensityFormula'])
   <v-row>
   <div style="margin-top: 10px; width: 33.33%;">
     <v-text-field v-model="currentState.pathFilterText" 
-    label="Filter by Path" placeholder="Enter path to filter" clearable=""></v-text-field>
+    label="Filter by path and name" placeholder="Enter path or name to filter" clearable=""></v-text-field>
   </div>
     <v-col cols="1" class="d-flex align-center justify-center"><strong>Filters</strong></v-col>
     <v-col cols="2">

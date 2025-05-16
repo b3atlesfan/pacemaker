@@ -1,10 +1,12 @@
 import {isNode, MaybeElement, useVueFlow, VueFlowStore} from "@vue-flow/core";
+import {BeatContentManager} from "@/assets/BeatContentManager";
 import {GameplayBeat} from "@/assets/GameplayBeat";
-import {BeatContent} from "@/assets/BeatContent";
 import {storeToRefs} from "pinia";
 import {useElementsStore} from "@/store/elements";
 import {IdManager} from "@/assets/IdManager";
+import { get } from "http";
 
+var contentManager : BeatContentManager;
 export class BeatManager {
     idManager: IdManager
     vueFlowStore: VueFlowStore
@@ -83,6 +85,17 @@ export class BeatManager {
 
     getLatestNodeID() {
       return this.idManager.getLatestId()
+    }
+
+    addRunsListToNodeContent(id: string, runsList: number[], beatColumn: number) {
+      var node = this.getNode(id);
+      var contentId = node.data.contentId;
+      if (contentId == -1) return
+      if (contentManager == undefined) contentManager = BeatContentManager.getInstance();
+      var content = contentManager.getContent(contentId);
+      if (content == undefined) return
+      content.runsList = runsList;
+      content.beatColumn = beatColumn;
     }
 
     editNodeLabel(id: string, label: string) {

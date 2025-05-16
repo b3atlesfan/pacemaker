@@ -27,7 +27,8 @@
             "windows": {
                 "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron-vite.cmd"
             },
-            "runtimeArgs": ["--sourcemap", "--outDir=dist"],// If there is an added argument, for example --experimental-network-inspection remove it
+            "runtimeArgs": ["--sourcemap", "--outDir=dist"],
+// If there is an added argument, for example --experimental-network-inspection remove it
             // in the cmd.
             /*
 @SETLOCAL

@@ -11,7 +11,8 @@ import Papa from "papaparse";
 import { SettingsManager } from './settingsManager.ts';
 
 
-import { setupDatabase, storeEvent, getVariablesByName, createRun, getNumberOfEventsPerBeat, getBranches } from './database';
+import { setupDatabase, storeEvent, getVariablesByName, createRun, getNumberOfEventsPerBeat, getBranches, getAvgBeatIntensity } from './database';
+import { database } from 'pg/lib/defaults.js';
 
 
 let mainWindow;
@@ -111,7 +112,9 @@ app.whenReady().then(() => {
     if (!arg) {
       return "null";
     }
-    var res = await getBranches();
+  
+    console.log("Reading from file: " + arg.list_of_bvs_names);
+    var res = await getBranches(arg.list_of_bvs_names, arg.diffMap, arg.min_run_id);
     return res;
 
     return;
@@ -172,12 +175,22 @@ app.whenReady().then(() => {
   
   var lastSheetName = "";
   var runID = 0;
+
+  ipcMain.handle('update-beat-content', async (event, arg) => {
+    console.log("Updating beat content" + arg);
+    return await getAvgBeatIntensity(arg);
+  });
   
   ipcMain.handle('writeToExcelFile', async (event, sheetName, arg) => {
     
     if(lastSheetName !== sheetName) {
       lastSheetName = sheetName;
-      runID = await createRun();
+      //runID = await createRun();
+    }
+
+    if(arg.name === "RecordingStarted") {
+      runID = await createRun(); 
+      return;
     }
 
     storeEvent(runID, arg.name, arg.variables, arg.timestamp);

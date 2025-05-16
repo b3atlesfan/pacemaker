@@ -3,6 +3,9 @@ import {IdManager} from "@/assets/IdManager";
 import {useContentsStore} from "@/store/contents";
 import {BeatContent, Category, Skill} from "@/assets/BeatContent";
 import {BeatManager} from "@/assets/BeatManager";
+import { useDesignVariablesStore, DesignVariable, separateKey } from "@/store/designVariables";
+
+const designVariablesStore = useDesignVariablesStore()
 
 export type ContentFormState = {
   overridingContentWithId: number,
@@ -110,8 +113,15 @@ export class BeatContentManager {
   }
 
   updateAllContents() {
+    const listOfVarsWithWeights = designVariablesStore.getAllVariablesWithWeights()
+    const nameAndPath_andWeights = listOfVarsWithWeights.map((variable: DesignVariable) => { 
+      return {name_and_path: "(" + variable.name + ", " + variable.path + ")", weight: variable.intensityWeight}
+    });
+
+
+
     this.contentsStore.contents.value.forEach(content => {
-      content.update()
+      content.update(nameAndPath_andWeights)
     })
   }
 }

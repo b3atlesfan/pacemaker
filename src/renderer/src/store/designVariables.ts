@@ -94,6 +94,22 @@ export const useDesignVariablesStore = defineStore('designVariablesStore',  {
       );
       this.allVariables.push(newVar);
     },
+    
+    getAllVariablesWithWeights() {
+      return this.allVariables.filter(
+        variable => {
+          var weight = 0;
+          if (!(variable instanceof DesignVariable)) {
+            weight = variable.intensityWeight;
+          }
+          else {
+            weight = variable.getIntensityWeight();
+          }
+          console.log("weight is " + weight);
+          return weight != undefined && weight != 0;
+        }
+    );
+    },
 
     deleteVariable(index: number) {
       this.allVariables.splice(index, 1);
@@ -161,7 +177,8 @@ export const useDesignVariablesStore = defineStore('designVariablesStore',  {
       var a = this.allVariables;
       
       if(currentState.pathFilterText) {
-        a = a.filter(variable => (variable.path + "/" + variable.name).match(new RegExp(currentState.pathFilterText, "i")));
+        const regex = new RegExp(currentState.pathFilterText, "i");
+        a = a.filter(variable => (variable.path + "/" + variable.name).match(regex));
       }
       if(currentState.favoritesOnly){
         a = a.filter(variable => variable.markedFavorite || variable.requestedFromPM);
@@ -173,6 +190,9 @@ export const useDesignVariablesStore = defineStore('designVariablesStore',  {
         a = a.filter(variable => (variable.intensityWeight || 0) != 0 || (variable.narrativeWeight || 0) != 0);
       }
       return a;
+    },
+    getAllBVVariables() {
+      return this.allVariables.filter(variable => variable.isBV);
     }
   },
     persist: {
