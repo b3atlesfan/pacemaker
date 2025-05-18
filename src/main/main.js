@@ -178,7 +178,8 @@ app.whenReady().then(() => {
 
   ipcMain.handle('update-beat-content', async (event, arg) => {
     console.log("Updating beat content" + arg);
-    return await getAvgBeatIntensity(arg);
+    const retObj = await getAvgBeatIntensity(arg);
+    return retObj;
   });
   
   ipcMain.handle('writeToExcelFile', async (event, sheetName, arg) => {

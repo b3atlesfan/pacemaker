@@ -115,13 +115,16 @@ export class BeatContentManager {
   updateAllContents() {
     const listOfVarsWithWeights = designVariablesStore.getAllVariablesWithWeights()
     const nameAndPath_andWeights = listOfVarsWithWeights.map((variable: DesignVariable) => { 
-      return {name_and_path: "(" + variable.name + ", " + variable.path + ")", weight: variable.intensityWeight}
+      return {name_and_path: "(" + variable.name + ", " + variable.path + ")", weight: variable.intensityWeight, useDiff: variable.useDiff}
     });
 
 
 
     this.contentsStore.contents.value.forEach(content => {
-      content.update(nameAndPath_andWeights)
+      //if(content has function update) {
+      if(content.update != undefined){
+        content.update(nameAndPath_andWeights)
+      }
     })
   }
 }

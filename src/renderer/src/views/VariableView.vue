@@ -5,6 +5,15 @@ import VariableCardClosed from "@/components/VariableCardClosed.vue";
 import VariableCardMinimal from "@/components/VariableCardMinimal.vue";
 import { useDesignVariablesStore, DesignVariable} from "@/store/designVariables";
 import { settings, loadSettings, saveSettings, currentState } from '@/store/settings';
+import { BeatContentManager } from '../assets/BeatContentManager';
+
+import { useDialogStore } from '@/store/dialogStore';
+import SimpleDialog from '@/components/SimpleDialog.vue';
+
+
+const dialogStore = useDialogStore();
+
+const beatContentManager = BeatContentManager.getInstance();
 
 
 const designVariablesStore = useDesignVariablesStore();
@@ -112,26 +121,38 @@ function prevPage() {
 
 function onUpdateVariable(){
     saveSettings();
-    emit('onUpdateIntensityFormula')
+    emit('onUpdateIntensityFormula');
+    beatContentManager.updateAllContents();
 }
 
 
 function addRow(){
+  dialogStore.showVariableDialog = true
+  variableDialog.value?.open();
+}
+
+function handleSubmitted(_name: string) {
   const next_id : number = designVariablesStore.allVariables.length;
-  const  temp_model = reactive({id: next_id, name: '', remoteValue: 0, localValue: 0, path: "FromPM", 
+  const  temp_model = reactive({id: next_id, name: _name, path: 'ScriptableObjects/Statistics', remoteValue: 0, localValue: 0, path: "FromPM", 
       detailedView: true, markedFavorite: false, isPublic: true, intensityWeight: 0, narrativeIntensity: 0, requestedFromPM: true,
-    isMultiplier:false});
-      designVariablesStore.addVariable(temp_model);
+    isMultiplier:false, runtimeModified: true
+  });
+
+  designVariablesStore.addVariable(temp_model);
 }
 
 const props = defineProps<{ isInVisualizerView: boolean }>();
 const emit = defineEmits(['onUpdateIntensityFormula'])
+
+const variableDialog = ref(null)
 
 </script>
 <template>
   <div>
 
   <div style="height: 20px;"></div>
+
+  <SimpleDialog ref="variableDialog" @submitted="handleSubmitted" />
 
   <v-btn v-if="isInVisualizerView" @click="addRow">Create Statistics Variable</v-btn>
   <p v-if="isInVisualizerView">

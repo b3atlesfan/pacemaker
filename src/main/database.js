@@ -54,6 +54,19 @@ async function setupDatabase() {
 
     `);
 
+    
+    const queryDropBeatTimings = `
+DROP TABLE IF EXISTS beat_timings_per_run;`;
+    await dbClient.query(queryDropBeatTimings);
+
+    await dbClient.query(`
+CREATE TABLE IF NOT EXISTS beat_timings_per_run (
+  run_id INTEGER NOT NULL,
+  beat_id INTEGER NOT NULL,
+  time_diff INTERVAL,
+  CONSTRAINT unique_run_beat UNIQUE (run_id, beat_id)
+);
+`);
 
     await dbClient.query(`
         CREATE TABLE IF NOT EXISTS events (
@@ -101,7 +114,8 @@ let lastRunId = 0;
 let _eventId = -1;
 
 async function computeBeats(runId) {
-    const queryBeat = `INSERT INTO beats (run_id, beat_id, timestamp)
+    const queryBeat = `
+INSERT INTO beats (run_id, beat_id, timestamp)
 SELECT run_id, 
        (SELECT COUNT(*) - 1 
         FROM events e2 
@@ -109,6 +123,7 @@ SELECT run_id,
        timestamp
 FROM events e
 WHERE e.type = 'checkpointReached' AND e.run_id = $1
+ORDER BY timestamp DESC
 LIMIT 1;
 `;
     await dbClient.query(queryBeat, [runId]);
@@ -210,15 +225,21 @@ function calculateUnionInterestedValues(branchVariables, diffMap) {
         FROM variable_changes WHERE name_and_path = '${name}'`;
     });
 
+    if(branchVariables.length === 0) {
+        return `SELECT *, 0 AS interestedVal, FALSE AS isDiff
+        FROM variable_changes WHERE FALSE
+        `;
+    }
+
 
     const finalQuery = queries.join(' UNION ');
     return finalQuery;
 }
 
 async function getBranches(branchVariables, diffMap, minRunId) {
-    if (!branchVariables || branchVariables.length === 0) {
+    if (!branchVariables) {
         branchVariables = ['(totalMouseClicks, DontDestroyOnLoad/GameDataCollector/GameDataCollector)'];
-        diffMap = [1, 0];
+        diffMap = [1];
     }
     //else {
     //    console.log('branchVariables', branchVariables);
@@ -261,7 +282,7 @@ CREATE TEMP TABLE temp_joinedWithEmpties AS
 SELECT 
     ab.run_id,
     ab.beat_id,
-    COALESCE(ob.name_and_path, '(level, Level 1/World/Ability Manager/Dagger Ability(Clone)/DaggerAbility)') AS name_and_path,
+    COALESCE(ob.name_and_path, 'noBranch') AS name_and_path,
     COALESCE(ob.interestedVal, 0) AS interestedVal,
     COALESCE(ob.isDiff, FALSE) AS isDiff
 FROM all_beats_in_a_run ab
@@ -290,13 +311,39 @@ async function getNumberOfEventsPerBeat(runId) {
     return res;
 }
 
+async function getTimings(runIdListAsArg, beatColumn) {
+    const queryCreateBeatTimings = `
+INSERT INTO beat_timings_per_run
+SELECT * FROM (
+SELECT 
+    run_id,
+    beat_id,
+    timestamp - LAG(timestamp) OVER (PARTITION BY run_id ORDER BY timestamp) AS time_diff
+FROM 
+    beats
+WHERE run_id IN (${runIdListAsArg})
+ORDER BY run_id DESC
+) WHERE beat_id = ${beatColumn} AND time_diff > interval '0 seconds'
+ON CONFLICT (run_id, beat_id)
+DO UPDATE SET time_diff = EXCLUDED.time_diff;
+    `;
+    var res = await dbClient.query(queryCreateBeatTimings);
+    return res.rows;
+}
+
 async function getAvgBeatIntensity(arg) {
-    var nameAndWeightAsArg = ' ';
+    var string_name_weight = ' ';
+    var string_name_useLatest = ' ';
     
     for (const entry of Object.entries(arg.nameAndPath_andWeights)) {
         var nameAndPath = entry[1].name_and_path;
         var weight = entry[1].weight;
-        nameAndWeightAsArg += `WHEN '${nameAndPath}' THEN ${weight} * new_value `;
+        var useDiff = entry[1].useDiff || false;
+        string_name_weight += `WHEN '${nameAndPath}' THEN ${weight} `;
+        if(arg.devideByTime) {
+            nameAndWeightAsArg += ` / NULLIF(EXTRACT(SECONDS FROM time_diff_of_beat), 0) `;
+        }
+        string_name_useLatest += `WHEN '${nameAndPath}' THEN ${useDiff ? 1 : 0} `;
     }
     const nameAndPathAsArg = arg.nameAndPath_andWeights.map(
         v => `'${v.name_and_path}'`
@@ -306,34 +353,82 @@ async function getAvgBeatIntensity(arg) {
         v => `${v}`
     ).join(', ');
 
+ //SELECT * FROM variable_changes vc JOIN events e ON vc.event_id = e.event_id
+
+    var timings; 
+    await getTimings(runIdListAsArg, arg.beatColumn);
+
+    const queryDropEventChanges_and_timings = `
+DROP TABLE IF EXISTS eventChanges_and_timings${arg.beatColumn};`;
+    await dbClient.query(queryDropEventChanges_and_timings);
+
+    const queryCreateEventChanges_and_timings = `
+CREATE TEMP TABLE eventChanges_and_timings${arg.beatColumn} AS
+ SELECT 
+ e.*, 
+ vc.name_and_path, vc.new_value, vc.diff, 
+ CASE name_and_path
+   ${string_name_weight}
+	ELSE 0
+ END as weight,
+ CASE name_and_path
+    ${string_name_useLatest}
+	ELSE 0
+ END as useLatest,
+ btp.time_diff AS time_diff_of_beat
+ FROM variable_changes vc
+ JOIN events e ON vc.event_id = e.event_id
+ JOIN beat_timings_per_run btp 
+ ON e.run_id = btp.run_id AND e.beat_id = btp.beat_id
+ WHERE e.run_id IN (${runIdListAsArg})
+  AND e.beat_id = ${arg.beatColumn} 
+ ORDER BY e.run_id, e.beat_id, vc.name_and_path,timestamp DESC;`;
+    await dbClient.query(queryCreateEventChanges_and_timings);
+
+    const queryWeightedSumPerRun = `
+SELECT DISTINCT ON (run_id, name_and_path)
+    run_id, useLatest,
+	time_diff_of_beat,name_and_path,
+	new_value * weight * useLatest AS sumOrLatest
+  FROM eventChanges_and_timings${arg.beatColumn}
+WHERE weight != 0 AND useLatest = 1
+UNION ALL
+SELECT 
+    run_id, useLatest,
+	time_diff_of_beat,name_and_path,
+	SUM(new_value * weight * (1-useLatest)) AS sumOrLatest
+  FROM eventChanges_and_timings${arg.beatColumn}
+WHERE weight != 0 AND useLatest = 0
+GROUP BY run_id, name_and_path,useLatest, time_diff_of_beat
+  `;
+
     const queryAvgBeatIntensity = `
     WITH weighted_values AS (
-  SELECT
-    run_id,
-    beat_id,
-    SUM(
-      CASE name_and_path
-        ${nameAndWeightAsArg}
-        ELSE 0
-      END
-    ) AS weighted_sum
-  FROM (SELECT * FROM variable_changes vc JOIN events e ON vc.event_id = e.event_id)
-  WHERE beat_id = ${arg.beatColumn}
-    AND run_id IN (
-        ${runIdListAsArg}
-    )
-    AND name_and_path IN (
-        ${nameAndPathAsArg}
-    )
-  GROUP BY run_id, beat_id
+${queryWeightedSumPerRun}
 )
-SELECT AVG(weighted_sum) AS avg_weighted_score
-FROM weighted_values;`
+SELECT AVG(sumorlatest) AS avg_weighted_score
+FROM weighted_values GROUP BY name_and_path;`
     const res = await dbClient.query(queryAvgBeatIntensity);
-    if (res.rows[0].avg_weighted_score === null) {
+    if (!res.rows[0] || res.rows[0].avg_weighted_score === null) {
         return 0;
     }
-    return res.rows[0].avg_weighted_score;
+    var ms = 0;
+    if (timings[0]?.time_diff && Object.keys(timings[0]?.time_diff)?.length == 1) {
+        if (Object.keys(timings[0]?.time_diff)?.length == 1) {
+            ms = timings[0].time_diff.milliseconds ;
+        }
+        else {
+            console.log(Object.keys(timings[0]?.time_diff)?.length) 
+        }
+    }
+    
+
+    const returnObj = {
+        avg_weighted_score: res.rows[0].avg_weighted_score,
+        time_diff_ms: ms
+    };
+
+    return returnObj;
 }
 
 

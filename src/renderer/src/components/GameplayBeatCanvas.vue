@@ -460,7 +460,7 @@ const loadRecordings = async () => {
   const list_of_bvs_names = list_of_bvs.map((bv: DesignVariable) => 
   '(' + bv.name + ', ' + bv.path + ')');
   const diffMap = list_of_bvs.map((bv: DesignVariable) => bv.useDiff);
-  const min_run_id = 21;
+  const min_run_id = 30;
   const BVrequest = { list_of_bvs_names, diffMap, min_run_id }
   const workbook = await window.versions.readFromExcelFile(BVrequest); // settings.Name
 

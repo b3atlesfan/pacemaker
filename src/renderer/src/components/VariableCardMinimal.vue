@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { defineProps, watch } from 'vue';
 import { useTheme } from 'vuetify';
-import { BeatContentManager } from '../assets/BeatContentManager';
 const theme = useTheme();
 
-const beatContentManager = BeatContentManager.getInstance();
 
 const props = defineProps({
     currentVariable: Object,
@@ -15,7 +13,6 @@ watch(
   (newValue, oldValue) => {
     if (newValue) {
       emit('onUpdateVariable', newValue);
-      beatContentManager.updateAllContents();
     }
   },
   { deep: true }

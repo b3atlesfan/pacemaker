@@ -64,7 +64,27 @@ export class BeatContent {
   }
 
   async waitForUpdate(arg) {
-    this.computedIntensity = await window.database.updateBeatContent(arg);
+    const retObj = await window.database.updateBeatContent(arg);
+    if (retObj == undefined) {
+      return;
+    }
+
+    if (retObj.avg_weighted_score == undefined) {
+      this.computedIntensity = 0;
+      return;
+    }
+
+    
+    if(!arg.devideByTime){
+      this.computedIntensity = retObj.avg_weighted_score;
+      return;
+    }
+
+    if(retObj.time_diff_ms == undefined || retObj.time_diff_ms == 0){
+      this.computedIntensity = 0;
+      return;
+    }
+    this.computedIntensity = retObj.avg_weighted_score / retObj.time_diff_ms;
   }
 
   update(listOfVarsWithWeights) {
@@ -72,7 +92,8 @@ export class BeatContent {
     const arg = {
       beatColumn:this.beatColumn, 
       runsList: [...this.runsList],
-      nameAndPath_andWeights: listOfVarsWithWeights
+      nameAndPath_andWeights: listOfVarsWithWeights,
+      devideByTime: false
     }
     this.waitForUpdate(arg);
   }
