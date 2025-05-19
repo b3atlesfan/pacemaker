@@ -47,7 +47,7 @@ export class BeatContent {
   beatColumn: number
 
   constructor(id: number, description: string, narrativeIntensity: number, category: Category, intensity: number, rawVariables: {[Key:string] : number},  
-    expectedPlaytime: string, introducedSkills: string[], reinforcedSkills: string[], requiredSkills: string[], runsList: number[] = []) {
+    expectedPlaytime: string, introducedSkills: string[], reinforcedSkills: string[], requiredSkills: string[], runsList: number[] = [], beatColumn: number = -1) {
     this.id = id
     this.description = description
     this.narrativeIntensity = narrativeIntensity
@@ -60,7 +60,7 @@ export class BeatContent {
     this.reinforcedSkills = reinforcedSkills
     this.requiredSkills = requiredSkills
     this.runsList = runsList
-    this.beatColumn = -1
+    this.beatColumn = beatColumn
   }
 
   async waitForUpdate(arg) {
@@ -72,6 +72,10 @@ export class BeatContent {
     if (retObj.avg_weighted_score == undefined) {
       this.computedIntensity = 0;
       return;
+    }
+
+    if(retObj.time_diff_of_beat != undefined){
+      this.expectedPlaytime = retObj.time_diff_of_beat.seconds.toString() + ":" + retObj.time_diff_of_beat.milliseconds.toString();
     }
 
     

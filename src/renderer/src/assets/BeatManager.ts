@@ -116,6 +116,12 @@ export class BeatManager {
         (currentNode as GameplayBeat).data.contentId = contentId
     }
 
+    getContentId(beatId: string) {
+        let currentNode = this.getNode(beatId)
+        if (currentNode == undefined) return -1
+        return (currentNode as GameplayBeat).data.contentId
+    }
+
     onDeleteContent(contentId: number) {
         this.elements.elements.value.forEach(elem => {
             if (!isNode(elem as MaybeElement)) return

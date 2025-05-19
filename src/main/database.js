@@ -1,3 +1,6 @@
+import { time } from 'console';
+import { randomInt } from 'crypto';
+
 const { Client } = require('pg');
 
 const DB_NAME = 'my_database'; 
@@ -171,6 +174,9 @@ const storeEvent = async(runId, type, variables, timestamp) => {
             value = arg.value;
             if(arg.diff !== undefined) {
                 diff = arg.diff;
+                if(diff === null) {
+                    diff = 0;
+                }
             }
         }
         else {
@@ -282,21 +288,47 @@ CREATE TEMP TABLE temp_joinedWithEmpties AS
 SELECT 
     ab.run_id,
     ab.beat_id,
-    COALESCE(ob.name_and_path, 'noBranch') AS name_and_path,
-    COALESCE(ob.interestedVal, 0) AS interestedVal,
+    COALESCE(ob.name_and_path, '${branchVariables[0]}') AS name_and_path,
+    COALESCE(ob.interestedVal, null) AS interestedVal,
     COALESCE(ob.isDiff, FALSE) AS isDiff
 FROM all_beats_in_a_run ab
 LEFT JOIN only_beats_with_changes ob
     ON ab.run_id = ob.run_id AND ab.beat_id = ob.beat_id
 ORDER BY name_and_path, ab.run_id DESC, ab.beat_id;`
     await dbClient.query(query_temp_joinedWithEmpties);
+
+    const queryDroptemp_joined_notnull = `
+DROP TABLE IF EXISTS temp_joined_notnull;`;
+    await dbClient.query(queryDroptemp_joined_notnull);
+
+    const querySelectLastValueIfNull = `
+CREATE TEMP TABLE temp_joined_notnull AS
+SELECT 
+    t1.run_id,
+    t1.beat_id,
+    t1.name_and_path,
+    COALESCE((
+        SELECT t2.interestedVal
+        FROM temp_joinedWithEmpties t2
+        WHERE t2.run_id = t1.run_id
+          AND (t2.beat_id <= t1.beat_id OR t1.beat_id IS NULL)
+          AND t2.interestedVal IS NOT NULL
+        ORDER BY t2.beat_id DESC
+        LIMIT 1
+    ), 0) AS interestedVal,
+    t1.isDiff
+FROM temp_joinedWithEmpties t1
+ORDER BY t1.name_and_path, t1.run_id DESC, t1.beat_id;`
+
+    await dbClient.query(querySelectLastValueIfNull);
+
     const queryBranches3 = `SELECT 
     beat_id, name_and_path,
     interestedVal, isDiff,array_agg(run_id) AS listOfRunIds,
     COUNT(*) AS occurrences
-FROM temp_joinedWithEmpties
+FROM temp_joined_notnull
 GROUP BY name_and_path, beat_id, interestedVal, isDiff
-ORDER BY name_and_path, beat_id, occurrences DESC;`;
+ORDER BY beat_id,name_and_path, occurrences DESC;`;
     const res = await dbClient.query(queryBranches3);
     return res.rows;
 }
@@ -334,6 +366,10 @@ DO UPDATE SET time_diff = EXCLUDED.time_diff;
 async function getAvgBeatIntensity(arg) {
     var string_name_weight = ' ';
     var string_name_useLatest = ' ';
+
+    const queryID = `id_bc${arg.beatColumn|| 'null'}_rl${
+        arg.runsList.map(v => v).join('_') || 'noRun'}` + randomInt(0, 1000000);
+
     
     for (const entry of Object.entries(arg.nameAndPath_andWeights)) {
         var nameAndPath = entry[1].name_and_path;
@@ -343,7 +379,7 @@ async function getAvgBeatIntensity(arg) {
         if(arg.devideByTime) {
             nameAndWeightAsArg += ` / NULLIF(EXTRACT(SECONDS FROM time_diff_of_beat), 0) `;
         }
-        string_name_useLatest += `WHEN '${nameAndPath}' THEN ${useDiff ? 1 : 0} `;
+        string_name_useLatest += `WHEN '${nameAndPath}' THEN ${useDiff ? 0 : 1} `;
     }
     const nameAndPathAsArg = arg.nameAndPath_andWeights.map(
         v => `'${v.name_and_path}'`
@@ -359,11 +395,11 @@ async function getAvgBeatIntensity(arg) {
     await getTimings(runIdListAsArg, arg.beatColumn);
 
     const queryDropEventChanges_and_timings = `
-DROP TABLE IF EXISTS eventChanges_and_timings${arg.beatColumn};`;
+DROP TABLE IF EXISTS eventChanges_and_timings${queryID};`;
     await dbClient.query(queryDropEventChanges_and_timings);
 
     const queryCreateEventChanges_and_timings = `
-CREATE TEMP TABLE eventChanges_and_timings${arg.beatColumn} AS
+CREATE TEMP TABLE eventChanges_and_timings${queryID} AS
  SELECT 
  e.*, 
  vc.name_and_path, vc.new_value, vc.diff, 
@@ -380,9 +416,8 @@ CREATE TEMP TABLE eventChanges_and_timings${arg.beatColumn} AS
  JOIN events e ON vc.event_id = e.event_id
  JOIN beat_timings_per_run btp 
  ON e.run_id = btp.run_id AND e.beat_id = btp.beat_id
- WHERE e.run_id IN (${runIdListAsArg})
-  AND e.beat_id = ${arg.beatColumn} 
- ORDER BY e.run_id, e.beat_id, vc.name_and_path,timestamp DESC;`;
+ WHERE e.run_id IN (${runIdListAsArg}) 
+ ORDER BY e.run_id DESC, e.beat_id DESC, vc.name_and_path,timestamp DESC;`;
     await dbClient.query(queryCreateEventChanges_and_timings);
 
     const queryWeightedSumPerRun = `
@@ -390,15 +425,16 @@ SELECT DISTINCT ON (run_id, name_and_path)
     run_id, useLatest,
 	time_diff_of_beat,name_and_path,
 	new_value * weight * useLatest AS sumOrLatest
-  FROM eventChanges_and_timings${arg.beatColumn}
+  FROM eventChanges_and_timings${queryID}
 WHERE weight != 0 AND useLatest = 1
 UNION ALL
 SELECT 
     run_id, useLatest,
 	time_diff_of_beat,name_and_path,
-	SUM(new_value * weight * (1-useLatest)) AS sumOrLatest
-  FROM eventChanges_and_timings${arg.beatColumn}
-WHERE weight != 0 AND useLatest = 0
+	SUM(diff * weight * (1-useLatest)) AS sumOrLatest
+  FROM eventChanges_and_timings${queryID}
+WHERE weight != 0 AND useLatest = 0 
+AND beat_id = ${arg.beatColumn}
 GROUP BY run_id, name_and_path,useLatest, time_diff_of_beat
   `;
 
@@ -409,6 +445,14 @@ ${queryWeightedSumPerRun}
 SELECT AVG(sumorlatest) AS avg_weighted_score
 FROM weighted_values GROUP BY name_and_path;`
     const res = await dbClient.query(queryAvgBeatIntensity);
+
+    const queryTimings = `
+SELECT DISTINCT ON (beat_id) beat_id, AVG(time_diff_of_beat) FROM eventChanges_and_timings${queryID}
+WHERE beat_id = ${arg.beatColumn} 
+GROUP BY beat_id;`
+
+    var timeDiffOfBeat = await dbClient.query(queryTimings);
+
     if (!res.rows[0] || res.rows[0].avg_weighted_score === null) {
         return 0;
     }
@@ -425,7 +469,8 @@ FROM weighted_values GROUP BY name_and_path;`
 
     const returnObj = {
         avg_weighted_score: res.rows[0].avg_weighted_score,
-        time_diff_ms: ms
+        time_diff_ms: ms,
+        time_diff_of_beat: timeDiffOfBeat.rows[0]?.avg
     };
 
     return returnObj;

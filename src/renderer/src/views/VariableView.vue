@@ -87,7 +87,7 @@ const itemsPerPage = computed(() => {
 });
 
 function getFilteredVars() {
-    var a = designVariablesStore.getPathFilteredVariables();
+    var a = designVariablesStore.getPathFilteredVariables(props.isInVisualizerView);
     if(props.isInVisualizerView){
         a = a.filter(variable => variable.runtimeModified);
       }
@@ -190,24 +190,31 @@ const variableDialog = ref(null)
     label="Filter by path and name" placeholder="Enter path or name to filter" clearable=""></v-text-field>
   </div>
     <v-col cols="1" class="d-flex align-center justify-center"><strong>Filters</strong></v-col>
-    <v-col cols="2">
+    <v-col cols="1">
       <v-checkbox 
         class="d-flex align-center"
         v-model="currentState.favoritesOnly" 
         label="Favorite" 
       ></v-checkbox>
     </v-col>
-    <v-col cols="2">
+    <v-col cols="1">
       <v-checkbox 
         v-model="currentState.onlyPublic" 
         label="Public" 
         class="d-flex align-center"
       ></v-checkbox>
     </v-col>
-    <v-col v-if="isInVisualizerView" cols="2">
+    <v-col v-if="isInVisualizerView" cols="1">
       <v-checkbox 
         v-model="currentState.onlyWithWeight" 
         label="Has Weight"
+        class="d-flex align-center"
+      ></v-checkbox>
+    </v-col>
+    <v-col v-if="isInVisualizerView" cols="1">
+      <v-checkbox 
+        v-model="currentState.onlyBVs" 
+        label="Is BV"
         class="d-flex align-center"
       ></v-checkbox>
     </v-col>

@@ -120,10 +120,30 @@ export class BeatContentManager {
 
 
 
-    this.contentsStore.contents.value.forEach(content => {
+    this.contentsStore.contents.value.forEach(
+      (content: BeatContent) => {
       //if(content has function update) {
-      if(content.update != undefined){
-        content.update(nameAndPath_andWeights)
+      var contentAsBeatContent = content as BeatContent
+      if(contentAsBeatContent.update != undefined){
+        contentAsBeatContent.update(nameAndPath_andWeights)
+      }
+      else{
+        var newContent = new BeatContent(
+          contentAsBeatContent.id,
+          contentAsBeatContent.description, 
+          contentAsBeatContent.narrativeIntensity, 
+          contentAsBeatContent.category, 
+          contentAsBeatContent.intensity, 
+          contentAsBeatContent.rawVariables, 
+          contentAsBeatContent.expectedPlaytime, 
+          contentAsBeatContent.introducedSkills, 
+          contentAsBeatContent.reinforcedSkills, 
+          contentAsBeatContent.requiredSkills);
+        newContent.runsList = contentAsBeatContent.runsList
+        newContent.beatColumn = contentAsBeatContent.beatColumn
+        newContent.update(nameAndPath_andWeights)
+
+        content = newContent;
       }
     })
   }

@@ -173,12 +173,34 @@ export const useDesignVariablesStore = defineStore('designVariablesStore',  {
         }
         return match;
     },
-    getPathFilteredVariables() {
+    getPathFilteredVariables(runtimeFilters : boolean = false) {
       var a = this.allVariables;
       
       if(currentState.pathFilterText) {
-        const regex = new RegExp(currentState.pathFilterText, "i");
-        a = a.filter(variable => (variable.path + "/" + variable.name).match(regex));
+        
+        var regex;
+        const literal = currentState.pathFilterText;
+        try {
+          regex = new RegExp(currentState.pathFilterText, "i");
+        }
+        catch (error) {
+        }
+        a = a.filter(variable => 
+        {
+          const nameAndPath = variable.path + "/" + variable.name;
+          try {
+            var res;
+            if(regex) {
+              res = nameAndPath.match(regex)
+            }
+            if(!res) {
+              res = nameAndPath.includes(literal);
+            }
+            return res;
+          } catch (error) {
+            return false;
+          }
+        });
       }
       if(currentState.favoritesOnly){
         a = a.filter(variable => variable.markedFavorite || variable.requestedFromPM);
@@ -186,8 +208,13 @@ export const useDesignVariablesStore = defineStore('designVariablesStore',  {
       if(currentState.onlyPublic){
         a = a.filter(variable => variable.isPublic);
       }
-      if(currentState.onlyWithWeight){
-        a = a.filter(variable => (variable.intensityWeight || 0) != 0 || (variable.narrativeWeight || 0) != 0);
+      if(runtimeFilters){
+        if(currentState.onlyWithWeight){
+          a = a.filter(variable => (variable.intensityWeight || 0) != 0 || (variable.narrativeWeight || 0) != 0);
+        }
+        if(currentState.onlyBVs){
+          a = a.filter(variable => variable.isBV);
+        }
       }
       return a;
     },

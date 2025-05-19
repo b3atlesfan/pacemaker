@@ -452,7 +452,23 @@ const calculateAverages = async () => {
 var logged_events: any[]
 var currentRecordingID : string = ""
 
+
+function anyOverlaps(a: number[], b: number[]) {
+  if(!a || !b) return false;
+  for (let i = 0; i < a.length; i++) {
+    for (let j = 0; j < b.length; j++) {
+      if (a[i] === b[j]) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+const min_run_id = ref(61);
+
 const loadRecordings = async () => {
+
 
   designVariablesStore.getPathFilteredVariables();
 
@@ -460,8 +476,7 @@ const loadRecordings = async () => {
   const list_of_bvs_names = list_of_bvs.map((bv: DesignVariable) => 
   '(' + bv.name + ', ' + bv.path + ')');
   const diffMap = list_of_bvs.map((bv: DesignVariable) => bv.useDiff);
-  const min_run_id = 30;
-  const BVrequest = { list_of_bvs_names, diffMap, min_run_id }
+  const BVrequest = { list_of_bvs_names, diffMap, min_run_id: min_run_id.value }
   const workbook = await window.versions.readFromExcelFile(BVrequest); // settings.Name
 
   if(!workbook || workbook == "null") return;
@@ -483,28 +498,64 @@ const loadRecordings = async () => {
 
   var currentBeatID = -1;
   var variantIndex = 0;
-  var listOfRunsFoundAtCurrentBeat : number[] = [];
+
+  var column = 0;
+  var row = 0;
+
+  var beatsInPreviousColumn: number[] = [];
+  var beatsInCurrentColumn: number [] = [];
   for(var i in branchedBeats) {
     const beat = branchedBeats[i]
     if(beat.beat_id > currentBeatID || !beat.beat_id) {
+      beatsInPreviousColumn = beatsInCurrentColumn
+      beatsInCurrentColumn = []
 
+      column++;
+      row = 0;
       variantIndex = 1;
       currentBeatID = beat.beat_id
       prevBeatId = beatId
-      beatId = createEmptyNode("toTheRight")
-      listOfRunsFoundAtCurrentBeat = []
-      listOfRunsFoundAtCurrentBeat.push(beat.listofrunids)
+      beatId = createEmptyNode("toTheRight", false, {x: column, y: beat.interestedval})
     }
     else {
+      row++;
       variantIndex++;
-      beatId = createEmptyNode("below", prevBeatId)
-      listOfRunsFoundAtCurrentBeat.push(beat.listofrunids)
+      beatId = createEmptyNode("below", false, {x: column, y: beat.interestedval})
     }
+    beatsInCurrentColumn.push(beatId)
     beatManager.addRunsListToNodeContent(beatId, beat.listofrunids, beat.beat_id)
 
     var name = separateKey(beat.name_and_path).name
     
     beatManager.editNodeLabel(beatId, "Beat" + beat.beat_id + ", " + name + "=" + beat.interestedval + "|" + beat.listofrunids)
+
+    if(beatsInPreviousColumn.length > 0) {
+      for(var j in beatsInPreviousColumn) {
+        const prevBeat = beatsInPreviousColumn[j]
+        const contentProxy = contentManager.getContent(beatManager.getContentId(prevBeat));
+        if(anyOverlaps(beat.listofrunids, contentProxy.runsList)) {
+          const edge = {
+            id: 'e' + prevBeat + '-' + beatId,
+            source: String(prevBeat),
+            target: String(beatId),
+            sourceHandle: 'c_out',
+            targetHandle: 'a_in',
+            animated: false,
+            markerEnd: {
+              type: MarkerType.ArrowClosed,
+              width: 20,
+              height: 20,
+              color: '#000000',
+            },
+            style: {
+              strokeWidth: 2,
+              stroke: '#000000',
+            },
+          }
+          addEdgesDelayed(edge)
+        }
+      }
+    }
   }
 
   
@@ -551,7 +602,9 @@ const loadRecordings = async () => {
 
 function recordEvent(event: string) {
   var eventObj = JSON.parse(event)
-  if(eventObj.name != "checkpointReached" && eventObj.name != "VariableChanged" ) return;
+  if(!(eventObj.name == "checkpointReached" || eventObj.name == "VariableChanged" || eventObj.name == "Initial")) {
+    return;
+  }
 
   console.log("Recording event: " + JSON.stringify(eventObj))
   // expected eventObj.args example: 
@@ -639,13 +692,15 @@ function getAllWithName(v : { [key: string]: number }, wantedName: string) {
   return all;
 }
 
-function createEmptyNode(position: "toTheRight" | "below" = "toTheRight", fromBeatId: number) : number {
+function createEmptyNode(position: "toTheRight" | "below" = "toTheRight"
+  , autoEdge: boolean = true, coords: {x:number, y:number}) : number {
   const viewport = getViewport()
 
 
   // get position of last beat
-  var lastBeatId = beatManager.getLatestNodeID()
+  const lastBeatId = beatManager.getLatestNodeID() || 0
   var lastBeat = beatManager.getNode(lastBeatId)
+
   
   var lastBeatPos = {x: viewport.x / viewport.zoom, y: viewport.y / viewport.zoom}
   if (lastBeat != null) {
@@ -653,18 +708,25 @@ function createEmptyNode(position: "toTheRight" | "below" = "toTheRight", fromBe
   }
 
   var newPosition = {x: -viewport.x / viewport.zoom, y: -viewport.y / viewport.zoom}
-  if(position === "toTheRight"){
-    newPosition = {x: lastBeatPos.x + 300, y: lastBeatPos.y}
+  
+  if(coords) {
+    var firstBeat = beatManager.getNode(0);
+    if(firstBeat != null) {
+      newPosition = {x: firstBeat.position.x + coords.x * 400, y: firstBeat.position.y + coords.y * 400}
+    }
+  }
+  else if (position === "toTheRight"){
+    newPosition = {x: lastBeatPos.x + 500, y: lastBeatPos.y}
   }
   else if(position === "below"){
-    newPosition = {x: lastBeatPos.x, y: lastBeatPos.y + 300}
+    newPosition = {x: lastBeatPos.x, y: lastBeatPos.y + 400}
   }
 
-  var beatId = beatManager.createNode(newPosition)
+  const beatId = beatManager.createNode(newPosition)
 
-   if(!fromBeatId && fromBeatId != 0) {
-      fromBeatId = lastBeatId
-    }
+   //if(!fromBeatId && fromBeatId != 0) {
+   //var   fromBeatId = lastBeatId
+   // }
 
   const contentId = contentManager.createContent({
     name: "empty",
@@ -677,33 +739,36 @@ function createEmptyNode(position: "toTheRight" | "below" = "toTheRight", fromBe
 
   beatManager.editContentId(beatId, contentId)
 
-  const edge = {
-    id: 'e' + fromBeatId + '-' + beatId,
-    //label: 'edge with arrowhead',
-    source: String(fromBeatId),
-    target: String(beatId),
-    sourceHandle: 'c_out',
-    targetHandle: 'a_in',
-    animated: false,
-    markerEnd: {
-      type: MarkerType.ArrowClosed,
-      width: 20,
-      height: 20,
-      color: '#000000',
-    },
-    style: {
-      strokeWidth: 2,
-      stroke: '#000000',
-    },
+
+  if(autoEdge){  
+      const edge = {
+      id: 'e' + fromBeatId + '-' + beatId,
+      //label: 'edge with arrowhead',
+      source: String(fromBeatId),
+      target: String(beatId),
+      sourceHandle: 'c_out',
+      targetHandle: 'a_in',
+      animated: false,
+      markerEnd: {
+        type: MarkerType.ArrowClosed,
+        width: 20,
+        height: 20,
+        color: '#000000',
+      },
+      style: {
+        strokeWidth: 2,
+        stroke: '#000000',
+      },
+    }
+    if (beatId != 0 && beatId != '') {
+      addEdgesDelayed(edge)
+    }
   }
-  if (beatId != 0 && beatId != '') {
-    addEdgesDelayed(edge)
-  }
-  lastBeatId = beatId
   return beatId
 }
 
 function createNodeFromValidEvent(eventObj) {
+  const lastBeatId = beatManager.getLatestNodeID() || 0
   var beatId: number = createEmptyNode("toTheRight");
   
   var v : { [key: string]: number } = eventObj.args;
