@@ -1,0 +1,3 @@
+RecordingID;Timestamp;index;userReportedIntensity;EventName;(Empty, NoPath)
+1;2025-05-12T08:31:53.208Z;0;0;checkpointReached;0
+1;2025-05-12T08:32:13.592Z;1;4;checkpointReached;
